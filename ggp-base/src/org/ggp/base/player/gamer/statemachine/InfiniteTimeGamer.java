@@ -16,6 +16,9 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public class InfiniteTimeGamer extends StateMachineGamer {
 
+	private static final int MAX_GOAL = 100;
+	private static final int TIMEOUT_BUFFER = 500;
+	
 	@Override
 	public StateMachine getInitialStateMachine() {
 		return new CachedStateMachine(new ProverStateMachine());
@@ -40,7 +43,11 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		int bestValue = -1;
 		
 		for (Move move : legalMoves) {
-			int minValue = 100;
+			if (System.currentTimeMillis() > timeout - TIMEOUT_BUFFER) {
+				break;
+			}
+			
+			int minValue = MAX_GOAL;
 			
 			for (MachineState state : nextStates.get(move)) {
 				int value = getStateValue(state);
@@ -111,7 +118,7 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		int bestValue = 0;
 		
 		for (Move move : legalMoves) {
-			int minValue = 100;
+			int minValue = MAX_GOAL;
 			
 			for (MachineState nextState : nextStates.get(move)) {
 				int value = getStateValue(nextState);
