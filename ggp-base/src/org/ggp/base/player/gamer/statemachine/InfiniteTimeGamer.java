@@ -41,15 +41,17 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		Move bestMove = null;
 		int bestValue = MAX_STATE_VALUE;
 		
-		while(System.currentTimeMillis() < timeout) {
-			for (Move nextMove : legalMoves) {
-				for (MachineState state : nextStates.get(nextMove)) {
-					int nextValue = getStateValue(state);
-					
-					if (nextValue < bestValue) {
-						bestValue = nextValue;
-						bestMove = nextMove;
-					}
+		for (Move nextMove : legalMoves) {
+			if (System.currentTimeMillis() > timeout) {
+				break;
+			}
+			
+			for (MachineState state : nextStates.get(nextMove)) {
+				int nextValue = getStateValue(state);
+				
+				if (nextValue < bestValue) {
+					bestValue = nextValue;
+					bestMove = nextMove;
 				}
 			}
 		}
