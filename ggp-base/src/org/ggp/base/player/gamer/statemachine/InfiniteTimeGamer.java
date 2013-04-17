@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.util.game.Game;
@@ -39,7 +40,7 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		List<Move> legalMoves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 		Map<Move, List<MachineState>> nextStates = stateMachine.getNextStates(getCurrentState(), getRole());
 		
-		Move bestMove = null;
+		Move bestMove = (legalMoves.get(new Random().nextInt(legalMoves.size()))); // at worst, we're a random player
 		int bestValue = -1;
 		
 		for (Move move : legalMoves) {
@@ -50,7 +51,7 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 			int minValue = MAX_GOAL;
 			
 			for (MachineState state : nextStates.get(move)) {
-				int value = getStateValue(state);
+				int value = getStateValue(state, timeout);
 				
 				if (value < minValue) {
 					minValue = value;
@@ -86,7 +87,7 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		return "InfiniteTime";
 	}
 	
-	private int getStateValue(MachineState currentState) {
+	private int getStateValue(MachineState currentState, long timeout) {		
 		StateMachine stateMachine = getStateMachine();
 		
 		if (stateMachine.isTerminal(currentState)) {
@@ -97,6 +98,10 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 				e.printStackTrace();
 				return -1;
 			}
+		}
+		
+		if (System.currentTimeMillis() > timeout - TIMEOUT_BUFFER) {
+			return 0;
 		}
 		
 		Map<Move, List<MachineState>> nextStates;
@@ -118,10 +123,14 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		int bestValue = 0;
 		
 		for (Move move : legalMoves) {
+			if (System.currentTimeMillis() > timeout - TIMEOUT_BUFFER) {
+				break;
+			}
+			
 			int minValue = MAX_GOAL;
 			
 			for (MachineState nextState : nextStates.get(move)) {
-				int value = getStateValue(nextState);
+				int value = getStateValue(nextState, timeout);
 				if (value < minValue) {
 					minValue = value;
 				}
