@@ -16,6 +16,9 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public class InfiniteTimeGamer extends StateMachineGamer {
 
+	private static final int MAX_GOAL = 100;
+	private static final int TIMEOUT_BUFFER = 500;
+	
 	@Override
 	public StateMachine getInitialStateMachine() {
 		return new CachedStateMachine(new ProverStateMachine());
@@ -35,27 +38,31 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 		StateMachine stateMachine = getStateMachine();
 		List<Move> legalMoves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 		Map<Move, List<MachineState>> nextStates = stateMachine.getNextStates(getCurrentState(), getRole());
-
+		
 		Move bestMove = null;
 		int bestValue = -1;
-
+		
 		for (Move move : legalMoves) {
-			int minValue = 100;
-
+			if (System.currentTimeMillis() > timeout - TIMEOUT_BUFFER) {
+				break;
+			}
+			
+			int minValue = MAX_GOAL;
+			
 			for (MachineState state : nextStates.get(move)) {
 				int value = getStateValue(state);
-
+				
 				if (value < minValue) {
 					minValue = value;
 				}
 			}
-
+			
 			if (minValue > bestValue) {
 				bestMove = move;
 				bestValue = minValue;
 			}
 		}
-
+		
 		return bestMove;
 	}
 
@@ -78,10 +85,10 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 	public String getName() {
 		return "InfiniteTime";
 	}
-
+	
 	private int getStateValue(MachineState currentState) {
 		StateMachine stateMachine = getStateMachine();
-
+		
 		if (stateMachine.isTerminal(currentState)) {
 			try {
 				return stateMachine.getGoal(currentState, getRole());
@@ -91,10 +98,10 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 				return -1;
 			}
 		}
-
+		
 		Map<Move, List<MachineState>> nextStates;
 		List<Move> legalMoves;
-
+		
 		try {
 			nextStates = stateMachine.getNextStates(currentState, getRole());
 			legalMoves = stateMachine.getLegalMoves(currentState, getRole());
@@ -107,24 +114,24 @@ public class InfiniteTimeGamer extends StateMachineGamer {
 			e.printStackTrace();
 			return -1;
 		}
-
+		
 		int bestValue = 0;
-
+		
 		for (Move move : legalMoves) {
-			int minValue = 100;
-
+			int minValue = MAX_GOAL;
+			
 			for (MachineState nextState : nextStates.get(move)) {
 				int value = getStateValue(nextState);
 				if (value < minValue) {
 					minValue = value;
 				}
 			}
-
+			
 			if (minValue > bestValue) {
 				bestValue = minValue;
 			}
 		}
-
+		
 		return bestValue;
 	}
 
