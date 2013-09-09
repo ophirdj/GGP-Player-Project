@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src_py"/>
 	<classpathentry kind="src" path="src_clj"/>
+	<classpathentry kind="src" path="src_my_player"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="src/external/FlyingSaucer/core-renderer.jar"/>
 	<classpathentry kind="lib" path="src/external/JTidy/Tidy.jar"/>
@@ -12,5 +13,10 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="src/external/JFreeChart/jcommon-1.0.17.jar"/>
 	<classpathentry kind="lib" path="src/external/JFreeChart/jfreechart-1.0.14.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Weka-3-7/weka.jar" sourcepath="C:/Program Files/Weka-3-7/weka-src.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Program%20Files/Weka-3-7/doc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
