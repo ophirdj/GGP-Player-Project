@@ -15,6 +15,8 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
+import state.MyState;
+
 /**
  * A simple class for computing the minmax value of game states. Note: the
  * calculated value is indeed the real minmax value, meaning that the whole game
@@ -27,15 +29,14 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
  */
 public class MinMax {
 
-	private static final int CACHE_HEIGHT_THRESHOLD = 2;
+	private static final int CACHE_HEIGHT_THRESHOLD = 1;
 	private StateMachine machine;
 	private Role maxPlayer;
 	private Role minPlayer;
-	private Map<MachineState, CacheEntry> cache;
+	private Map<MyState, CacheEntry> cache;
 
-	
 	private static class CacheEntry {
-		
+
 		private static final int STARTING_TTL = 0;
 		private final int value;
 		private final Move bestMove;
@@ -61,50 +62,57 @@ public class MinMax {
 			ttl = STARTING_TTL + height;
 			return value;
 		}
-		
-		public Move getMove(){
+
+		public Move getMove() {
 			return bestMove;
 		}
-		
-		public int getHeight(){
+
+		public int getHeight() {
 			return height;
 		}
 	}
 
-	
 	public MinMax(StateMachine machine, Role maxPlayer) {
 		List<Role> roles = machine.getRoles();
 		assert (roles.size() == 2);
 		this.machine = machine;
 		this.maxPlayer = maxPlayer;
-		this.minPlayer = (roles.get(0).equals(maxPlayer) ? roles.get(1) : roles.get(0));
-		this.cache = new HashMap<MachineState, CacheEntry>();
+		this.minPlayer = (roles.get(0).equals(maxPlayer) ? roles.get(1) : roles
+				.get(0));
+		this.cache = new HashMap<MyState, CacheEntry>();
 	}
 
 	public void pruneCache() {
-		Set<MachineState> toBeDeleted = new HashSet<MachineState>();
-		for (Entry<MachineState, CacheEntry> entry : cache.entrySet()) {
+		Set<MyState> toBeDeleted = new HashSet<MyState>();
+		for (Entry<MyState, CacheEntry> entry : cache.entrySet()) {
 			if (entry.getValue() != null && entry.getValue().canPrune()) {
 				toBeDeleted.add(entry.getKey());
 			} else if (entry.getValue() != null) {
 				entry.getValue().reduceTTL();
 			}
 		}
-		for (MachineState key : toBeDeleted) {
+		for (MyState key : toBeDeleted) {
 			cache.remove(key);
 		}
 	}
 
-	public Integer valuOf(MachineState state, Role controlingPlayer)
-			throws GoalDefinitionException, MoveDefinitionException,
-			TransitionDefinitionException {
-		if (state == null || controlingPlayer == null) {
+	public Move bestMove(MyState state) throws GoalDefinitionException,
+			MoveDefinitionException, TransitionDefinitionException {
+		if (state == null) {
 			return null;
 		}
-		return minmaxValueOf(state, controlingPlayer).getValue();
+		return minmaxValueOf(state).getMove();
 	}
 
-	private CacheEntry minmaxValueOf(MachineState state, Role controlingPlayer)
+	public Integer valuOf(MyState state) throws GoalDefinitionException,
+			MoveDefinitionException, TransitionDefinitionException {
+		if (state == null) {
+			return null;
+		}
+		return minmaxValueOf(state).getValue();
+	}
+
+	private CacheEntry minmaxValueOf(MyState state)
 			throws GoalDefinitionException, MoveDefinitionException,
 			TransitionDefinitionException {
 		if (cache.containsKey(state) && cache.get(state) != null) {
@@ -114,47 +122,58 @@ public class MinMax {
 		}
 		CacheEntry minmaxEntry = null;
 		cache.put(state, null);
-		if (machine.isTerminal(state)) {
-			return new CacheEntry(machine.getGoal(state, maxPlayer) - machine.getGoal(state, minPlayer), null, 0);
-		} else if (controlingPlayer == maxPlayer) {
+		if (machine.isTerminal(state.getState())) {
+			return new CacheEntry(machine.getGoal(state.getState(), maxPlayer)
+					- machine.getGoal(state.getState(), minPlayer), null, 0);
+		} else if (maxPlayer.equals(state.getControlingPlayer())) {
 			minmaxEntry = maxMove(state);
-		} else if (controlingPlayer == minPlayer) {
+		} else if (minPlayer.equals(state.getControlingPlayer())) {
 			minmaxEntry = minMove(state);
 		} else {
 			throw new RuntimeException(
 					"minmax error: no match for controlingPlayer");
 		}
-		if(minmaxEntry.getHeight() >= CACHE_HEIGHT_THRESHOLD){
+		if (minmaxEntry.getHeight() >= CACHE_HEIGHT_THRESHOLD) {
 			cache.put(state, minmaxEntry);
 		}
 		return minmaxEntry;
 	}
 
-	private CacheEntry maxMove(MachineState state) throws MoveDefinitionException,
+	private CacheEntry maxMove(MyState state) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException {
 		CacheEntry maxEntry = null;
-		for(Entry<Move, List<MachineState>> maxMove: machine.getNextStates(state, maxPlayer).entrySet()){
-			assert(maxMove.getValue().size() == 1);
-			MachineState nextState = maxMove.getValue().get(0);
-			CacheEntry nextEntry = minmaxValueOf(nextState, minPlayer);
+		for (Entry<Move, List<MachineState>> maxMove : machine.getNextStates(
+				state.getState(), maxPlayer).entrySet()) {
+			assert (maxMove.getValue().size() == 1);
+			MachineState nextMachineState = maxMove.getValue().get(0);
+			MyState nextState = new MyState(nextMachineState,
+					state.getTurnNumber() + 1, minPlayer);
+			CacheEntry nextEntry = minmaxValueOf(nextState);
 			if ((maxEntry == null)
-					|| ((nextEntry != null) && (nextEntry.getValue() > maxEntry.getValue()))) {
-				maxEntry = new CacheEntry(nextEntry.getValue(), maxMove.getKey(), nextEntry.getHeight());
+					|| ((nextEntry != null) && (nextEntry.getValue() > maxEntry
+							.getValue()))) {
+				maxEntry = new CacheEntry(nextEntry.getValue(),
+						maxMove.getKey(), nextEntry.getHeight() + 1);
 			}
 		}
 		return maxEntry;
 	}
 
-	private CacheEntry minMove(MachineState state) throws MoveDefinitionException,
+	private CacheEntry minMove(MyState state) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException {
 		CacheEntry minEntry = null;
-		for(Entry<Move, List<MachineState>> minMove: machine.getNextStates(state, minPlayer).entrySet()){
-			assert(minMove.getValue().size() == 1);
-			MachineState nextState = minMove.getValue().get(0);
-			CacheEntry nextEntry = minmaxValueOf(nextState, maxPlayer);
+		for (Entry<Move, List<MachineState>> minMove : machine.getNextStates(
+				state.getState(), minPlayer).entrySet()) {
+			assert (minMove.getValue().size() == 1);
+			MachineState nextMachineState = minMove.getValue().get(0);
+			MyState nextState = new MyState(nextMachineState,
+					state.getTurnNumber() + 1, maxPlayer);
+			CacheEntry nextEntry = minmaxValueOf(nextState);
 			if ((minEntry == null)
-					|| ((nextEntry != null) && (nextEntry.getValue() < minEntry.getValue()))) {
-				minEntry = new CacheEntry(nextEntry.getValue(), minMove.getKey(), nextEntry.getHeight());
+					|| ((nextEntry != null) && (nextEntry.getValue() < minEntry
+							.getValue()))) {
+				minEntry = new CacheEntry(nextEntry.getValue(),
+						minMove.getKey(), nextEntry.getHeight() + 1);
 			}
 		}
 		return minEntry;
