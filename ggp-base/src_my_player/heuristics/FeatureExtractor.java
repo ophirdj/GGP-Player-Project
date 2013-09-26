@@ -1,7 +1,13 @@
 package heuristics;
 
+import state.MyState;
+import weka.core.Instance;
+import weka.core.Instances;
+
 public interface FeatureExtractor {
 	
-	FeatureVector getFeatures();
+	Instance getValues(MyState state);
+	
+	Instances getInstances();
 	
 }

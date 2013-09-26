@@ -3,7 +3,9 @@ package heuristics;
 import heuristics.ClassifierBuilder.ClassifierBuildException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -26,7 +28,7 @@ public class HeuristicGenerator {
 	private Role myRole;
 	private Role oponentRole;
 	private Simulator simulator;
-	private ManualTicTacToeFeatureExtractor featureExtractor;
+	private FeatureExtractor featureExtractor;
 	private ClassifierBuilder classifierBuilder;
 
 	public HeuristicGenerator(Game game, StateMachine machine, Role myRole,
@@ -37,7 +39,7 @@ public class HeuristicGenerator {
 		this.myRole = myRole;
 		this.oponentRole = oponentRole;
 		this.simulator = new Simulator(machine);
-		this.featureExtractor = new ManualTicTacToeFeatureExtractor();
+		this.featureExtractor = null;
 		this.classifierBuilder = new SimpleRegressionClassifierBuilder();
 	}
 
@@ -46,16 +48,18 @@ public class HeuristicGenerator {
 			TransitionDefinitionException, GoalDefinitionException {
 		List<LabeledExample> labeledStates = new ArrayList<HeuristicGenerator.LabeledExample>(
 				numExamples);
+		Set<MyState> allStates = new HashSet<MyState>();
 		for (int i = 0; i < numExamples; i++) {
 			List<MyState> simulation = simulator.simulate(machine.getRoles()
 					.get(0));
+			allStates.addAll(simulation);
 			MyState state = simulation.get(simulation.size() - 1);
 			labeledStates.add(new LabeledExample(state, getStateLabel(state)));
 		}
-		FeatureVector featureVector = featureExtractor.getFeatures();
-		Instances classifiedInstances = getClassifiedInstances(featureVector,
+		featureExtractor = new AutomaticFeatureExtractor(gameName, rules, allStates);
+		Instances classifiedInstances = getClassifiedInstances(featureExtractor,
 				labeledStates);
-		return classifierBuilder.buildClassifier(classifiedInstances, featureVector);
+		return classifierBuilder.buildClassifier(classifiedInstances, featureExtractor);
 	}
 
 	private double getStateLabel(MyState state) throws GoalDefinitionException {
@@ -63,7 +67,7 @@ public class HeuristicGenerator {
 				- machine.getGoal(state.getState(), oponentRole);
 	}
 
-	private Instances getClassifiedInstances(FeatureVector featureVector,
+	private Instances getClassifiedInstances(FeatureExtractor featureVector,
 			List<LabeledExample> labeledExamples) {
 		Instances classifiedExamples = new Instances(
 				featureVector.getInstances());

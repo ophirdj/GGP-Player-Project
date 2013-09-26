@@ -52,10 +52,10 @@ public class MyPlayer extends StateMachineGamer {
 		HeuristicGenerator g = new HeuristicGenerator(getMatch().getGame(),
 				getStateMachine(), getRole(), oponentRole);
 		try {
-			classifier = g.generateClassifier(1);
+			classifier = g.generateClassifier(30000);
 			minmax = new HeuristicLimitedDepthMinMax(getStateMachine(),
 					getRole(), classifier);
-			minmax.setDepth(4);
+			minmax.setDepth(3);
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
 		}

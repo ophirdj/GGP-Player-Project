@@ -63,8 +63,9 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		MinMaxEntry minmaxEntry = null;
 		cache.put(state, null);
 		if (machine.isTerminal(state.getState())) {
-			return new MinMaxEntry(machine.getGoal(state.getState(), maxPlayer)
-					- machine.getGoal(state.getState(), minPlayer), null, 10);
+			double goalValue = (machine.getGoal(state.getState(), maxPlayer)
+					- machine.getGoal(state.getState(), minPlayer)) * 10000;
+			return new MinMaxEntry(goalValue, null, 10);
 		} else if(depth < 0) {
 			return new MinMaxEntry(classifier.classifyState(state), null, 0);
 		} else if (maxPlayer.equals(state.getControlingPlayer())) {

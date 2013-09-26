@@ -4,7 +4,7 @@ import weka.core.Instances;
 
 public interface ClassifierBuilder {
 
-	StateClassifier buildClassifier(Instances classifiedExamples, FeatureVector featureVector)
+	StateClassifier buildClassifier(Instances classifiedExamples, FeatureExtractor featureVector)
 			throws ClassifierBuildException;
 
 	class ClassifierBuildException extends Exception {
