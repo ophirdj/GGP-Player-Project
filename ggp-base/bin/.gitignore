@@ -1,10 +1,7 @@
-/external
-/minmax
-/myplayer
 /org
-/simulator
-/featureextractor
-/gamefeatures
-/state
+/external
 /heuristics
+/minmax
 /player
+/simulator
+/state

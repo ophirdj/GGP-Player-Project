@@ -1,5 +1,7 @@
 package heuristics;
 
+import heuristics.ClassifierBuilder.ClassifierBuildException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,14 +15,11 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import simulator.Simulator;
 import state.MyState;
-
-import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 
 public class HeuristicGenerator {
 
-	
 	private List<Gdl> rules;
 	private String gameName;
 	private StateMachine machine;
@@ -30,7 +29,8 @@ public class HeuristicGenerator {
 	private ManualTicTacToeFeatureExtractor featureExtractor;
 	private ClassifierBuilder classifierBuilder;
 
-	public HeuristicGenerator(Game game, StateMachine machine, Role myRole, Role oponentRole){
+	public HeuristicGenerator(Game game, StateMachine machine, Role myRole,
+			Role oponentRole) {
 		this.rules = game.getRules();
 		this.gameName = game.getName();
 		this.machine = machine;
@@ -38,38 +38,45 @@ public class HeuristicGenerator {
 		this.oponentRole = oponentRole;
 		this.simulator = new Simulator(machine);
 		this.featureExtractor = new ManualTicTacToeFeatureExtractor();
-		this.classifierBuilder = null; //TODO: initialize this with real classifier builder
+		this.classifierBuilder = new SimpleRegressionClassifierBuilder();
 	}
-	
-	public Classifier generateClassifier(int numExamples) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
-		List<LabeledExample> labeledStates = new ArrayList<HeuristicGenerator.LabeledExample>(numExamples);
-		for(int i = 0; i < numExamples; i++){
-			List<MyState> simulation = simulator.simulate(machine.getRoles().get(0));
+
+	public StateClassifier generateClassifier(int numExamples)
+			throws ClassifierBuildException, MoveDefinitionException,
+			TransitionDefinitionException, GoalDefinitionException {
+		List<LabeledExample> labeledStates = new ArrayList<HeuristicGenerator.LabeledExample>(
+				numExamples);
+		for (int i = 0; i < numExamples; i++) {
+			List<MyState> simulation = simulator.simulate(machine.getRoles()
+					.get(0));
 			MyState state = simulation.get(simulation.size() - 1);
 			labeledStates.add(new LabeledExample(state, getStateLabel(state)));
 		}
 		FeatureVector featureVector = featureExtractor.getFeatures();
-		Instances classifiedInstances = getClassifiedInstances(featureVector, labeledStates);
-		return classifierBuilder.buildClassifier(classifiedInstances);
+		Instances classifiedInstances = getClassifiedInstances(featureVector,
+				labeledStates);
+		return classifierBuilder.buildClassifier(classifiedInstances, featureVector);
 	}
 
 	private double getStateLabel(MyState state) throws GoalDefinitionException {
-		return machine.getGoal(state.getState(), myRole) - machine.getGoal(state.getState(), oponentRole);
+		return machine.getGoal(state.getState(), myRole)
+				- machine.getGoal(state.getState(), oponentRole);
 	}
 
 	private Instances getClassifiedInstances(FeatureVector featureVector,
-			List<LabeledExample> labeledExamples) {		
-		Instances classifiedExamples = new Instances(featureVector.getInstances());
-		for(LabeledExample e: labeledExamples) {
+			List<LabeledExample> labeledExamples) {
+		Instances classifiedExamples = new Instances(
+				featureVector.getInstances());
+		for (LabeledExample e : labeledExamples) {
 			Instance example = featureVector.getValues(e.getState());
 			example.setClassValue(e.getValue());
+			classifiedExamples.add(example);
 		}
 		return classifiedExamples;
 	}
-	
-	
+
 	private static final class LabeledExample {
-		
+
 		private MyState state;
 		private double value;
 
@@ -77,7 +84,7 @@ public class HeuristicGenerator {
 			this.state = state;
 			this.value = value;
 		}
-		
+
 		public MyState getState() {
 			return state;
 		}
@@ -86,5 +93,5 @@ public class HeuristicGenerator {
 			return value;
 		}
 	}
-	
+
 }

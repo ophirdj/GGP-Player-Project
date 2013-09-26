@@ -29,13 +29,18 @@ public class AutomaticFeatureVector implements FeatureVector {
 
 	@Override
 	public Instance getValues(MyState state) {
-		Instance featureVector = new DenseInstance(features.size());
+		Instance featureVector = new DenseInstance(datasetHeader.numAttributes());
 		featureVector.setDataset(datasetHeader);
 		for(Feature f: features){
-			if(f.getType() == AttributeType.BINARY) {
+			switch(f.getType()) {
+			case BINARY:
 				featureVector.setValue(f.getAttribute(), (String) f.getFeatureValue(state));
-			} else if(f.getType() == AttributeType.NUMERIC) {
+				break;
+			case NUMERIC:
 				featureVector.setValue(f.getAttribute(), (Double) f.getFeatureValue(state));
+				break;
+			default:
+				break;
 			}
 		}
 		return featureVector;
