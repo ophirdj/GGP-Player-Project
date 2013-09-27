@@ -2,6 +2,8 @@ package minmax;
 
 import org.ggp.base.util.statemachine.Move;
 
+import debugging.Verbose;
+
 public class MinMaxEntry {
 
 	private static final int STARTING_TTL = 0;
@@ -11,6 +13,7 @@ public class MinMaxEntry {
 	private int ttl;
 
 	public MinMaxEntry(double d, Move bestMove, int importance) {
+		Verbose.printVerbose("State value is " + d, Verbose.MIN_MAX_VERBOSE);
 		this.value = d;
 		this.bestMove = bestMove;
 		this.importance = importance;

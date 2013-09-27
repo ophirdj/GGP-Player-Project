@@ -25,13 +25,13 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 import state.MyState;
 
-public class MyPlayer extends StateMachineGamer {
+public class AutomaticHeuristicPlayer extends StateMachineGamer {
 
 	private StateClassifier classifier;
 	private LimitedDepthMinMax minmax;
 	private int turnNumber;
 
-	public MyPlayer() {
+	public AutomaticHeuristicPlayer() {
 		this.classifier = null;
 		this.minmax = null;
 		this.turnNumber = 0;
@@ -46,19 +46,21 @@ public class MyPlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
+		System.out.println("META-GAME START");
 		List<Role> roles = getStateMachine().getRoles();
 		Role oponentRole = getRole().equals(roles.get(0)) ? roles.get(1)
 				: roles.get(0);
 		HeuristicGenerator g = new HeuristicGenerator(getMatch().getGame(),
 				getStateMachine(), getRole(), oponentRole);
 		try {
-			classifier = g.generateClassifier(30000);
+			classifier = g.generateClassifier(300);
 			minmax = new HeuristicLimitedDepthMinMax(getStateMachine(),
 					getRole(), classifier);
 			minmax.setDepth(3);
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
 		}
+		System.out.println("META-GAME END");
 	}
 
 	@Override

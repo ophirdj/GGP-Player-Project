@@ -1,8 +1,5 @@
 package minmax;
 
-import heuristics.StateClassifier;
-import heuristics.StateClassifier.ClassificationException;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,23 +17,21 @@ import debugging.Verbose;
 
 import state.MyState;
 
-public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
+public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	
 	private StateMachine machine;
 	private Role maxPlayer;
 	private Role minPlayer;
-	private StateClassifier classifier;
 	private int searchDepth;
 	private Map<MyState, MinMaxEntry> cache;
 	
-	public HeuristicLimitedDepthMinMax(StateMachine machine, Role maxPlayer, StateClassifier classifier) {
+	public NoHeuristicLimitedDepthMinMax(StateMachine machine, Role maxPlayer) {
 		List<Role> roles = machine.getRoles();
 		assert (roles.size() == 2);
 		this.machine = machine;
 		this.maxPlayer = maxPlayer;
 		this.minPlayer = (roles.get(0).equals(maxPlayer) ? roles.get(1) : roles
 				.get(0));
-		this.classifier = classifier;
 		this.searchDepth = 2;
 		this.cache = new HashMap<MyState, MinMaxEntry>();
 	}
@@ -50,7 +45,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
 			return minmaxValueOf(state, searchDepth).getMove();
 		} catch (GoalDefinitionException | MoveDefinitionException
-				| TransitionDefinitionException | ClassificationException e) {
+				| TransitionDefinitionException e) {
 			e.printStackTrace();
 			throw new MinMaxException();
 		}
@@ -58,7 +53,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	
 	private MinMaxEntry minmaxValueOf(MyState state, int depth)
 			throws GoalDefinitionException, MoveDefinitionException,
-			TransitionDefinitionException, ClassificationException {
+			TransitionDefinitionException {
 		if (cache.containsKey(state) && cache.get(state) != null) {
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
@@ -73,7 +68,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 			return new MinMaxEntry(goalValue, null, 10);
 		} else if(depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
-			return new MinMaxEntry(classifier.classifyState(state), null, 0);
+			return new MinMaxEntry(0, null, 0);
 		} else if (maxPlayer.equals(state.getControlingPlayer())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = maxMove(state, depth);
@@ -89,7 +84,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	private MinMaxEntry maxMove(MyState state, int depth) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException, ClassificationException {
+			TransitionDefinitionException, GoalDefinitionException {
 		MinMaxEntry maxEntry = null;
 		for (Entry<Move, List<MachineState>> maxMove : machine.getNextStates(
 				state.getState(), maxPlayer).entrySet()) {
@@ -109,7 +104,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	private MinMaxEntry minMove(MyState state, int depth) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException, ClassificationException {
+			TransitionDefinitionException, GoalDefinitionException {
 		MinMaxEntry minEntry = null;
 		for (Entry<Move, List<MachineState>> minMove : machine.getNextStates(
 				state.getState(), minPlayer).entrySet()) {

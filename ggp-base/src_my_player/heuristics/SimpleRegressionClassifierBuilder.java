@@ -24,11 +24,11 @@ public class SimpleRegressionClassifierBuilder implements ClassifierBuilder {
 				public double classifyState(MyState state) throws ClassificationException {
 					try {
 						double value = linearRegressionClassifier.classifyInstance(featureVector.getValues(state));
-						char board[][] = parseState(state.getContents());
-						printBoard(board);
-						System.out.println(value);
-						System.out.println();
-						System.out.println();
+//						char board[][] = parseState(state.getContents());
+//						printBoard(board);
+//						System.out.println(value);
+//						System.out.println();
+//						System.out.println();
 						return value;
 					} catch (Exception e) {
 						throw new ClassificationException();
@@ -42,6 +42,7 @@ public class SimpleRegressionClassifierBuilder implements ClassifierBuilder {
 	}
 	
 	
+	@SuppressWarnings("unused")
 	private char[][] parseState(Set<GdlSentence> contents) {
 		char board[][] = new char[3][3];
 		for(GdlSentence s: contents) {
@@ -57,6 +58,7 @@ public class SimpleRegressionClassifierBuilder implements ClassifierBuilder {
 	}
 
 
+	@SuppressWarnings("unused")
 	private void printBoard(char[][] board) {
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {

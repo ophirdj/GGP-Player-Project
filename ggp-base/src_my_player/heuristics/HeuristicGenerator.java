@@ -15,13 +15,14 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
+import debugging.Verbose;
+
 import simulator.Simulator;
 import state.MyState;
 import weka.core.Instance;
 import weka.core.Instances;
 
 public class HeuristicGenerator {
-
 	private List<Gdl> rules;
 	private String gameName;
 	private StateMachine machine;
@@ -49,16 +50,23 @@ public class HeuristicGenerator {
 		List<LabeledExample> labeledStates = new ArrayList<HeuristicGenerator.LabeledExample>(
 				numExamples);
 		Set<MyState> allStates = new HashSet<MyState>();
+		Verbose.printVerbose("SIMULATIONS START", Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		for (int i = 0; i < numExamples; i++) {
 			List<MyState> simulation = simulator.simulate(machine.getRoles()
 					.get(0));
 			allStates.addAll(simulation);
 			MyState state = simulation.get(simulation.size() - 1);
 			labeledStates.add(new LabeledExample(state, getStateLabel(state)));
+			Verbose.printVerbose("Simulation " + i + " of " + numExamples + " finished", Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
+		Verbose.printVerbose("SIMULATIONS END", Verbose.HEURISTIC_GENERATOR_VERBOSE);
+		Verbose.printVerbose("FEATURE EXTRACTION START", Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		featureExtractor = new AutomaticFeatureExtractor(gameName, rules, allStates);
+		Verbose.printVerbose("FEATURE EXTRACTION END", Verbose.HEURISTIC_GENERATOR_VERBOSE);
+		Verbose.printVerbose("CLASSIFY INSTANCES START", Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		Instances classifiedInstances = getClassifiedInstances(featureExtractor,
 				labeledStates);
+		Verbose.printVerbose("CLASSIFY INSTANCES END", Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		return classifierBuilder.buildClassifier(classifiedInstances, featureExtractor);
 	}
 
@@ -97,5 +105,7 @@ public class HeuristicGenerator {
 			return value;
 		}
 	}
+	
+	
 
 }
