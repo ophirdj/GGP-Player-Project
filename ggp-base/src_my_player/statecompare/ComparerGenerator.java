@@ -1,6 +1,4 @@
-package heuristics;
-
-import heuristics.ClassifierBuilder.ClassifierBuildException;
+package statecompare;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,24 +13,25 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import debugging.Verbose;
-
 import simulator.Simulator;
 import state.MyState;
+import statecompare.ComparerBuilder.ComparerBuildException;
 import weka.core.Instance;
 import weka.core.Instances;
+import debugging.Verbose;
 
-public class HeuristicGenerator {
+public class ComparerGenerator {
+
 	private List<Gdl> rules;
 	private String gameName;
 	private StateMachine machine;
 	private Role myRole;
 	private Role oponentRole;
 	private Simulator simulator;
-	private HeuristicsFeatureExtractor featureExtractor;
-	private ClassifierBuilder classifierBuilder;
+	private StateComparisonFeatureExtractor featureExtractor;
+	private ComparerBuilder comparerBuilder;
 
-	public HeuristicGenerator(Game game, StateMachine machine, Role myRole,
+	public ComparerGenerator(Game game, StateMachine machine, Role myRole,
 			Role oponentRole) {
 		this.rules = game.getRules();
 		this.gameName = game.getName();
@@ -41,11 +40,11 @@ public class HeuristicGenerator {
 		this.oponentRole = oponentRole;
 		this.simulator = new Simulator(machine);
 		this.featureExtractor = null;
-		this.classifierBuilder = new SimpleRegressionClassifierBuilder();
+		this.comparerBuilder = null;
 	}
 
-	public StateClassifier generateClassifier(int numExamples)
-			throws ClassifierBuildException, MoveDefinitionException,
+	public StateComparer generateClassifier(int numExamples)
+			throws ComparerBuildException, MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException {
 		List<LabeledExample> labeledStates = new ArrayList<LabeledExample>(
 				numExamples);
@@ -65,8 +64,8 @@ public class HeuristicGenerator {
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		Verbose.printVerbose("FEATURE EXTRACTION START",
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
-		featureExtractor = new AutomaticHeuristicsFeatureExtractor(gameName, rules,
-				allStates);
+		featureExtractor = new AutomaticStateComparisonFeatureExtractor(
+				gameName, rules, allStates);
 		Verbose.printVerbose("FEATURE EXTRACTION END",
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		Verbose.printVerbose("CLASSIFY INSTANCES START",
@@ -75,7 +74,7 @@ public class HeuristicGenerator {
 				featureExtractor, labeledStates);
 		Verbose.printVerbose("CLASSIFY INSTANCES END",
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
-		return classifierBuilder.buildClassifier(classifiedInstances,
+		return comparerBuilder.buildComparer(classifiedInstances,
 				featureExtractor);
 	}
 
@@ -84,14 +83,21 @@ public class HeuristicGenerator {
 				- machine.getGoal(state.getState(), oponentRole);
 	}
 
-	private Instances getClassifiedInstances(HeuristicsFeatureExtractor featureExtractor,
+	private Instances getClassifiedInstances(
+			StateComparisonFeatureExtractor featureExtractor2,
 			List<LabeledExample> labeledExamples) {
 		Instances classifiedExamples = new Instances(
-				featureExtractor.getDatasetHeader());
-		for (LabeledExample e : labeledExamples) {
-			Instance example = featureExtractor.getFeatureValues(e.getState());
-			example.setClassValue(e.getValue());
-			classifiedExamples.add(example);
+				featureExtractor2.getDatasetHeader());
+		for (LabeledExample e1 : labeledExamples) {
+			for (LabeledExample e2 : labeledExamples) {
+				if (e1 == e2) {
+					continue;
+				}
+				Instance example = featureExtractor2.getFeatureValues(
+						e1.getState(), e2.getState());
+				example.setClassValue(e1.getValue() - e2.getValue());
+				classifiedExamples.add(example);
+			}
 		}
 		return classifiedExamples;
 	}

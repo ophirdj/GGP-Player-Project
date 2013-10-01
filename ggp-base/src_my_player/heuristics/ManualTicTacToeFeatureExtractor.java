@@ -14,7 +14,7 @@ import weka.core.Instances;
 
 
 
-public class ManualTicTacToeFeatureExtractor implements FeatureExtractor{
+public class ManualTicTacToeFeatureExtractor implements HeuristicsFeatureExtractor{
 	
 	private Instances datasetHeader;
 
@@ -34,7 +34,7 @@ public class ManualTicTacToeFeatureExtractor implements FeatureExtractor{
 	}
 
 	@Override
-	public Instance getValues(MyState state) {
+	public Instance getFeatureValues(MyState state) {
 		char board[][] = parseState(state.getContents());
 		Instance featureVector = new DenseInstance(datasetHeader.numAttributes());
 		featureVector.setDataset(datasetHeader);
@@ -80,7 +80,7 @@ public class ManualTicTacToeFeatureExtractor implements FeatureExtractor{
 	}
 
 	@Override
-	public Instances getInstances() {
+	public Instances getDatasetHeader() {
 		return datasetHeader;
 	}
 
