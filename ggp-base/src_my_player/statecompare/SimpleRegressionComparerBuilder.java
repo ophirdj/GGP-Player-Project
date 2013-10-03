@@ -2,8 +2,6 @@ package statecompare;
 
 import state.MyState;
 
-import heuristics.StateClassifier.ClassificationException;
-
 import weka.classifiers.functions.LinearRegression;
 import weka.core.Instances;
 
@@ -23,14 +21,15 @@ public class SimpleRegressionComparerBuilder implements ComparerBuilder {
 
 				@Override
 				public double compare(MyState state1, MyState state2)
-						throws ClassificationException {
+						throws ComparisonException {
 					try {
 						double value = linearRegressionClassifier
 								.classifyInstance(featureExtractor
 										.getFeatureValues(state1, state2));
 						return value;
 					} catch (Exception e) {
-						throw new ClassificationException();
+						e.printStackTrace();
+						throw new ComparisonException();
 					}
 				}
 			};

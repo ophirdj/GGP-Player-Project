@@ -58,13 +58,13 @@ public class StateGenerator {
 		int i = low, j = high;
 		MyState pivot = states.get(low + (high - low) / 2).getValue();
 		while (i <= j) {
-			while (sortFunction.isGreater(pivot, states.get(i).getValue())) {
+			while (i <= high && sortFunction.isGreater(pivot, states.get(i).getValue())) {
 				++i;
 			}
-			while (sortFunction.isGreater(states.get(j).getValue(), pivot)) {
+			while (j >= low && sortFunction.isGreater(states.get(j).getValue(), pivot)) {
 				--j;
 			}
-			if (i <= j) {
+			if (i < j) {
 				Entry<Move, MyState> tmp = states.get(i);
 				states.set(i, states.get(j));
 				states.set(j, tmp);

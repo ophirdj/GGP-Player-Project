@@ -6,8 +6,6 @@ import heuristics.StateClassifier.ClassificationException;
 import java.util.List;
 import java.util.Map.Entry;
 
-import minmax.LimitedDepthAlphaBeta;
-
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;

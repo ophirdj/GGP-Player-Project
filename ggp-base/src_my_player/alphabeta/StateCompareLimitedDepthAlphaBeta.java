@@ -16,7 +16,6 @@ import state.MyState;
 import statecompare.StateComparer;
 import alphabeta.StateGenerator.SortFunction;
 import debugging.Verbose;
-import minmax.LimitedDepthAlphaBeta;
 
 public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 
@@ -126,10 +125,10 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 				maxEntry = new StateCompareAlphaBetaEntry(entry.getAlpha(),
 						entry.getBeta(), child.getKey(), depth);
 			}
-			if (maxSortFunction.isGreater(entry.getAlpha(), alpha)) {
+			if (alpha == null || maxSortFunction.isGreater(entry.getAlpha(), alpha)) {
 				alpha = entry.getAlpha();
 			}
-			if (!maxSortFunction.isGreater(beta, alpha)) {
+			if (alpha != null && beta != null && !maxSortFunction.isGreater(beta, alpha)) {
 				break;
 			}
 		}
@@ -151,10 +150,10 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 				minEntry = new StateCompareAlphaBetaEntry(entry.getAlpha(),
 						entry.getBeta(), child.getKey(), depth);
 			}
-			if (minSortFunction.isGreater(entry.getBeta(), beta)) {
+			if (beta == null || minSortFunction.isGreater(entry.getBeta(), beta)) {
 				beta = entry.getBeta();
 			}
-			if (!minSortFunction.isGreater(alpha, beta)) {
+			if (alpha != null && beta != null && !minSortFunction.isGreater(alpha, beta)) {
 				break;
 			}
 		}

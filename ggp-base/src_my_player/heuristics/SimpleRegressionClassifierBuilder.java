@@ -36,6 +36,7 @@ public class SimpleRegressionClassifierBuilder implements ClassifierBuilder {
 						// System.out.println();
 						return value;
 					} catch (Exception e) {
+						e.printStackTrace();
 						throw new ClassificationException();
 					}
 				}
