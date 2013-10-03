@@ -5,6 +5,7 @@ import heuristics.ClassifierBuilder.ClassifierBuildException;
 import heuristics.HeuristicMapSimulatorGenerator;
 import heuristics.SimpleRegressionClassifierBuilder;
 import heuristics.StateClassifier;
+import heuristics.StateClassifier.ClassificationException;
 
 import java.util.List;
 
@@ -84,7 +85,7 @@ public class AutomaticHeuristicKnownValueStatePlayer extends StateMachineGamer {
 				selection = minmax.bestMove(new MyState(getCurrentState(),
 						turnNumber, getRole()));
 			}
-		} catch (MinMaxException e) {
+		} catch (MinMaxException | ClassificationException e) {
 			e.printStackTrace();
 		} finally {
 			if (selection == null) {

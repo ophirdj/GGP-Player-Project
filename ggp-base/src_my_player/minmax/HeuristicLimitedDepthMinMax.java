@@ -17,7 +17,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import debugging.Verbose;
-
 import state.MyState;
 
 public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
@@ -42,23 +41,17 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	@Override
-	public Move bestMove(MyState state) throws MinMaxException {
+	public Move bestMove(MyState state) throws MinMaxException, GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, ClassificationException {
 		if (state == null) {
 			throw new MinMaxException();
 		}
-		try {
-			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
-			return minmaxValueOf(state, searchDepth).getMove();
-		} catch (GoalDefinitionException | MoveDefinitionException
-				| TransitionDefinitionException | ClassificationException e) {
-			e.printStackTrace();
-			throw new MinMaxException();
-		}
+		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
+		return minmaxValueOf(state, searchDepth).getMove();
 	}
 	
 	private MinMaxEntry minmaxValueOf(MyState state, int depth)
 			throws GoalDefinitionException, MoveDefinitionException,
-			TransitionDefinitionException, ClassificationException {
+			TransitionDefinitionException, ClassificationException, MinMaxException {
 		if (cache.containsKey(state) && cache.get(state) != null) {
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
@@ -81,7 +74,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = minMove(state, depth);
 		} else {
-			throw new RuntimeException(
+			throw new MinMaxException(
 					"minmax error: no match for controlingPlayer");
 		}
 		cache.put(state, minmaxEntry);
@@ -89,7 +82,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	private MinMaxEntry maxMove(MyState state, int depth) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException, ClassificationException {
+			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry maxEntry = null;
 		for (Entry<Move, List<MachineState>> maxMove : machine.getNextStates(
 				state.getState(), maxPlayer).entrySet()) {
@@ -109,7 +102,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	private MinMaxEntry minMove(MyState state, int depth) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException, ClassificationException {
+			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry minEntry = null;
 		for (Entry<Move, List<MachineState>> minMove : machine.getNextStates(
 				state.getState(), minPlayer).entrySet()) {

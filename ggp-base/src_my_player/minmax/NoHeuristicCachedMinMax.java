@@ -60,21 +60,15 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		}
 	}
 
-	public Move bestMove(MyState state) throws MinMaxException {
+	public Move bestMove(MyState state) throws MinMaxException, GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException {
 		if (state == null) {
 			throw new MinMaxException();
 		}
-		try {
 			return minmaxValueOf(state).getMove();
-		} catch (GoalDefinitionException | MoveDefinitionException
-				| TransitionDefinitionException e) {
-			e.printStackTrace();
-			throw new MinMaxException();
-		}
 	}
 
 	public Double valuOf(MyState state) throws GoalDefinitionException,
-			MoveDefinitionException, TransitionDefinitionException {
+			MoveDefinitionException, TransitionDefinitionException, MinMaxException {
 		if (state == null) {
 			return null;
 		}
@@ -83,7 +77,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 
 	private MinMaxEntry minmaxValueOf(MyState state)
 			throws GoalDefinitionException, MoveDefinitionException,
-			TransitionDefinitionException {
+			TransitionDefinitionException, MinMaxException {
 		if (cache.containsKey(state) && cache.get(state) != null) {
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
@@ -99,7 +93,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		} else if (minPlayer.equals(state.getControlingPlayer())) {
 			minmaxEntry = minMove(state);
 		} else {
-			throw new RuntimeException(
+			throw new MinMaxException(
 					"minmax error: no match for controlingPlayer");
 		}
 		if (minmaxEntry.getImportance() >= CACHE_HEIGHT_THRESHOLD) {
@@ -109,7 +103,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 	}
 
 	private MinMaxEntry maxMove(MyState state) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException {
+			TransitionDefinitionException, GoalDefinitionException, MinMaxException {
 		MinMaxEntry maxEntry = null;
 		for (Entry<Move, List<MachineState>> maxMove : machine.getNextStates(
 				state.getState(), maxPlayer).entrySet()) {
@@ -129,7 +123,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 	}
 
 	private MinMaxEntry minMove(MyState state) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException {
+			TransitionDefinitionException, GoalDefinitionException, MinMaxException {
 		MinMaxEntry minEntry = null;
 		for (Entry<Move, List<MachineState>> minMove : machine.getNextStates(
 				state.getState(), minPlayer).entrySet()) {

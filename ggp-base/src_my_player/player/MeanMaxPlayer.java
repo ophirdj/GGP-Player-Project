@@ -1,5 +1,7 @@
 package player;
 
+import heuristics.StateClassifier.ClassificationException;
+
 import java.util.List;
 
 import minmax.LimitedDepthMinMax;
@@ -60,7 +62,7 @@ public class MeanMaxPlayer extends StateMachineGamer {
 				selection = minmax.bestMove(new MyState(getCurrentState(),
 						turnNumber, getRole()));
 			}
-		} catch (MinMaxException e) {
+		} catch (MinMaxException | ClassificationException e) {
 			e.printStackTrace();
 		} finally {
 			if (selection == null) {

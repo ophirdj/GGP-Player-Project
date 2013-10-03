@@ -81,25 +81,19 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	}
 
 	@Override
-	public Move bestMove(MyState state) throws MinMaxException {
+	public Move bestMove(MyState state) throws AlphaBetaException, GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, ClassificationException {
 		if (state == null) {
 			throw new AlphaBetaException();
 		}
-		try {
-			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
-			return alphabeta(state, Double.NEGATIVE_INFINITY,
-					Double.POSITIVE_INFINITY, searchDepth).getMove();
-		} catch (GoalDefinitionException | MoveDefinitionException
-				| TransitionDefinitionException | ClassificationException e) {
-			e.printStackTrace();
-			throw new AlphaBetaException();
-		}
+		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
+		return alphabeta(state, Double.NEGATIVE_INFINITY,
+				Double.POSITIVE_INFINITY, searchDepth).getMove();
 	}
 
 	private HeuristicAlphaBetaEntry alphabeta(MyState state, double alpha,
 			double beta, int depth) throws GoalDefinitionException,
 			MoveDefinitionException, TransitionDefinitionException,
-			ClassificationException {
+			ClassificationException, AlphaBetaException {
 		if (cache.containsKey(state, depth)) {
 			return cache.get(state);
 		}
@@ -123,7 +117,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = minMove(state, alpha, beta, depth);
 		} else {
-			throw new RuntimeException(
+			throw new AlphaBetaException(
 					"alpha-beta error: no match for controlingPlayer");
 		}
 		cache.put(state, entry);
@@ -133,7 +127,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	private HeuristicAlphaBetaEntry maxMove(MyState state, double alpha,
 			double beta, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
-			ClassificationException {
+			ClassificationException, AlphaBetaException {
 		HeuristicAlphaBetaEntry maxEntry = null;
 		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
 				maxPlayer, minPlayer, maxComparer)) {
@@ -156,7 +150,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	private HeuristicAlphaBetaEntry minMove(MyState state, double alpha,
 			double beta, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
-			ClassificationException {
+			ClassificationException, AlphaBetaException {
 		HeuristicAlphaBetaEntry minEntry = null;
 		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
 				minPlayer, maxPlayer, minComparer)) {

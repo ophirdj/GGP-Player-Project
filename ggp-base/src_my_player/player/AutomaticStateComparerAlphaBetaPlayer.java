@@ -1,6 +1,7 @@
 package player;
 
 import heuristics.ClassifierBuilder.ClassifierBuildException;
+import heuristics.StateClassifier.ClassificationException;
 
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class AutomaticStateComparerAlphaBetaPlayer extends StateMachineGamer {
 				selection = minmax.bestMove(new MyState(getCurrentState(),
 						turnNumber, getRole()));
 			}
-		} catch (MinMaxException e) {
+		} catch (MinMaxException | ClassificationException e) {
 			e.printStackTrace();
 		} finally {
 			if (selection == null) {
