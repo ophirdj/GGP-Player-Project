@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -16,6 +17,7 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.ProtectedProperties;
 
 public class AutomaticHeuristicsFeatureExtractor implements HeuristicsFeatureExtractor {
 
@@ -47,7 +49,9 @@ public class AutomaticHeuristicsFeatureExtractor implements HeuristicsFeatureExt
 			attributeToSentence.put(attribute, sentence);
 			attributes.add(attribute);
 		}
-		Attribute classAttribute = new Attribute("state value");
+		Properties props = new Properties();
+		props.setProperty("range", "(-100, 100)");
+		Attribute classAttribute = new Attribute("state value", new ProtectedProperties(props));
 		attributes.add(classAttribute);
 		datasetHeader = new Instances(gameName, attributes, 0);
 		datasetHeader.setClass(classAttribute);

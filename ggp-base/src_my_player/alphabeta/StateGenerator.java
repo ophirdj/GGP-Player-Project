@@ -11,6 +11,7 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
@@ -19,8 +20,8 @@ import state.MyState;
 
 public class StateGenerator {
 	
-	public static interface SortFunction {
-		boolean isGreater(MyState state1, MyState state2) throws ClassificationException;
+	public static interface CompareFunction {
+		boolean isGreater(MyState state1, MyState state2) throws ClassificationException, GoalDefinitionException;
 	}
 	
 	private StateMachine machine;
@@ -31,8 +32,8 @@ public class StateGenerator {
 	
 	
 	public List<Entry<Move, MyState>> getNextStates(MyState fatherState,
-			Role player, Role nextPlayer, SortFunction sortFunction)
-			throws MoveDefinitionException, TransitionDefinitionException, ClassificationException {
+			Role player, Role nextPlayer, CompareFunction sortFunction)
+			throws MoveDefinitionException, TransitionDefinitionException, ClassificationException, GoalDefinitionException {
 		Map<Move, List<MachineState>> nextStates = machine.getNextStates(
 				fatherState.getState(), player);
 		ArrayList<Entry<Move, MyState>> childrenStates = new ArrayList<Entry<Move, MyState>>(
@@ -49,12 +50,12 @@ public class StateGenerator {
 
 	
 	private void sortMoves(ArrayList<Entry<Move, MyState>> states,
-			SortFunction sortFunction) throws ClassificationException {
+			CompareFunction sortFunction) throws ClassificationException, GoalDefinitionException {
 		quicksort(states, 0, states.size() - 1, sortFunction);
 	}
 
 	private void quicksort(ArrayList<Entry<Move, MyState>> states, int low,
-			int high, SortFunction sortFunction) throws ClassificationException {
+			int high, CompareFunction sortFunction) throws ClassificationException, GoalDefinitionException {
 		int i = low, j = high;
 		MyState pivot = states.get(low + (high - low) / 2).getValue();
 		while (i <= j) {

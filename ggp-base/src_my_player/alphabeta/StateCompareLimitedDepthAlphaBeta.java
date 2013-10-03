@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import state.MyState;
 import statecompare.StateComparer;
-import alphabeta.StateGenerator.SortFunction;
+import alphabeta.StateGenerator.CompareFunction;
 import debugging.Verbose;
 
 public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
@@ -28,20 +28,36 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 
 	private StateGenerator stateGenerator;
 
-	private SortFunction maxSortFunction = new SortFunction() {
+	private CompareFunction maxComparer = new CompareFunction() {
 
 		@Override
 		public boolean isGreater(MyState state1, MyState state2)
-				throws ClassificationException {
-			return comparer.compare(state1, state2) > 0;
+				throws ClassificationException, GoalDefinitionException {
+			if (machine.isTerminal(state1.getState()) && machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state1.getState(), maxPlayer) > machine.getGoal(state2.getState(), maxPlayer);
+			} else if (machine.isTerminal(state1.getState())) {
+				return machine.getGoal(state1.getState(), maxPlayer) > machine.getGoal(state1.getState(), minPlayer);
+			} else if (machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state2.getState(), maxPlayer) < machine.getGoal(state2.getState(), minPlayer);
+			} else {
+				return comparer.compare(state1, state2) > 0;
+			}
 		}
 	};
-	private SortFunction minSortFunction = new SortFunction() {
+	private CompareFunction minComparer = new CompareFunction() {
 
 		@Override
 		public boolean isGreater(MyState state1, MyState state2)
-				throws ClassificationException {
-			return comparer.compare(state1, state2) < 0;
+				throws ClassificationException, GoalDefinitionException {
+			if (machine.isTerminal(state1.getState()) && machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state1.getState(), minPlayer) > machine.getGoal(state2.getState(), minPlayer);
+			} else if (machine.isTerminal(state1.getState())) {
+				return machine.getGoal(state1.getState(), maxPlayer) < machine.getGoal(state1.getState(), minPlayer);
+			} else if (machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state2.getState(), maxPlayer) > machine.getGoal(state2.getState(), minPlayer);
+			} else {
+				return comparer.compare(state1, state2) < 0;
+			}
 		}
 	};
 
@@ -67,7 +83,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 	@Override
 	public Move bestMove(MyState state) throws MinMaxException {
 		if (state == null) {
-			throw new MinMaxException();
+			throw new AlphaBetaException();
 		}
 		try {
 			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
@@ -114,21 +130,21 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			ClassificationException {
 		StateCompareAlphaBetaEntry maxEntry = null;
 		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				maxPlayer, minPlayer, maxSortFunction)) {
+				maxPlayer, minPlayer, maxComparer)) {
 			StateCompareAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (maxEntry == null
-					|| maxSortFunction.isGreater(entry.getAlpha(),
+					|| maxComparer.isGreater(entry.getAlpha(),
 							maxEntry.getAlpha())) {
 				maxEntry = new StateCompareAlphaBetaEntry(entry.getAlpha(),
 						entry.getBeta(), child.getKey(), depth);
 			}
-			if (alpha == null || maxSortFunction.isGreater(entry.getAlpha(), alpha)) {
+			if (alpha == null || maxComparer.isGreater(entry.getAlpha(), alpha)) {
 				alpha = entry.getAlpha();
 			}
-//			if (alpha != null && beta != null && !maxSortFunction.isGreater(beta, alpha)) {
-//				break;
-//			}
+			if (alpha != null && beta != null && !maxComparer.isGreater(beta, alpha)) {
+				break;
+			}
 		}
 		return maxEntry;
 	}
@@ -139,21 +155,21 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			ClassificationException {
 		StateCompareAlphaBetaEntry minEntry = null;
 		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				minPlayer, maxPlayer, minSortFunction)) {
+				minPlayer, maxPlayer, minComparer)) {
 			StateCompareAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (minEntry == null
-					|| minSortFunction.isGreater(entry.getBeta(),
+					|| minComparer.isGreater(entry.getBeta(),
 							minEntry.getBeta())) {
 				minEntry = new StateCompareAlphaBetaEntry(entry.getAlpha(),
 						entry.getBeta(), child.getKey(), depth);
 			}
-			if (beta == null || minSortFunction.isGreater(entry.getBeta(), beta)) {
+			if (beta == null || minComparer.isGreater(entry.getBeta(), beta)) {
 				beta = entry.getBeta();
 			}
-//			if (alpha != null && beta != null && !minSortFunction.isGreater(alpha, beta)) {
-//				break;
-//			}
+			if (alpha != null && beta != null && !minComparer.isGreater(alpha, beta)) {
+				break;
+			}
 		}
 		return minEntry;
 	}

@@ -13,7 +13,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import alphabeta.StateGenerator.SortFunction;
+import alphabeta.StateGenerator.CompareFunction;
 import debugging.Verbose;
 import state.MyState;
 
@@ -28,22 +28,36 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 
 	private StateGenerator stateGenerator;
 
-	private SortFunction maxSortFunction = new SortFunction() {
+	private CompareFunction maxComparer = new CompareFunction() {
 
 		@Override
 		public boolean isGreater(MyState state1, MyState state2)
-				throws ClassificationException {
-			return classifier.classifyState(state1) > classifier
-					.classifyState(state2);
+				throws ClassificationException, GoalDefinitionException {
+			if (machine.isTerminal(state1.getState()) && machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state1.getState(), maxPlayer) > machine.getGoal(state2.getState(), maxPlayer);
+			} else if (machine.isTerminal(state1.getState())) {
+				return machine.getGoal(state1.getState(), maxPlayer) > machine.getGoal(state1.getState(), minPlayer);
+			} else if (machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state2.getState(), maxPlayer) < machine.getGoal(state2.getState(), minPlayer);
+			} else {
+				return classifier.classifyState(state1) > classifier.classifyState(state2);
+			}
 		}
 	};
-	private SortFunction minSortFunction = new SortFunction() {
+	private CompareFunction minComparer = new CompareFunction() {
 
 		@Override
 		public boolean isGreater(MyState state1, MyState state2)
-				throws ClassificationException {
-			return classifier.classifyState(state1) < classifier
-					.classifyState(state2);
+				throws ClassificationException, GoalDefinitionException {
+			if (machine.isTerminal(state1.getState()) && machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state1.getState(), minPlayer) > machine.getGoal(state2.getState(), minPlayer);
+			} else if (machine.isTerminal(state1.getState())) {
+				return machine.getGoal(state1.getState(), maxPlayer) < machine.getGoal(state1.getState(), minPlayer);
+			} else if (machine.isTerminal(state2.getState())) {
+				return machine.getGoal(state2.getState(), maxPlayer) > machine.getGoal(state2.getState(), minPlayer);
+			} else {
+				return classifier.classifyState(state1) < classifier.classifyState(state2);
+			}
 		}
 	};
 
@@ -69,7 +83,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	@Override
 	public Move bestMove(MyState state) throws MinMaxException {
 		if (state == null) {
-			throw new MinMaxException();
+			throw new AlphaBetaException();
 		}
 		try {
 			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
@@ -122,7 +136,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			ClassificationException {
 		HeuristicAlphaBetaEntry maxEntry = null;
 		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				maxPlayer, minPlayer, maxSortFunction)) {
+				maxPlayer, minPlayer, maxComparer)) {
 			HeuristicAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (maxEntry == null || entry.getAlpha() > maxEntry.getAlpha()) {
@@ -145,7 +159,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			ClassificationException {
 		HeuristicAlphaBetaEntry minEntry = null;
 		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				minPlayer, maxPlayer, minSortFunction)) {
+				minPlayer, maxPlayer, minComparer)) {
 			HeuristicAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (minEntry == null || entry.getBeta() < minEntry.getBeta()) {
