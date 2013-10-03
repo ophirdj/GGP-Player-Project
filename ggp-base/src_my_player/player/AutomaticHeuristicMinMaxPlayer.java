@@ -49,7 +49,6 @@ public class AutomaticHeuristicMinMaxPlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		System.out.println("META-GAME START");
 		List<Role> roles = getStateMachine().getRoles();
 		Role oponentRole = getRole().equals(roles.get(0)) ? roles.get(1)
 				: roles.get(0);
@@ -63,7 +62,6 @@ public class AutomaticHeuristicMinMaxPlayer extends StateMachineGamer {
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
 		}
-		System.out.println("META-GAME END");
 	}
 
 	@Override

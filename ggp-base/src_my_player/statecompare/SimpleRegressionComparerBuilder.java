@@ -1,7 +1,7 @@
 package statecompare;
 
+import debugging.Verbose;
 import state.MyState;
-
 import weka.classifiers.functions.LinearRegression;
 import weka.core.Instances;
 
@@ -12,10 +12,10 @@ public class SimpleRegressionComparerBuilder implements ComparerBuilder {
 			final StateComparisonFeatureExtractor featureExtractor)
 			throws ComparerBuildException {
 		final LinearRegression linearRegressionClassifier = new LinearRegression();
-		System.out.println(comparedExamples.toSummaryString());
-		System.out.println(linearRegressionClassifier.toString());
+		Verbose.printVerbose(comparedExamples.toSummaryString(), Verbose.CLASSIFIER_BUILDER);
+		Verbose.printVerbose(linearRegressionClassifier.toString(), Verbose.CLASSIFIER_BUILDER);
 		try {
-			linearRegressionClassifier.setDebug(true);
+			linearRegressionClassifier.setDebug(Verbose.isVerbose(Verbose.CLASSIFIER_BUILDER));
 			linearRegressionClassifier.buildClassifier(comparedExamples);
 			return new StateComparer() {
 

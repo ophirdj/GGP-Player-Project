@@ -101,7 +101,6 @@ public class Simulator {
 			throws TransitionDefinitionException {
 		MachineState state = machine.getInitialState();
 		if (state == null)
-			System.out.println("initial state is null");
 		for (List<GdlTerm> nextMove : moveHistory) {
 			List<Move> jointMove = new ArrayList<Move>();
 			for (GdlTerm sentence : nextMove) {
@@ -109,8 +108,6 @@ public class Simulator {
 			}
 			state = machine.getNextState(state, jointMove);
 		}
-		if (state == null)
-			System.out.println("state is null");
 		return state;
 	}
 

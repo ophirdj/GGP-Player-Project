@@ -49,7 +49,6 @@ public class AutomaticStateComparerAlphaBetaPlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		System.out.println("META-GAME START");
 		List<Role> roles = getStateMachine().getRoles();
 		Role oponentRole = getRole().equals(roles.get(0)) ? roles.get(1)
 				: roles.get(0);
@@ -63,14 +62,12 @@ public class AutomaticStateComparerAlphaBetaPlayer extends StateMachineGamer {
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
 		}
-		System.out.println("META-GAME END");
 	}
 
 	@Override
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		System.out.println("SELECT MOVE START");
 		long start = System.currentTimeMillis();
 
 		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(),
@@ -95,7 +92,6 @@ public class AutomaticStateComparerAlphaBetaPlayer extends StateMachineGamer {
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop
 				- start));
-		System.out.println("SELECT MOVE END");
 		return selection;
 	}
 
