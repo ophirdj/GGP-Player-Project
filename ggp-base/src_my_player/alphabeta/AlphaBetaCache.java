@@ -24,5 +24,9 @@ public class AlphaBetaCache<T extends AlphaBetaEntry> {
 			cache.put(state, entry);
 		}
 	}
+	
+	public void clear() {
+		cache.clear();
+	}
 
 }

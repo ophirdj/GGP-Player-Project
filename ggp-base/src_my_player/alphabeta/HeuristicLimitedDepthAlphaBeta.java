@@ -103,7 +103,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 					.getGoal(state.getState(), minPlayer)) * 10000;
 			Verbose.printVerbose("Final State with goal value " + goalValue,
 					Verbose.MIN_MAX_VERBOSE);
-			entry = new HeuristicAlphaBetaEntry(goalValue, goalValue, null, -1);
+			entry = new HeuristicAlphaBetaEntry(goalValue, goalValue, null, AlphaBetaEntry.TERMINAL_STATE_HEIGHT);
 		} else if (depth <= 0) {
 			double heuristicValue = classifier.classifyState(state);
 			Verbose.printVerbose("reached final depth with heuristic value "
@@ -168,6 +168,11 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			}
 		}
 		return minEntry;
+	}
+
+	@Override
+	public void clear() {
+		cache.clear();
 	}
 
 }

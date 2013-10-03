@@ -101,14 +101,12 @@ public class AutomaticStateComparerAlphaBetaPlayer extends StateMachineGamer {
 
 	@Override
 	public void stateMachineStop() {
-		// TODO Auto-generated method stub
-
+		minmax.clear();
 	}
 
 	@Override
 	public void stateMachineAbort() {
-		// TODO Auto-generated method stub
-
+		minmax.clear();
 	}
 
 	@Override

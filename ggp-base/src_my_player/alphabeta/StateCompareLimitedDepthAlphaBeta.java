@@ -100,7 +100,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		if (machine.isTerminal(state.getState())) {
 			Verbose.printVerbose("Final State with goal value ",
 					Verbose.MIN_MAX_VERBOSE);
-			entry = new StateCompareAlphaBetaEntry(state, state, null, -1);
+			entry = new StateCompareAlphaBetaEntry(state, state, null, AlphaBetaEntry.TERMINAL_STATE_HEIGHT);
 		} else if (depth <= 0) {
 			Verbose.printVerbose("reached final depth", Verbose.MIN_MAX_VERBOSE);
 			entry = new StateCompareAlphaBetaEntry(state, state, null, 0);
@@ -166,6 +166,11 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			}
 		}
 		return minEntry;
+	}
+
+	@Override
+	public void clear() {
+		cache.clear();
 	}
 
 }

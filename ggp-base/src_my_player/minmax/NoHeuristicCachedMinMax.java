@@ -142,4 +142,9 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		return minEntry;
 	}
 
+	@Override
+	public void clear() {
+		cache.clear();
+	}
+
 }

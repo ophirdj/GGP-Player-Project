@@ -123,4 +123,9 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	public void setDepth(int depth) {
 		this.searchDepth = depth;
 	}
+
+	@Override
+	public void clear() {
+		cache.clear();
+	}
 }
