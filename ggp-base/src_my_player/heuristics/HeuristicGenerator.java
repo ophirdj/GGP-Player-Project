@@ -43,6 +43,18 @@ public class HeuristicGenerator {
 		this.featureExtractor = null;
 		this.classifierBuilder = new SimpleRegressionClassifierBuilder();
 	}
+	
+	public HeuristicGenerator(Game game, StateMachine machine, Role myRole,
+			Role oponentRole, Simulator simulator, ClassifierBuilder classifierBuilder) {
+		this.rules = game.getRules();
+		this.gameName = game.getName();
+		this.machine = machine;
+		this.myRole = myRole;
+		this.oponentRole = oponentRole;
+		this.simulator = simulator;
+		this.featureExtractor = null;
+		this.classifierBuilder = classifierBuilder;
+	}
 
 	public StateClassifier generateClassifier(int numExamples)
 			throws ClassifierBuildException, MoveDefinitionException,
