@@ -1,4 +1,4 @@
-package tesing;
+package gamestatistics;
 
 import java.awt.BorderLayout;
 import java.util.Arrays;

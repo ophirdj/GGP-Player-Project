@@ -1,6 +1,7 @@
-package tesing;
+package main;
 
-import java.awt.Component;
+import gamestatistics.StatisticsPanel;
+
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -27,11 +28,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerNumberModel;
 
-import org.ggp.base.apps.server.error.ErrorPanel;
-import org.ggp.base.apps.server.history.HistoryPanel;
 import org.ggp.base.apps.server.scheduling.SchedulingPanel;
-import org.ggp.base.apps.server.states.StatesPanel;
-import org.ggp.base.apps.server.visualization.VisualizationPanel;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.util.crypto.BaseCryptography.EncodedKeyPair;
 import org.ggp.base.util.game.Game;
@@ -43,7 +40,6 @@ import org.ggp.base.util.presence.PlayerPresenceManager.InvalidHostportException
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.ui.CloseableTabs;
 import org.ggp.base.util.ui.GameSelector;
 import org.ggp.base.util.ui.JLabelBold;
 import org.ggp.base.util.ui.NativeUI;
@@ -91,6 +87,7 @@ public final class TestingPanel extends JPanel implements ActionListener
 	private final SchedulingPanel schedulingPanel;
 	private final StatisticsPanel statisticsPanel;
 
+	@SuppressWarnings("rawtypes")
 	private final List<JComboBox> playerFields;
 	private final List<JLabel> roleLabels;
 	private final JButton runButton;
@@ -104,8 +101,10 @@ public final class TestingPanel extends JPanel implements ActionListener
 	
 	private final GameSelector gameSelector;
 	private final PlayerSelector playerSelector;
+	@SuppressWarnings("rawtypes")
 	private final JList playerSelectorList;
 
+	@SuppressWarnings("rawtypes")
 	public TestingPanel()
 	{
 		super(new GridBagLayout());
@@ -224,6 +223,7 @@ public final class TestingPanel extends JPanel implements ActionListener
 
 	private AbstractAction runButtonMethod() {
 		return new AbstractAction("Start Experiment!") {
+			@SuppressWarnings("rawtypes")
 			public void actionPerformed(ActionEvent evt) {
 				final int startClock = (Integer)startClockSpinner.getValue();
 				final int playClock = (Integer)playClockSpinner.getValue();
@@ -250,7 +250,6 @@ public final class TestingPanel extends JPanel implements ActionListener
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
-							//((JButton)(((JPanel)(matchesTabbedPane.getTabComponentAt(matchesTabbedPane.getTabCount() - 1))).getComponent(1))).doClick();
 							--numGames;
 						}
 					}
