@@ -68,6 +68,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 			return minmaxValueOf(state).getMove();
 		} catch (GoalDefinitionException | MoveDefinitionException
 				| TransitionDefinitionException e) {
+			e.printStackTrace();
 			throw new MinMaxException();
 		}
 	}

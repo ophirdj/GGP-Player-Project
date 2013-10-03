@@ -8,7 +8,7 @@ public interface ComparerBuilder {
 			StateComparisonFeatureExtractor featureExtractor)
 			throws ComparerBuildException;
 
-	class ComparerBuildException extends Exception {
+	class ComparerBuildException extends heuristics.ClassifierBuilder.ClassifierBuildException {
 		private static final long serialVersionUID = 8538798209144589014L;
 	}
 

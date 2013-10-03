@@ -1,15 +1,14 @@
 package player;
 
 import heuristics.ClassifierBuilder.ClassifierBuildException;
-import heuristics.HeuristicGenerator;
-import heuristics.StateClassifier;
 
 import java.util.List;
 
-import minmax.HeuristicLimitedDepthMinMax;
 import minmax.LimitedDepthMinMax;
 import minmax.MinMax.MinMaxException;
 
+import org.ggp.base.apps.player.detail.DetailPanel;
+import org.ggp.base.apps.player.detail.SimpleDetailPanel;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
@@ -23,16 +22,19 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
+import alphabeta.StateCompareLimitedDepthAlphaBeta;
 import state.MyState;
+import statecompare.ComparerGenerator;
+import statecompare.StateComparer;
 
-public class AutomaticHeuristicPlayer extends StateMachineGamer {
+public class AutomaticStateComparerAlphaBetaPlayer extends StateMachineGamer {
 
-	private StateClassifier classifier;
+	private StateComparer clomparer;
 	private LimitedDepthMinMax minmax;
 	private int turnNumber;
 
-	public AutomaticHeuristicPlayer() {
-		this.classifier = null;
+	public AutomaticStateComparerAlphaBetaPlayer() {
+		this.clomparer = null;
 		this.minmax = null;
 		this.turnNumber = 0;
 	}
@@ -50,12 +52,12 @@ public class AutomaticHeuristicPlayer extends StateMachineGamer {
 		List<Role> roles = getStateMachine().getRoles();
 		Role oponentRole = getRole().equals(roles.get(0)) ? roles.get(1)
 				: roles.get(0);
-		HeuristicGenerator g = new HeuristicGenerator(getMatch().getGame(),
+		ComparerGenerator g = new ComparerGenerator(getMatch().getGame(),
 				getStateMachine(), getRole(), oponentRole);
 		try {
-			classifier = g.generateClassifier(300);
-			minmax = new HeuristicLimitedDepthMinMax(getStateMachine(),
-					getRole(), classifier);
+			clomparer = g.generateComparer(500);
+			minmax = new StateCompareLimitedDepthAlphaBeta(getStateMachine(),
+					getRole(), clomparer);
 			minmax.setDepth(3);
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
@@ -67,6 +69,7 @@ public class AutomaticHeuristicPlayer extends StateMachineGamer {
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
+		System.out.println("SELECT MOVE START");
 		long start = System.currentTimeMillis();
 
 		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(),
@@ -91,6 +94,7 @@ public class AutomaticHeuristicPlayer extends StateMachineGamer {
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop
 				- start));
+		System.out.println("SELECT MOVE END");
 		return selection;
 	}
 
@@ -114,8 +118,12 @@ public class AutomaticHeuristicPlayer extends StateMachineGamer {
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return getClass().getSimpleName();
+	}
+	
+	@Override
+	public DetailPanel getDetailPanel() {
+		return new SimpleDetailPanel();
 	}
 
 }

@@ -1,6 +1,7 @@
 package statecompare;
 
 import state.MyState;
+
 import weka.classifiers.functions.LinearRegression;
 import weka.core.Instances;
 
@@ -27,6 +28,7 @@ public class SimpleRegressionComparerBuilder implements ComparerBuilder {
 										.getFeatureValues(state1, state2));
 						return value;
 					} catch (Exception e) {
+						e.printStackTrace();
 						throw new ComparisonException();
 					}
 				}

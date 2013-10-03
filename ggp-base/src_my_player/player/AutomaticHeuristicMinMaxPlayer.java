@@ -1,10 +1,14 @@
 package player;
 
+import heuristics.ClassifierBuilder.ClassifierBuildException;
+import heuristics.HeuristicGenerator;
+import heuristics.StateClassifier;
+
 import java.util.List;
 
+import minmax.HeuristicLimitedDepthMinMax;
 import minmax.LimitedDepthMinMax;
 import minmax.MinMax.MinMaxException;
-import minmax.NoHeuristicLimitedDepthMinMax;
 
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.apps.player.detail.SimpleDetailPanel;
@@ -13,6 +17,7 @@ import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -22,12 +27,14 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 import state.MyState;
 
-public class MeanMaxPlayer extends StateMachineGamer {
+public class AutomaticHeuristicMinMaxPlayer extends StateMachineGamer {
 
+	private StateClassifier classifier;
 	private LimitedDepthMinMax minmax;
 	private int turnNumber;
 
-	public MeanMaxPlayer() {
+	public AutomaticHeuristicMinMaxPlayer() {
+		this.classifier = null;
 		this.minmax = null;
 		this.turnNumber = 0;
 	}
@@ -41,9 +48,21 @@ public class MeanMaxPlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		minmax = new NoHeuristicLimitedDepthMinMax(getStateMachine(),
-				getRole());
-		minmax.setDepth(3);
+		System.out.println("META-GAME START");
+		List<Role> roles = getStateMachine().getRoles();
+		Role oponentRole = getRole().equals(roles.get(0)) ? roles.get(1)
+				: roles.get(0);
+		HeuristicGenerator g = new HeuristicGenerator(getMatch().getGame(),
+				getStateMachine(), getRole(), oponentRole);
+		try {
+			classifier = g.generateClassifier(300);
+			minmax = new HeuristicLimitedDepthMinMax(getStateMachine(),
+					getRole(), classifier);
+			minmax.setDepth(3);
+		} catch (ClassifierBuildException e) {
+			e.printStackTrace();
+		}
+		System.out.println("META-GAME END");
 	}
 
 	@Override

@@ -40,10 +40,10 @@ public class ComparerGenerator {
 		this.oponentRole = oponentRole;
 		this.simulator = new Simulator(machine);
 		this.featureExtractor = null;
-		this.comparerBuilder = null;
+		this.comparerBuilder = new SimpleRegressionComparerBuilder();
 	}
 
-	public StateComparer generateClassifier(int numExamples)
+	public StateComparer generateComparer(int numExamples)
 			throws ComparerBuildException, MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException {
 		List<LabeledExample> labeledStates = new ArrayList<LabeledExample>(

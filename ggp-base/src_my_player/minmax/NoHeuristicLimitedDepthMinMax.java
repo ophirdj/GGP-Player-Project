@@ -43,7 +43,12 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		}
 		try {
 			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
-			return minmaxValueOf(state, searchDepth).getMove();
+			MinMaxEntry entry = minmaxValueOf(state, searchDepth);
+			if(entry == null) {
+				throw new MinMaxException();
+			} else {
+				return entry.getMove();
+			}
 		} catch (GoalDefinitionException | MoveDefinitionException
 				| TransitionDefinitionException e) {
 			e.printStackTrace();
@@ -54,33 +59,31 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	private MinMaxEntry minmaxValueOf(MyState state, int depth)
 			throws GoalDefinitionException, MoveDefinitionException,
 			TransitionDefinitionException {
-		if (cache.containsKey(state) && cache.get(state) != null) {
+		if (cache.containsKey(state)) {
 			return cache.get(state);
-		} else if (cache.containsKey(state)) {
-			return null;
 		}
-		MinMaxEntry minmaxEntry = null;
+		MinMaxEntry entry = null;
 		cache.put(state, null);
 		if (machine.isTerminal(state.getState())) {
 			double goalValue = (machine.getGoal(state.getState(), maxPlayer)
 					- machine.getGoal(state.getState(), minPlayer)) * 10000;
 			Verbose.printVerbose("Final State with goal value " + goalValue, Verbose.MIN_MAX_VERBOSE);
 			return new MinMaxEntry(goalValue, null, 10);
-		} else if(depth < 0) {
+		} else if(depth <= 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
 			return new MinMaxEntry(0, null, 0);
 		} else if (maxPlayer.equals(state.getControlingPlayer())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = maxMove(state, depth);
+			entry = maxMove(state, depth);
 		} else if (minPlayer.equals(state.getControlingPlayer())) {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = minMove(state, depth);
+			entry = minMove(state, depth);
 		} else {
 			throw new RuntimeException(
 					"minmax error: no match for controlingPlayer");
 		}
-		cache.put(state, minmaxEntry);
-		return minmaxEntry;
+		cache.put(state, entry);
+		return entry;
 	}
 
 	private MinMaxEntry maxMove(MyState state, int depth) throws MoveDefinitionException,
