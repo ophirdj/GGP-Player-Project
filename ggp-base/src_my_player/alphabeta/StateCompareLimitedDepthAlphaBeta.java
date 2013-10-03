@@ -88,9 +88,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		}
 		StateCompareAlphaBetaEntry entry = null;
 		if (machine.isTerminal(state.getState())) {
-			double goalValue = (machine.getGoal(state.getState(), maxPlayer) - machine
-					.getGoal(state.getState(), minPlayer)) * 10000;
-			Verbose.printVerbose("Final State with goal value " + goalValue,
+			Verbose.printVerbose("Final State with goal value ",
 					Verbose.MIN_MAX_VERBOSE);
 			entry = new StateCompareAlphaBetaEntry(state, state, null, -1);
 		} else if (depth <= 0) {
@@ -128,9 +126,9 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			if (alpha == null || maxSortFunction.isGreater(entry.getAlpha(), alpha)) {
 				alpha = entry.getAlpha();
 			}
-			if (alpha != null && beta != null && !maxSortFunction.isGreater(beta, alpha)) {
-				break;
-			}
+//			if (alpha != null && beta != null && !maxSortFunction.isGreater(beta, alpha)) {
+//				break;
+//			}
 		}
 		return maxEntry;
 	}
@@ -153,9 +151,9 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			if (beta == null || minSortFunction.isGreater(entry.getBeta(), beta)) {
 				beta = entry.getBeta();
 			}
-			if (alpha != null && beta != null && !minSortFunction.isGreater(alpha, beta)) {
-				break;
-			}
+//			if (alpha != null && beta != null && !minSortFunction.isGreater(alpha, beta)) {
+//				break;
+//			}
 		}
 		return minEntry;
 	}
