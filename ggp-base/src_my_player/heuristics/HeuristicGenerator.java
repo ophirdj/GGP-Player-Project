@@ -5,52 +5,34 @@ import heuristics.ClassifierBuilder.ClassifierBuildException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import debugging.Verbose;
-
-import simulator.Simulator;
+import simulator.MapValueSimulator;
 import state.MyState;
 import weka.core.Instance;
 import weka.core.Instances;
+import debugging.Verbose;
 
 public class HeuristicGenerator {
 	private List<Gdl> rules;
 	private String gameName;
 	private StateMachine machine;
-	private Role myRole;
-	private Role oponentRole;
-	private Simulator simulator;
+	private MapValueSimulator simulator;
 	private HeuristicsFeatureExtractor featureExtractor;
 	private ClassifierBuilder classifierBuilder;
 
-	public HeuristicGenerator(Game game, StateMachine machine, Role myRole,
-			Role oponentRole) {
+	public HeuristicGenerator(Game game, StateMachine machine, MapValueSimulator simulator, ClassifierBuilder classifierBuilder) {
 		this.rules = game.getRules();
 		this.gameName = game.getName();
 		this.machine = machine;
-		this.myRole = myRole;
-		this.oponentRole = oponentRole;
-		this.simulator = new Simulator(machine);
-		this.featureExtractor = null;
-		this.classifierBuilder = new SimpleRegressionClassifierBuilder();
-	}
-	
-	public HeuristicGenerator(Game game, StateMachine machine, Role myRole,
-			Role oponentRole, Simulator simulator, ClassifierBuilder classifierBuilder) {
-		this.rules = game.getRules();
-		this.gameName = game.getName();
-		this.machine = machine;
-		this.myRole = myRole;
-		this.oponentRole = oponentRole;
 		this.simulator = simulator;
 		this.featureExtractor = null;
 		this.classifierBuilder = classifierBuilder;
@@ -68,11 +50,17 @@ public class HeuristicGenerator {
 			List<MyState> simulation = simulator.simulate(machine.getRoles()
 					.get(0));
 			allStates.addAll(simulation);
-			MyState state = simulation.get(simulation.size() - 1);
-			labeledStates.add(new LabeledExample(state, getStateLabel(state)));
 			Verbose.printVerbose("Simulation " + i + " of " + numExamples
 					+ " finished", Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
+		
+		Map<MyState, Integer> knownStates = simulator.getStateValueMap();
+		Verbose.printVerbose("num of examples found: " + knownStates.keySet().size(), Verbose.SIMULATOR_MIN_MAX);
+		for (MyState state : knownStates.keySet()){
+			labeledStates.add(new LabeledExample(state, knownStates.get(state)));
+		}
+		
+		
 		Verbose.printVerbose("SIMULATIONS END",
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		Verbose.printVerbose("FEATURE EXTRACTION START",
@@ -89,11 +77,6 @@ public class HeuristicGenerator {
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		return classifierBuilder.buildClassifier(classifiedInstances,
 				featureExtractor);
-	}
-
-	private double getStateLabel(MyState state) throws GoalDefinitionException {
-		return machine.getGoal(state.getState(), myRole)
-				- machine.getGoal(state.getState(), oponentRole);
 	}
 
 	private Instances getClassifiedInstances(HeuristicsFeatureExtractor featureExtractor,

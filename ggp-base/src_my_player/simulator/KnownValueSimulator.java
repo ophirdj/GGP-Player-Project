@@ -88,8 +88,9 @@ public class KnownValueSimulator implements MapValueSimulator{
 		simulation.add(myState);
 		while (!(knownStates.containsKey(myState) || machine.isTerminal(machineState))) {
 			machineState = machine.getRandomNextState(machineState);
+			controlingPlayer = getNextPlayer(controlingPlayer);
 			myState = new MyState(machineState, myState.getTurnNumber() + 1,
-					getNextPlayer(controlingPlayer));
+					controlingPlayer);
 			simulation.add(myState);
 		}
 		addStatesToKnown(simulation);

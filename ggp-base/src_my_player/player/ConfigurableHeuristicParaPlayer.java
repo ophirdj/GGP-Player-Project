@@ -1,5 +1,6 @@
 package player;
 
+import heuristics.ClassifierBuilder;
 import heuristics.ClassifierBuilder.ClassifierBuildException;
 import heuristics.HeuristicGenerator;
 import heuristics.StateClassifier;
@@ -7,12 +8,11 @@ import heuristics.StateClassifier.ClassificationException;
 
 import java.util.List;
 
-import minmax.HeuristicLimitedDepthMinMax;
 import minmax.LimitedDepthMinMax;
 import minmax.MinMax.MinMaxException;
+import minmax.MinMaxFactory;
+import minmax.MinMaxType;
 
-import org.ggp.base.apps.player.detail.DetailPanel;
-import org.ggp.base.apps.player.detail.SimpleDetailPanel;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
@@ -20,48 +20,85 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
+import simulator.MapValueSimulator;
+import simulator.MapValueSimulatorFactory;
+import simulator.SimulatorType;
 import state.MyState;
+import debugging.Verbose;
 
-public class AutomaticHeuristicMinMaxPlayer extends StateMachineGamer {
+public class ConfigurableHeuristicParaPlayer extends ParaStateMachinePlayer{
 
 	private StateClassifier classifier;
 	private LimitedDepthMinMax minmax;
+	private MinMaxFactory minmaxFactory;
+	private MapValueSimulatorFactory simulatorFactory;
+	private int exampleAmount;
+	private boolean isInitialize;
+	
+	
 	private int turnNumber;
+	private ClassifierBuilder classifierBuilder;
+	private int minmaxDepth;
+	private MapValueSimulator simulator;
 
-	public AutomaticHeuristicMinMaxPlayer() {
-		this.classifier = null;
-		this.minmax = null;
+	public ConfigurableHeuristicParaPlayer(StateMachineGamer caller) {
+		super(caller);
 		this.turnNumber = 0;
+		this.isInitialize = false;
 	}
-
+	
 	@Override
-	public StateMachine getInitialStateMachine() {
-		return new CachedStateMachine(new ProverStateMachine());
+	public void initialize(int exampleAmount, MapValueSimulatorFactory mapValueSimulatorFactory, MinMaxFactory minmaxFactory, BuilderFactory builderFactory, int minmaxDepth){
+		isInitialize = true;
+		this.exampleAmount = exampleAmount;
+		this.simulatorFactory = mapValueSimulatorFactory;
+		this.minmaxFactory = minmaxFactory;
+		this.classifierBuilder = builderFactory.createClassifierBuilder();
+		this.minmaxDepth = minmaxDepth;
 	}
+	
+
 
 	@Override
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		List<Role> roles = getStateMachine().getRoles();
-		Role oponentRole = getRole().equals(roles.get(0)) ? roles.get(1)
-				: roles.get(0);
+		if(!isInitialize){
+			Verbose.printVerboseError("Heuristic player is not initialize, use default values", Verbose.UNIMPLEMENTED_OPTION);
+			defaultInitialization();
+		}
+		StateMachine machine = getStateMachine();
+		simulator = buildSimulator();
 		HeuristicGenerator g = new HeuristicGenerator(getMatch().getGame(),
-				getStateMachine(), getRole(), oponentRole);
+				machine, simulator, classifierBuilder);
 		try {
-			classifier = g.generateClassifier(300);
-			minmax = new HeuristicLimitedDepthMinMax(getStateMachine(),
-					getRole(), classifier);
-			minmax.setDepth(3);
+			classifier = g.generateClassifier(exampleAmount);
+			minmax = minmaxFactory.createHeuristicLimitedDepthMinMax(machine, getRole(), classifier);
+			minmax.setDepth(minmaxDepth);
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private MapValueSimulator buildSimulator() {
+		StateMachine machine = getStateMachine();
+		Role myRole = getRole();
+		Role oponentRole = (myRole.equals(machine.getRoles().get(0))) ? machine.getRoles().get(1) : machine.getRoles().get(0);
+		return simulatorFactory.createSimulator(machine, myRole, oponentRole);
+	}
+
+
+	private void defaultInitialization() {
+		isInitialize = true;
+		this.exampleAmount = 100;
+		this.simulatorFactory = SimulatorType.BASIC_SIMULATOR.getSimulatorFactory();
+		this.minmaxFactory = MinMaxType.BASIC_HUERISTIC_MINMAX.getFactory();
+		this.classifierBuilder = BuilderType.SIMPLE.getBuilderFactory().createClassifierBuilder();
+		this.minmaxDepth = 3;
 	}
 
 	@Override
@@ -113,12 +150,8 @@ public class AutomaticHeuristicMinMaxPlayer extends StateMachineGamer {
 
 	@Override
 	public String getName() {
+		// TODO Auto-generated method stub
 		return getClass().getSimpleName();
-	}
-	
-	@Override
-	public DetailPanel getDetailPanel() {
-		return new SimpleDetailPanel();
 	}
 
 }

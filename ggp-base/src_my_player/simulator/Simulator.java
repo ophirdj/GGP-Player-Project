@@ -1,7 +1,9 @@
 package simulator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.statemachine.MachineState;
@@ -22,15 +24,21 @@ import state.MyState;
  * @author Ophir De Jager
  * 
  */
-public class Simulator {
-
+public class Simulator implements MapValueSimulator{
+	
 	protected StateMachine machine;
 	protected List<Role> roles;
+	protected Map<MyState, Integer> terminalStates;
+	protected Role myRole;
+	protected Role oponentRole;
 
-	public Simulator(StateMachine machine) {
+	public Simulator(StateMachine machine, Role myRole, Role oponentRole) {
 		this.machine = machine;
+		this.myRole = myRole;
+		this.oponentRole = oponentRole;
 		this.roles = machine.getRoles();
 		assert (roles.size() == 2);
+		terminalStates = new HashMap<MyState, Integer>();
 	}
 
 	/**
@@ -74,10 +82,12 @@ public class Simulator {
 		simulation.add(myState);
 		while (!machine.isTerminal(machineState)) {
 			machineState = machine.getRandomNextState(machineState);
+			controlingPlayer = getNextPlayer(controlingPlayer);
 			myState = new MyState(machineState, myState.getTurnNumber() + 1,
-					getNextPlayer(controlingPlayer));
+					controlingPlayer);
 			simulation.add(myState);
 		}
+		terminalStates.put(myState, myState.evaluateTerminalState(machine, myRole));
 		return simulation;
 	}
 
@@ -101,6 +111,7 @@ public class Simulator {
 			throws TransitionDefinitionException {
 		MachineState state = machine.getInitialState();
 		if (state == null)
+			return null;
 		for (List<GdlTerm> nextMove : moveHistory) {
 			List<Move> jointMove = new ArrayList<Move>();
 			for (GdlTerm sentence : nextMove) {
@@ -110,5 +121,12 @@ public class Simulator {
 		}
 		return state;
 	}
+
+	@Override
+	public Map<MyState, Integer> getStateValueMap() {
+		return terminalStates;
+	}
+	
+	
 
 }

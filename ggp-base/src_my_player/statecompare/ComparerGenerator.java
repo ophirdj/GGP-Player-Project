@@ -1,19 +1,21 @@
 package statecompare;
 
+
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import simulator.Simulator;
+import simulator.MapValueSimulator;
 import state.MyState;
 import statecompare.ComparerBuilder.ComparerBuildException;
 import weka.core.Instance;
@@ -25,22 +27,18 @@ public class ComparerGenerator {
 	private List<Gdl> rules;
 	private String gameName;
 	private StateMachine machine;
-	private Role myRole;
-	private Role oponentRole;
-	private Simulator simulator;
+	private MapValueSimulator simulator;
 	private StateComparisonFeatureExtractor featureExtractor;
 	private ComparerBuilder comparerBuilder;
 
-	public ComparerGenerator(Game game, StateMachine machine, Role myRole,
-			Role oponentRole) {
+	public ComparerGenerator(Game game, StateMachine machine,
+			MapValueSimulator simulator, ComparerBuilder comparerBuilder) {
 		this.rules = game.getRules();
 		this.gameName = game.getName();
 		this.machine = machine;
-		this.myRole = myRole;
-		this.oponentRole = oponentRole;
-		this.simulator = new Simulator(machine);
+		this.simulator = simulator;
 		this.featureExtractor = null;
-		this.comparerBuilder = new SimpleRegressionComparerBuilder();
+		this.comparerBuilder = comparerBuilder;
 	}
 
 	public StateComparer generateComparer(int numExamples)
@@ -51,15 +49,20 @@ public class ComparerGenerator {
 		Set<MyState> allStates = new HashSet<MyState>();
 		Verbose.printVerbose("SIMULATIONS START",
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
+		
 		for (int i = 0; i < numExamples; i++) {
 			List<MyState> simulation = simulator.simulate(machine.getRoles()
 					.get(0));
 			allStates.addAll(simulation);
-			MyState state = simulation.get(simulation.size() - 1);
-			labeledStates.add(new LabeledExample(state, getStateLabel(state)));
-			Verbose.printVerbose("Simulation " + i + " of " + numExamples
-					+ " finished", Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
+		
+		Map<MyState, Integer> knownStates = simulator.getStateValueMap();
+		Verbose.printVerbose("num of examples found: " + knownStates.keySet().size(), Verbose.SIMULATOR_MIN_MAX);
+		for (MyState state : knownStates.keySet()){
+			labeledStates.add(new LabeledExample(state, knownStates.get(state)));
+		}
+		
+		
 		Verbose.printVerbose("SIMULATIONS END",
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		Verbose.printVerbose("FEATURE EXTRACTION START",
@@ -76,11 +79,6 @@ public class ComparerGenerator {
 				Verbose.HEURISTIC_GENERATOR_VERBOSE);
 		return comparerBuilder.buildComparer(classifiedInstances,
 				featureExtractor);
-	}
-
-	private double getStateLabel(MyState state) throws GoalDefinitionException {
-		return machine.getGoal(state.getState(), myRole)
-				- machine.getGoal(state.getState(), oponentRole);
 	}
 
 	private Instances getClassifiedInstances(
