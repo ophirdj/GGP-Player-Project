@@ -17,6 +17,8 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
+import org.ggp.base.util.observer.Observer;
+import org.ggp.base.util.observer.Subject;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -73,14 +75,23 @@ public class ConfigurableHeuristicParaPlayer extends ParaStateMachinePlayer{
 		}
 		StateMachine machine = getStateMachine();
 		simulator = buildSimulator();
+		addAllObservers(simulator);
 		HeuristicGenerator g = new HeuristicGenerator(getMatch().getGame(),
 				machine, simulator, classifierBuilder);
+		addAllObservers(g);
 		try {
 			classifier = g.generateClassifier(exampleAmount);
 			minmax = minmaxFactory.createHeuristicLimitedDepthMinMax(machine, getRole(), classifier);
+			addAllObservers(minmax);
 			minmax.setDepth(minmaxDepth);
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void addAllObservers(Subject subject) {
+		for(Observer observer: this.observers) {
+			subject.addObserver(observer);
 		}
 	}
 

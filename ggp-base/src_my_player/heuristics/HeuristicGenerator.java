@@ -10,6 +10,9 @@ import java.util.Set;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
+import org.ggp.base.util.observer.Subject;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -21,13 +24,14 @@ import weka.core.Instance;
 import weka.core.Instances;
 import debugging.Verbose;
 
-public class HeuristicGenerator {
+public class HeuristicGenerator  implements Subject{
 	private List<Gdl> rules;
 	private String gameName;
 	private StateMachine machine;
 	private MapValueSimulator simulator;
 	private HeuristicsFeatureExtractor featureExtractor;
 	private ClassifierBuilder classifierBuilder;
+	private ArrayList<Observer> observers;
 
 	public HeuristicGenerator(Game game, StateMachine machine, MapValueSimulator simulator, ClassifierBuilder classifierBuilder) {
 		this.rules = game.getRules();
@@ -36,6 +40,7 @@ public class HeuristicGenerator {
 		this.simulator = simulator;
 		this.featureExtractor = null;
 		this.classifierBuilder = classifierBuilder;
+		this.observers = new ArrayList<Observer>();
 	}
 
 	public StateClassifier generateClassifier(int numExamples)
@@ -107,6 +112,18 @@ public class HeuristicGenerator {
 
 		public double getValue() {
 			return value;
+		}
+	}
+
+	@Override
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		for(Observer observer: observers) {
+			observer.observe(event);
 		}
 	}
 

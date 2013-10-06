@@ -29,4 +29,8 @@ public class AlphaBetaCache<T extends AlphaBetaEntry> {
 		cache.clear();
 	}
 
+	public int size() {
+		return cache.size();
+	}
+
 }

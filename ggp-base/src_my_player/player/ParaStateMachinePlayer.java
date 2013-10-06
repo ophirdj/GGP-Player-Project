@@ -1,12 +1,16 @@
 package player;
 
+import java.util.ArrayList;
+
 import minmax.MinMaxFactory;
 
-import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.match.Match;
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
+import org.ggp.base.util.observer.Subject;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -17,11 +21,13 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import simulator.MapValueSimulatorFactory;
 
-public abstract class ParaStateMachinePlayer {
+public abstract class ParaStateMachinePlayer implements Subject{
 	private StateMachineGamer caller;
+	protected ArrayList<Observer> observers;
 	
 	public ParaStateMachinePlayer(StateMachineGamer caller) {
 		this.caller = caller;
+		this.observers = new ArrayList<Observer>();
 	}
 	
 	public Role getRole() {
@@ -37,8 +43,14 @@ public abstract class ParaStateMachinePlayer {
 		return caller.getStateMachine();
 	}
 	
-	public void notifyObservers(GamerSelectedMoveEvent gamerSelectedMoveEvent) {
-		caller.notifyObservers(gamerSelectedMoveEvent);
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+	}
+	
+	public void notifyObservers(Event event) {
+		for(Observer observer: observers) {
+			observer.observe(event);
+		}
 	}
 
 

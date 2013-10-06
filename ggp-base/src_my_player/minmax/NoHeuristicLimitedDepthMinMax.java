@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -23,6 +25,7 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	private Role minPlayer;
 	private int searchDepth;
 	private Map<MyState, MinMaxEntry> cache;
+	private MinMaxEventReporter reporter;
 	
 	public NoHeuristicLimitedDepthMinMax(StateMachine machine, Role maxPlayer) {
 		List<Role> roles = machine.getRoles();
@@ -33,6 +36,7 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 				.get(0));
 		this.searchDepth = 2;
 		this.cache = new HashMap<MyState, MinMaxEntry>();
+		this.reporter = new MinMaxEventReporter();
 	}
 
 	@Override
@@ -41,10 +45,13 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 			throw new MinMaxException();
 		}
 			Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
+			long startTime = System.currentTimeMillis();
 			MinMaxEntry entry = minmaxValueOf(state, searchDepth);
+			long endTime = System.currentTimeMillis();
 			if(entry == null) {
 				throw new MinMaxException();
 			} else {
+				reporter.reportAndReset(entry.getMove(), cache.size(), searchDepth, endTime - startTime);
 				return entry.getMove();
 			}
 	}
@@ -128,4 +135,15 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	public void clear() {
 		cache.clear();
 	}
+	
+	@Override
+	public void addObserver(Observer observer) {
+		reporter.addObserver(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		reporter.notifyObservers(event);
+	}
+	
 }
