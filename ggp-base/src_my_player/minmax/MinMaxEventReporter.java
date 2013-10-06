@@ -11,6 +11,9 @@ public class MinMaxEventReporter implements Subject {
 
 	private int exploredNodes;
 	private int expandedNodes;
+	private int prunedNodes;
+	private int terminalNodes;
+	private int cacheHits;
 	private int sumBranchingFactor;
 
 	private ArrayList<Observer> observers;
@@ -22,6 +25,9 @@ public class MinMaxEventReporter implements Subject {
 	public void resetCount() {
 		exploredNodes = 0;
 		expandedNodes = 0;
+		prunedNodes = 0;
+		terminalNodes = 0;
+		cacheHits = 0;
 		sumBranchingFactor = 0;
 	}
 	
@@ -33,10 +39,22 @@ public class MinMaxEventReporter implements Subject {
 		++expandedNodes;
 		sumBranchingFactor += numChildren;
 	}
+	
+	public void prune(int numPruned) {
+		prunedNodes += numPruned;
+	}
+	
+	public void visitTerminal() {
+		++terminalNodes;
+	}
+	
+	public void cacheHit() {
+		++cacheHits;
+	}
 
 	public void reportAndReset(Move selectedMove, int nodesInCache, int searchDepth, long duration) {
-		notifyObservers(new MinMax.MinMaxEvent(selectedMove, exploredNodes, expandedNodes,
-				nodesInCache, searchDepth, sumBranchingFactor / expandedNodes, duration));
+		notifyObservers(new MinMax.MinMaxEvent(selectedMove, exploredNodes, expandedNodes, prunedNodes, terminalNodes,
+				nodesInCache, cacheHits, searchDepth, sumBranchingFactor / expandedNodes, duration));
 		resetCount();
 	}
 

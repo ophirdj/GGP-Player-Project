@@ -37,21 +37,30 @@ public interface MinMax extends Subject {
 		private final Move move;
 		private final int exploredNodes;
 		private final int expandedNodes;
+		private final int prunedNodes;
+		private final int terminalNodes;
 		private final int nodesInCache;
+		private final int cacheHits;
 		private final int searchDepth;
 		private final double averageBranchingFactor;
 		private final long duration;
 
-		public MinMaxEvent(Move selectedMove, int exploredNodes, int expandedNodes, int nodesInCache, int searchDepth, double averageBranchingFactor, long duration) {
+		public MinMaxEvent(Move selectedMove, int exploredNodes,
+				int expandedNodes, int prunedNodes, int terminalNodes,
+				int nodesInCache, int cacheHits, int searchDepth,
+				double averageBranchingFactor, long duration) {
 			this.move = selectedMove;
 			this.exploredNodes = exploredNodes;
 			this.expandedNodes = expandedNodes;
+			this.prunedNodes = prunedNodes;
+			this.terminalNodes = terminalNodes;
 			this.nodesInCache = nodesInCache;
+			this.cacheHits = cacheHits;
 			this.searchDepth = searchDepth;
 			this.averageBranchingFactor = averageBranchingFactor;
 			this.duration = duration;
 		}
-		
+
 		public Move getMove() {
 			return move;
 		}
@@ -64,10 +73,22 @@ public interface MinMax extends Subject {
 			return expandedNodes;
 		}
 
+		public int getPrunedNodes() {
+			return prunedNodes;
+		}
+
+		public int getTerminalNodes() {
+			return terminalNodes;
+		}
+
 		public int getNodesInCache() {
 			return nodesInCache;
 		}
-		
+
+		public int getCacheHits() {
+			return cacheHits;
+		}
+
 		public int getSearchDepth() {
 			return searchDepth;
 		}
@@ -79,7 +100,7 @@ public interface MinMax extends Subject {
 		public long getDuration() {
 			return duration;
 		}
-		
+
 	}
 
 }

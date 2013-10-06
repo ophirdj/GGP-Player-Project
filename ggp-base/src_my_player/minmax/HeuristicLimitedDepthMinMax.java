@@ -63,6 +63,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 			TransitionDefinitionException, ClassificationException, MinMaxException {
 		reporter.exploreNode();
 		if (cache.containsKey(state) && cache.get(state) != null) {
+			reporter.cacheHit();
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
 			return null;
@@ -70,6 +71,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		MinMaxEntry minmaxEntry = null;
 		cache.put(state, null);
 		if (machine.isTerminal(state.getState())) {
+			reporter.visitTerminal();
 			double goalValue = (machine.getGoal(state.getState(), maxPlayer)
 					- machine.getGoal(state.getState(), minPlayer)) * 10000;
 			Verbose.printVerbose("Final State with goal value " + goalValue, Verbose.MIN_MAX_VERBOSE);

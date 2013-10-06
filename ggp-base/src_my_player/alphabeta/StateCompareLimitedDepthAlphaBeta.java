@@ -104,12 +104,14 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			ClassificationException, AlphaBetaException {
 		reporter.exploreNode();
 		if (cache.containsKey(state, depth)) {
+			reporter.cacheHit();
 			return cache.get(state);
 		}
 		StateCompareAlphaBetaEntry entry = null;
 		if (machine.isTerminal(state.getState())) {
 			Verbose.printVerbose("Final State with goal value ",
 					Verbose.MIN_MAX_VERBOSE);
+			reporter.visitTerminal();
 			entry = new StateCompareAlphaBetaEntry(state, state, null, AlphaBetaEntry.TERMINAL_STATE_HEIGHT);
 		} else if (depth <= 0) {
 			Verbose.printVerbose("reached final depth", Verbose.MIN_MAX_VERBOSE);
@@ -136,7 +138,9 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				maxPlayer, minPlayer, maxComparer);
 		reporter.expandNode(children.size());
+		int nodesVisited = 0;
 		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			StateCompareAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (maxEntry == null
@@ -149,6 +153,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 				alpha = entry.getAlpha();
 			}
 			if (alpha != null && beta != null && !maxComparer.isGreater(beta, alpha)) {
+				reporter.prune(children.size() - nodesVisited);
 				break;
 			}
 		}
@@ -163,7 +168,9 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				minPlayer, maxPlayer, minComparer);
 		reporter.expandNode(children.size());
+		int nodesVisited = 0;
 		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			StateCompareAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (minEntry == null
@@ -176,6 +183,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 				beta = entry.getBeta();
 			}
 			if (alpha != null && beta != null && !minComparer.isGreater(alpha, beta)) {
+				reporter.prune(children.size() - nodesVisited);
 				break;
 			}
 		}

@@ -105,10 +105,12 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			ClassificationException, AlphaBetaException {
 		reporter.exploreNode();
 		if (cache.containsKey(state, depth)) {
+			reporter.cacheHit();
 			return cache.get(state);
 		}
 		HeuristicAlphaBetaEntry entry = null;
 		if (machine.isTerminal(state.getState())) {
+			reporter.visitTerminal();
 			double goalValue = (machine.getGoal(state.getState(), maxPlayer) - machine
 					.getGoal(state.getState(), minPlayer)) * 10000;
 			Verbose.printVerbose("Final State with goal value " + goalValue,
@@ -142,7 +144,9 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				maxPlayer, minPlayer, maxComparer);
 		reporter.expandNode(children.size());
+		int nodesVisited = 0;
 		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			HeuristicAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (maxEntry == null || entry.getAlpha() > maxEntry.getAlpha()) {
@@ -153,6 +157,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 				alpha = entry.getAlpha();
 			}
 			if (alpha >= beta) {
+				reporter.prune(children.size() - nodesVisited);
 				break;
 			}
 		}
@@ -167,7 +172,9 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				minPlayer, maxPlayer, minComparer);
 		reporter.expandNode(children.size());
+		int nodesVisited = 0;
 		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			HeuristicAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (minEntry == null || entry.getBeta() < minEntry.getBeta()) {
@@ -178,7 +185,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 				beta = entry.getBeta();
 			}
 			if (alpha >= beta) {
-				break;
+				reporter.prune(children.size() - nodesVisited);
 			}
 		}
 		return minEntry;

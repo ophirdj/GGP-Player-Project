@@ -23,7 +23,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 	public ConfigurablePlayer() {
 		this.configPanel = new ConfigurationPanel();
-		this.detatilPanel = new PlayerDetatilPanel();
+		this.detatilPanel = new PlayerDetatilPanel(getName(), configPanel.savePlayerData);
 		this.copiedPlayer = null;
 	}
 

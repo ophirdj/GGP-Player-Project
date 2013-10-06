@@ -93,6 +93,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 			searchDepth = depth;
 		}
 		if (cache.containsKey(state) && cache.get(state) != null) {
+			reporter.cacheHit();
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
 			return null;
@@ -100,6 +101,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		MinMaxEntry minmaxEntry = null;
 		cache.put(state, null);
 		if (machine.isTerminal(state.getState())) {
+			reporter.visitTerminal();
 			return new MinMaxEntry(machine.getGoal(state.getState(), maxPlayer)
 					- machine.getGoal(state.getState(), minPlayer), null, 0);
 		} else if (maxPlayer.equals(state.getControlingPlayer())) {
