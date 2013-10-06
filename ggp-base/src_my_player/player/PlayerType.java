@@ -40,6 +40,7 @@ public enum PlayerType {
 				@Override
 				public ParaStateMachinePlayer createParaStateMachinePlayer(
 						ConfigurablePlayer caller) {
+					//FIXME: if fix comparer, cancel comment
 					//return new ConfigurableComparerParaPlayer(caller);
 					Verbose.printVerboseError("Not supported type", Verbose.UNIMPLEMENTED_OPTION);
 					return new ConfigurableHeuristicParaPlayer(caller);
