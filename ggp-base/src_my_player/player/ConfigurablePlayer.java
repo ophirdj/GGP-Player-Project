@@ -72,5 +72,17 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	public ConfigPanel getConfigPanel() {
 		return configPanel;
 	}
+	
+	@Override
+	public String toString() {
+		String name = "Configurable Player: ";
+		name += "Example amount =  " + configPanel.getExampleAmount() + ", ";
+		name += "MinMax depth = " + configPanel.getMinMaxDepth() + ", " ;
+		name += "Player type = " + configPanel.getParaPlayerFactory() + ", ";
+		name += "Simulator =  " + configPanel.getSimulatorFactory() + ", ";
+		name += "MinMax =  " + configPanel.getMinmaxFactory() + ", ";
+		name += "classifier =  " + configPanel.getBuilderFactory() + ";";
+		return name;
+	}
 
 }
