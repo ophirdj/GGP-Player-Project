@@ -52,15 +52,24 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		}
 		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
 		long startTime = System.currentTimeMillis();
-		Move move = minmaxValueOf(state, searchDepth).getMove();
-		long endTime = System.currentTimeMillis();
-		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
-		return move;
+		Move move;
+		try {
+			move = minmaxValueOf(state, searchDepth).getMove();
+			long endTime = System.currentTimeMillis();
+			reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+			return move;
+		//This should only happen if time was over timeout
+		} catch (InterruptedException e) {
+			return null;
+		}
 	}
 	
 	private MinMaxEntry minmaxValueOf(MyState state, int depth)
 			throws GoalDefinitionException, MoveDefinitionException,
-			TransitionDefinitionException, ClassificationException, MinMaxException {
+			TransitionDefinitionException, ClassificationException, MinMaxException, InterruptedException {
+		if (Thread.currentThread().isInterrupted()){
+			throw new InterruptedException();
+		}
 		reporter.exploreNode();
 		if (cache.containsKey(state) && cache.get(state) != null) {
 			reporter.cacheHit();
@@ -94,7 +103,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	private MinMaxEntry maxMove(MyState state, int depth) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
+			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException, InterruptedException {
 		MinMaxEntry maxEntry = null;
 		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
 				state.getState(), maxPlayer).entrySet();
@@ -116,7 +125,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	}
 
 	private MinMaxEntry minMove(MyState state, int depth) throws MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
+			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException, InterruptedException {
 		MinMaxEntry minEntry = null;
 		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
 				state.getState(), minPlayer).entrySet();

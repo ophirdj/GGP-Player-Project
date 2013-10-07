@@ -92,16 +92,26 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		}
 		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
 		long startTime = System.currentTimeMillis();
-		Move move = alphabeta(state, null, null, searchDepth).getMove();
-		long endTime = System.currentTimeMillis();
-		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
-		return move;
+		Move move;
+		try {
+			move = alphabeta(state, null, null, searchDepth).getMove();
+			long endTime = System.currentTimeMillis();
+			reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+			return move;
+		//This should only happen if time was over timeout
+		} catch (InterruptedException e) {
+			return null;
+		}
+		
 	}
 
 	private StateCompareAlphaBetaEntry alphabeta(MyState state, MyState alpha,
 			MyState beta, int depth) throws GoalDefinitionException,
 			MoveDefinitionException, TransitionDefinitionException,
-			ClassificationException, AlphaBetaException {
+			ClassificationException, AlphaBetaException, InterruptedException {
+		if (Thread.currentThread().isInterrupted()){
+			throw new InterruptedException();
+		}
 		reporter.exploreNode();
 		if (cache.containsKey(state, depth)) {
 			reporter.cacheHit();
@@ -133,7 +143,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 	private StateCompareAlphaBetaEntry maxMove(MyState state, MyState alpha,
 			MyState beta, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
-			ClassificationException, AlphaBetaException {
+			ClassificationException, AlphaBetaException, InterruptedException {
 		StateCompareAlphaBetaEntry maxEntry = null;
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				maxPlayer, minPlayer, maxComparer);
@@ -163,7 +173,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 	private StateCompareAlphaBetaEntry minMove(MyState state, MyState alpha,
 			MyState beta, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
-			ClassificationException, AlphaBetaException {
+			ClassificationException, AlphaBetaException, InterruptedException {
 		StateCompareAlphaBetaEntry minEntry = null;
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				minPlayer, maxPlayer, minComparer);

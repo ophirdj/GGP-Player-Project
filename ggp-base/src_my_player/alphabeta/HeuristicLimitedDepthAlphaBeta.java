@@ -92,17 +92,26 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 		}
 		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
 		long startTime = System.currentTimeMillis();
-		Move move = alphabeta(state, Double.NEGATIVE_INFINITY,
-				Double.POSITIVE_INFINITY, searchDepth).getMove();
-		long endTime = System.currentTimeMillis();
-		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
-		return move;
+		Move move;
+		try {
+			move = alphabeta(state, Double.NEGATIVE_INFINITY,
+					Double.POSITIVE_INFINITY, searchDepth).getMove();
+			long endTime = System.currentTimeMillis();
+			reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+			return move;
+		//This should only happen if time was over timeout
+		} catch (InterruptedException e) {
+			return null;
+		}
 	}
 
 	private HeuristicAlphaBetaEntry alphabeta(MyState state, double alpha,
 			double beta, int depth) throws GoalDefinitionException,
 			MoveDefinitionException, TransitionDefinitionException,
-			ClassificationException, AlphaBetaException {
+			ClassificationException, AlphaBetaException, InterruptedException {
+		if (Thread.currentThread().isInterrupted()){
+			throw new InterruptedException();
+		}
 		reporter.exploreNode();
 		if (cache.containsKey(state, depth)) {
 			reporter.cacheHit();
@@ -139,7 +148,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	private HeuristicAlphaBetaEntry maxMove(MyState state, double alpha,
 			double beta, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
-			ClassificationException, AlphaBetaException {
+			ClassificationException, AlphaBetaException, InterruptedException {
 		HeuristicAlphaBetaEntry maxEntry = null;
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				maxPlayer, minPlayer, maxComparer);
@@ -167,7 +176,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	private HeuristicAlphaBetaEntry minMove(MyState state, double alpha,
 			double beta, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
-			ClassificationException, AlphaBetaException {
+			ClassificationException, AlphaBetaException, InterruptedException {
 		HeuristicAlphaBetaEntry minEntry = null;
 		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
 				minPlayer, maxPlayer, minComparer);
