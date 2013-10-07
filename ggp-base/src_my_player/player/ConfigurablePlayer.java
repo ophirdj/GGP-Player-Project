@@ -1,6 +1,8 @@
+
 package player;
 
 import org.ggp.base.apps.player.config.ConfigPanel;
+import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
@@ -12,13 +14,17 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
+import playerstatistics.PlayerDetatilPanel;
+
 public class ConfigurablePlayer extends StateMachineGamer {
 
 	private ConfigurationPanel configPanel;
 	private ParaStateMachinePlayer copiedPlayer;
+	private DetailPanel detatilPanel;
 
 	public ConfigurablePlayer() {
 		this.configPanel = new ConfigurationPanel();
+		this.detatilPanel = new PlayerDetatilPanel(getName(), configPanel.savePlayerData);
 		this.copiedPlayer = null;
 	}
 
@@ -34,6 +40,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 		copiedPlayer = configPanel.getParaPlayerFactory()
 				.createParaStateMachinePlayer(this);
+		copiedPlayer.addObserver(detatilPanel);
 		copiedPlayer.initialize(configPanel.getExampleAmount(),
 				configPanel.getSimulatorFactory(),
 				configPanel.getMinmaxFactory(),
@@ -74,6 +81,11 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	}
 	
 	@Override
+	public DetailPanel getDetailPanel() {
+		return detatilPanel;
+	}
+	
+	@Override
 	public String toString() {
 		String name = "Configurable Player: ";
 		name += "Example amount =  " + configPanel.getExampleAmount() + ", ";
@@ -86,3 +98,4 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	}
 
 }
+

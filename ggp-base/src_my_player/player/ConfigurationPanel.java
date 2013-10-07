@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,9 +23,7 @@ import debugging.Verbose;
 
 public class ConfigurationPanel extends ConfigPanel{
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -581259385199768198L;
 	
 	
@@ -46,6 +45,7 @@ public class ConfigurationPanel extends ConfigPanel{
 	private JComboBox<MinMaxType> minMaxTypeList;
 	private JComboBox<SimulatorType> simulatorList;
 	private JComboBox<BuilderType> builderList;
+	public final JCheckBox savePlayerData;
 	
 	public ConfigurationPanel() {
 		super(new GridBagLayout());
@@ -82,6 +82,9 @@ public class ConfigurationPanel extends ConfigPanel{
 		checkPanel.add(builderList, new GridBagConstraints(1, checkRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
 		checkPanelConstraints = new GridBagConstraints(panelNumber++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.FIRST_LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 5, 5);
 		this.add(checkPanel, checkPanelConstraints);
+		
+		savePlayerData = new JCheckBox("Save data?", false);
+		add(savePlayerData);
 		
 		if(Verbose.isVerbose(Verbose.GRAPHIC_VAL)){
 			this.printButton = new JButton("print info");

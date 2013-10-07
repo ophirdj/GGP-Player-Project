@@ -9,9 +9,10 @@ public class Verbose {
 	public static final long CLASSIFIER_BUILDER = 1 << 5;
 	public static final long TIC_TAC_TOE_SIMULATOR = 1 << 6;
 	public static final long GRAPHIC_VAL = 1 << 7;
-	public static final long UNIMPLEMENTED_OPTION = 1 << 8;
+	public static final long FILE_IO = 1 << 8;
+	public static final long UNIMPLEMENTED_OPTION = 1 << 9;
 	
-	public static final long verbose = MIN_MAX_VERBOSE | HEURISTIC_GENERATOR_VERBOSE | GRAPHIC_VAL;
+	public static final long verbose = 0;
 
 	public static boolean isVerbose(long verboseType){
 		return (verboseType & verbose) != 0;

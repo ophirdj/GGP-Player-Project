@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.GdlTerm;
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -31,14 +33,16 @@ public class Simulator implements MapValueSimulator{
 	protected Map<MyState, Integer> terminalStates;
 	protected Role myRole;
 	protected Role oponentRole;
+	private ArrayList<Observer> observers;
 
 	public Simulator(StateMachine machine, Role myRole, Role oponentRole) {
 		this.machine = machine;
 		this.myRole = myRole;
 		this.oponentRole = oponentRole;
 		this.roles = machine.getRoles();
-		assert (roles.size() == 2);
 		terminalStates = new HashMap<MyState, Integer>();
+		this.observers = new ArrayList<Observer>();
+		assert (roles.size() == 2);
 	}
 
 	/**
@@ -127,6 +131,16 @@ public class Simulator implements MapValueSimulator{
 		return terminalStates;
 	}
 	
-	
+	@Override
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		for(Observer observer: observers) {
+			observer.observe(event);
+		}
+	}
 
 }

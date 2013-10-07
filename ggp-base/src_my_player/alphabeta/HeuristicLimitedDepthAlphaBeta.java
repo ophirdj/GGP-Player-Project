@@ -6,6 +6,10 @@ import heuristics.StateClassifier.ClassificationException;
 import java.util.List;
 import java.util.Map.Entry;
 
+import minmax.MinMaxEventReporter;
+
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -25,8 +29,8 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	private int searchDepth;
 	private StateClassifier classifier;
 	private AlphaBetaCache<HeuristicAlphaBetaEntry> cache;
-
 	private StateGenerator stateGenerator;
+	private MinMaxEventReporter reporter;
 
 	private CompareFunction maxComparer = new CompareFunction() {
 
@@ -73,6 +77,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 		this.classifier = classifier;
 		this.cache = new AlphaBetaCache<HeuristicAlphaBetaEntry>();
 		this.stateGenerator = new StateGenerator(machine);
+		this.reporter = new MinMaxEventReporter();
 	}
 
 	@Override
@@ -86,19 +91,26 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			throw new AlphaBetaException();
 		}
 		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
-		return alphabeta(state, Double.NEGATIVE_INFINITY,
+		long startTime = System.currentTimeMillis();
+		Move move = alphabeta(state, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY, searchDepth).getMove();
+		long endTime = System.currentTimeMillis();
+		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+		return move;
 	}
 
 	private HeuristicAlphaBetaEntry alphabeta(MyState state, double alpha,
 			double beta, int depth) throws GoalDefinitionException,
 			MoveDefinitionException, TransitionDefinitionException,
 			ClassificationException, AlphaBetaException {
+		reporter.exploreNode();
 		if (cache.containsKey(state, depth)) {
+			reporter.cacheHit();
 			return cache.get(state);
 		}
 		HeuristicAlphaBetaEntry entry = null;
 		if (machine.isTerminal(state.getState())) {
+			reporter.visitTerminal();
 			double goalValue = (machine.getGoal(state.getState(), maxPlayer) - machine
 					.getGoal(state.getState(), minPlayer)) * 10000;
 			Verbose.printVerbose("Final State with goal value " + goalValue,
@@ -129,8 +141,12 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			TransitionDefinitionException, GoalDefinitionException,
 			ClassificationException, AlphaBetaException {
 		HeuristicAlphaBetaEntry maxEntry = null;
-		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				maxPlayer, minPlayer, maxComparer)) {
+		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
+				maxPlayer, minPlayer, maxComparer);
+		reporter.expandNode(children.size());
+		int nodesVisited = 0;
+		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			HeuristicAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (maxEntry == null || entry.getAlpha() > maxEntry.getAlpha()) {
@@ -141,6 +157,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 				alpha = entry.getAlpha();
 			}
 			if (alpha >= beta) {
+				reporter.prune(children.size() - nodesVisited);
 				break;
 			}
 		}
@@ -152,8 +169,12 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 			TransitionDefinitionException, GoalDefinitionException,
 			ClassificationException, AlphaBetaException {
 		HeuristicAlphaBetaEntry minEntry = null;
-		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				minPlayer, maxPlayer, minComparer)) {
+		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
+				minPlayer, maxPlayer, minComparer);
+		reporter.expandNode(children.size());
+		int nodesVisited = 0;
+		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			HeuristicAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (minEntry == null || entry.getBeta() < minEntry.getBeta()) {
@@ -164,7 +185,7 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 				beta = entry.getBeta();
 			}
 			if (alpha >= beta) {
-				break;
+				reporter.prune(children.size() - nodesVisited);
 			}
 		}
 		return minEntry;
@@ -173,6 +194,16 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 	@Override
 	public void clear() {
 		cache.clear();
+	}
+	
+	@Override
+	public void addObserver(Observer observer) {
+		reporter.addObserver(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		reporter.notifyObservers(event);
 	}
 
 }

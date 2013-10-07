@@ -5,6 +5,10 @@ import heuristics.StateClassifier.ClassificationException;
 import java.util.List;
 import java.util.Map.Entry;
 
+import minmax.MinMaxEventReporter;
+
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -25,8 +29,8 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 	private int searchDepth;
 	private StateComparer comparer;
 	private AlphaBetaCache<StateCompareAlphaBetaEntry> cache;
-
 	private StateGenerator stateGenerator;
+	private MinMaxEventReporter reporter;
 
 	private CompareFunction maxComparer = new CompareFunction() {
 
@@ -73,6 +77,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		this.comparer = comparer;
 		this.cache = new AlphaBetaCache<StateCompareAlphaBetaEntry>();
 		this.stateGenerator = new StateGenerator(machine);
+		this.reporter = new MinMaxEventReporter();
 	}
 
 	@Override
@@ -86,20 +91,27 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			throw new AlphaBetaException();
 		}
 		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
-		return alphabeta(state, null, null, searchDepth).getMove();
+		long startTime = System.currentTimeMillis();
+		Move move = alphabeta(state, null, null, searchDepth).getMove();
+		long endTime = System.currentTimeMillis();
+		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+		return move;
 	}
 
 	private StateCompareAlphaBetaEntry alphabeta(MyState state, MyState alpha,
 			MyState beta, int depth) throws GoalDefinitionException,
 			MoveDefinitionException, TransitionDefinitionException,
 			ClassificationException, AlphaBetaException {
+		reporter.exploreNode();
 		if (cache.containsKey(state, depth)) {
+			reporter.cacheHit();
 			return cache.get(state);
 		}
 		StateCompareAlphaBetaEntry entry = null;
 		if (machine.isTerminal(state.getState())) {
 			Verbose.printVerbose("Final State with goal value ",
 					Verbose.MIN_MAX_VERBOSE);
+			reporter.visitTerminal();
 			entry = new StateCompareAlphaBetaEntry(state, state, null, AlphaBetaEntry.TERMINAL_STATE_HEIGHT);
 		} else if (depth <= 0) {
 			Verbose.printVerbose("reached final depth", Verbose.MIN_MAX_VERBOSE);
@@ -123,8 +135,12 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			TransitionDefinitionException, GoalDefinitionException,
 			ClassificationException, AlphaBetaException {
 		StateCompareAlphaBetaEntry maxEntry = null;
-		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				maxPlayer, minPlayer, maxComparer)) {
+		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
+				maxPlayer, minPlayer, maxComparer);
+		reporter.expandNode(children.size());
+		int nodesVisited = 0;
+		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			StateCompareAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (maxEntry == null
@@ -137,6 +153,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 				alpha = entry.getAlpha();
 			}
 			if (alpha != null && beta != null && !maxComparer.isGreater(beta, alpha)) {
+				reporter.prune(children.size() - nodesVisited);
 				break;
 			}
 		}
@@ -148,8 +165,12 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 			TransitionDefinitionException, GoalDefinitionException,
 			ClassificationException, AlphaBetaException {
 		StateCompareAlphaBetaEntry minEntry = null;
-		for (Entry<Move, MyState> child : stateGenerator.getNextStates(state,
-				minPlayer, maxPlayer, minComparer)) {
+		List<Entry<Move, MyState>> children = stateGenerator.getNextStates(state,
+				minPlayer, maxPlayer, minComparer);
+		reporter.expandNode(children.size());
+		int nodesVisited = 0;
+		for (Entry<Move, MyState> child : children) {
+			++nodesVisited;
 			StateCompareAlphaBetaEntry entry = alphabeta(state, alpha, beta,
 					depth - 1);
 			if (minEntry == null
@@ -162,6 +183,7 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 				beta = entry.getBeta();
 			}
 			if (alpha != null && beta != null && !minComparer.isGreater(alpha, beta)) {
+				reporter.prune(children.size() - nodesVisited);
 				break;
 			}
 		}
@@ -171,6 +193,16 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 	@Override
 	public void clear() {
 		cache.clear();
+	}
+	
+	@Override
+	public void addObserver(Observer observer) {
+		reporter.addObserver(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		reporter.notifyObservers(event);
 	}
 
 }

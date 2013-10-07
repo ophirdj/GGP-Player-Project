@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -27,6 +30,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	private StateClassifier classifier;
 	private int searchDepth;
 	private Map<MyState, MinMaxEntry> cache;
+	private MinMaxEventReporter reporter;
 	
 	public HeuristicLimitedDepthMinMax(StateMachine machine, Role maxPlayer, StateClassifier classifier) {
 		List<Role> roles = machine.getRoles();
@@ -38,6 +42,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		this.classifier = classifier;
 		this.searchDepth = 2;
 		this.cache = new HashMap<MyState, MinMaxEntry>();
+		this.reporter = new MinMaxEventReporter();
 	}
 
 	@Override
@@ -46,13 +51,19 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 			throw new MinMaxException();
 		}
 		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
-		return minmaxValueOf(state, searchDepth).getMove();
+		long startTime = System.currentTimeMillis();
+		Move move = minmaxValueOf(state, searchDepth).getMove();
+		long endTime = System.currentTimeMillis();
+		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+		return move;
 	}
 	
 	private MinMaxEntry minmaxValueOf(MyState state, int depth)
 			throws GoalDefinitionException, MoveDefinitionException,
 			TransitionDefinitionException, ClassificationException, MinMaxException {
+		reporter.exploreNode();
 		if (cache.containsKey(state) && cache.get(state) != null) {
+			reporter.cacheHit();
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
 			return null;
@@ -60,6 +71,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		MinMaxEntry minmaxEntry = null;
 		cache.put(state, null);
 		if (machine.isTerminal(state.getState())) {
+			reporter.visitTerminal();
 			double goalValue = (machine.getGoal(state.getState(), maxPlayer)
 					- machine.getGoal(state.getState(), minPlayer)) * 10000;
 			Verbose.printVerbose("Final State with goal value " + goalValue, Verbose.MIN_MAX_VERBOSE);
@@ -84,8 +96,10 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	private MinMaxEntry maxMove(MyState state, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry maxEntry = null;
-		for (Entry<Move, List<MachineState>> maxMove : machine.getNextStates(
-				state.getState(), maxPlayer).entrySet()) {
+		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
+				state.getState(), maxPlayer).entrySet();
+		reporter.expandNode(children.size());
+		for (Entry<Move, List<MachineState>> maxMove : children) {
 			assert (maxMove.getValue().size() == 1);
 			MachineState nextMachineState = maxMove.getValue().get(0);
 			MyState nextState = new MyState(nextMachineState,
@@ -104,8 +118,10 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	private MinMaxEntry minMove(MyState state, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry minEntry = null;
-		for (Entry<Move, List<MachineState>> minMove : machine.getNextStates(
-				state.getState(), minPlayer).entrySet()) {
+		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
+				state.getState(), minPlayer).entrySet();
+		reporter.expandNode(children.size());
+		for (Entry<Move, List<MachineState>> minMove : children) {
 			assert (minMove.getValue().size() == 1);
 			MachineState nextMachineState = minMove.getValue().get(0);
 			MyState nextState = new MyState(nextMachineState,
@@ -129,5 +145,15 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 	@Override
 	public void clear() {
 		cache.clear();
+	}
+
+	@Override
+	public void addObserver(Observer observer) {
+		reporter.addObserver(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		reporter.notifyObservers(event);
 	}
 }

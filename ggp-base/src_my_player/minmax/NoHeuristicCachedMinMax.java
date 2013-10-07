@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -34,6 +36,8 @@ public class NoHeuristicCachedMinMax implements MinMax {
 	private Role maxPlayer;
 	private Role minPlayer;
 	private Map<MyState, MinMaxEntry> cache;
+	private MinMaxEventReporter reporter;
+	private int searchDepth;
 
 
 	public NoHeuristicCachedMinMax(StateMachine machine, Role maxPlayer) {
@@ -44,6 +48,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		this.minPlayer = (roles.get(0).equals(maxPlayer) ? roles.get(1) : roles
 				.get(0));
 		this.cache = new HashMap<MyState, MinMaxEntry>();
+		this.reporter = new MinMaxEventReporter();
 	}
 
 	public void pruneCache() {
@@ -64,7 +69,12 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		if (state == null) {
 			throw new MinMaxException();
 		}
-			return minmaxValueOf(state).getMove();
+		long startTime = System.currentTimeMillis();
+		searchDepth = 0;
+		Move move = minmaxValueOf(state, 0).getMove();
+		long endTime = System.currentTimeMillis();
+		reporter.reportAndReset(move, cache.size(), searchDepth, endTime - startTime);
+		return move;
 	}
 
 	public Double valuOf(MyState state) throws GoalDefinitionException,
@@ -72,13 +82,18 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		if (state == null) {
 			return null;
 		}
-		return minmaxValueOf(state).getValue();
+		return minmaxValueOf(state, 0).getValue();
 	}
 
-	private MinMaxEntry minmaxValueOf(MyState state)
+	private MinMaxEntry minmaxValueOf(MyState state, int depth)
 			throws GoalDefinitionException, MoveDefinitionException,
 			TransitionDefinitionException, MinMaxException {
+		reporter.exploreNode();
+		if(depth > searchDepth) {
+			searchDepth = depth;
+		}
 		if (cache.containsKey(state) && cache.get(state) != null) {
+			reporter.cacheHit();
 			return cache.get(state);
 		} else if (cache.containsKey(state)) {
 			return null;
@@ -86,12 +101,13 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		MinMaxEntry minmaxEntry = null;
 		cache.put(state, null);
 		if (machine.isTerminal(state.getState())) {
+			reporter.visitTerminal();
 			return new MinMaxEntry(machine.getGoal(state.getState(), maxPlayer)
 					- machine.getGoal(state.getState(), minPlayer), null, 0);
 		} else if (maxPlayer.equals(state.getControlingPlayer())) {
-			minmaxEntry = maxMove(state);
+			minmaxEntry = maxMove(state, depth);
 		} else if (minPlayer.equals(state.getControlingPlayer())) {
-			minmaxEntry = minMove(state);
+			minmaxEntry = minMove(state, depth);
 		} else {
 			throw new MinMaxException(
 					"minmax error: no match for controlingPlayer");
@@ -102,16 +118,18 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		return minmaxEntry;
 	}
 
-	private MinMaxEntry maxMove(MyState state) throws MoveDefinitionException,
+	private MinMaxEntry maxMove(MyState state, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException, MinMaxException {
 		MinMaxEntry maxEntry = null;
-		for (Entry<Move, List<MachineState>> maxMove : machine.getNextStates(
-				state.getState(), maxPlayer).entrySet()) {
+		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
+				state.getState(), maxPlayer).entrySet();
+		reporter.expandNode(children.size());
+		for (Entry<Move, List<MachineState>> maxMove : children) {
 			assert (maxMove.getValue().size() == 1);
 			MachineState nextMachineState = maxMove.getValue().get(0);
 			MyState nextState = new MyState(nextMachineState,
 					state.getTurnNumber() + 1, minPlayer);
-			MinMaxEntry nextEntry = minmaxValueOf(nextState);
+			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth + 1);
 			if ((maxEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() > maxEntry
 							.getValue()))) {
@@ -122,16 +140,18 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		return maxEntry;
 	}
 
-	private MinMaxEntry minMove(MyState state) throws MoveDefinitionException,
+	private MinMaxEntry minMove(MyState state, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException, MinMaxException {
 		MinMaxEntry minEntry = null;
-		for (Entry<Move, List<MachineState>> minMove : machine.getNextStates(
-				state.getState(), minPlayer).entrySet()) {
+		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
+				state.getState(), minPlayer).entrySet();
+		reporter.expandNode(children.size());
+		for (Entry<Move, List<MachineState>> minMove : children) {
 			assert (minMove.getValue().size() == 1);
 			MachineState nextMachineState = minMove.getValue().get(0);
 			MyState nextState = new MyState(nextMachineState,
 					state.getTurnNumber() + 1, maxPlayer);
-			MinMaxEntry nextEntry = minmaxValueOf(nextState);
+			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth + 1);
 			if ((minEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() < minEntry
 							.getValue()))) {
@@ -145,6 +165,16 @@ public class NoHeuristicCachedMinMax implements MinMax {
 	@Override
 	public void clear() {
 		cache.clear();
+	}
+	
+	@Override
+	public void addObserver(Observer observer) {
+		reporter.addObserver(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		reporter.notifyObservers(event);
 	}
 
 }

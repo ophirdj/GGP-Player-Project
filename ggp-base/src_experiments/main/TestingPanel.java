@@ -123,7 +123,7 @@ public final class TestingPanel extends JPanel implements ActionListener
 		playerFields = new ArrayList<JComboBox>();
 		theGame = null;
 
-		shouldSave = new JCheckBox("Save match to disk?", false);
+		shouldSave = new JCheckBox("Save experiment to disk?", false);
 		shouldPublish = new JCheckBox("Publish match to the web?", false);
 		
 		runButton.setEnabled(false);
@@ -228,12 +228,36 @@ public final class TestingPanel extends JPanel implements ActionListener
 				final int startClock = (Integer)startClockSpinner.getValue();
 				final int playClock = (Integer)playClockSpinner.getValue();
 				final int numberOfGames = (Integer)numberOfGamesSpinner.getValue();
-
 				final List<PlayerPresence> thePlayers = new ArrayList<PlayerPresence>();
 				for (JComboBox playerField : playerFields) {
                 	String name = playerField.getSelectedItem().toString();
                 	thePlayers.add(playerSelector.getPlayerPresence(name));
 				}
+				
+				
+				if (shouldSave.isSelected()) {
+					File statisticsDir = new File(System.getProperty("user.home"), "ggp-saved-statistics");
+					if (!statisticsDir.exists()) {
+						statisticsDir.mkdir();
+					}
+					String sessionIdPrefix = new String();
+					for(PlayerPresence p: thePlayers) {
+						if(p != null) {
+							sessionIdPrefix += p.getName();
+						} else {
+							sessionIdPrefix += "unknown player";
+						}
+						sessionIdPrefix += '.';
+					}
+					String sessionId = sessionIdPrefix + theGame.getKey() + "." + System.currentTimeMillis();
+					File sessionDir = new File(statisticsDir, sessionId);
+					if (!sessionDir.exists()) {
+						sessionDir.mkdir();
+					}
+					statisticsPanel.startSavingToDirectory(sessionDir);
+				}
+				
+				//run the games
 				(new Thread(new Runnable() {
 					private List<PlayerPresence> players = thePlayers;
 					private int startTime = startClock;
@@ -252,6 +276,7 @@ public final class TestingPanel extends JPanel implements ActionListener
 							}
 							--numGames;
 						}
+						statisticsPanel.saveWhenNecessary();
 					}
 				})).start();
 			}

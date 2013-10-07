@@ -1,6 +1,8 @@
+
 package player;
 
 import debugging.Verbose;
+
 
 public enum PlayerType {
 	HEURISTIC_PLAYER{

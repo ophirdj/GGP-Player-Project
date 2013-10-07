@@ -7,6 +7,8 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.GdlTerm;
+import org.ggp.base.util.observer.Event;
+import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -17,7 +19,6 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import debugging.TicTacToeBoardPrint;
 import debugging.Verbose;
-
 import state.MyState;
 
 /**
@@ -37,14 +38,16 @@ public class KnownValueSimulator implements MapValueSimulator{
 	protected Map<MyState, Integer> knownStates;
 	protected Role myRole;
 	protected Role oponentRole;
+	private ArrayList<Observer> observers;
 
 	public KnownValueSimulator(StateMachine machine, Role myRole, Role oponentRole) {
 		this.machine = machine;
 		this.myRole = myRole;
 		this.oponentRole = oponentRole;
 		this.roles = machine.getRoles();
-		assert (roles.size() == 2);
 		knownStates = new HashMap<MyState, Integer>();
+		this.observers = new ArrayList<Observer>();
+		assert (roles.size() == 2);
 	}
 
 	/**
@@ -180,7 +183,17 @@ public class KnownValueSimulator implements MapValueSimulator{
 	public Map<MyState, Integer> getStateValueMap() {
 		return knownStates;
 	}
-	
-	
+
+	@Override
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void notifyObservers(Event event) {
+		for(Observer observer: observers) {
+			observer.observe(event);
+		}
+	}
 
 }
