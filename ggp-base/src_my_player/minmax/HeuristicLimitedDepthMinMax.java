@@ -79,10 +79,10 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		} else if(depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
 			return new MinMaxEntry(classifier.classifyState(state), null, 0);
-		} else if (maxPlayer.equals(state.getControlingPlayer())) {
+		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = maxMove(state, depth);
-		} else if (minPlayer.equals(state.getControlingPlayer())) {
+		} else if (minPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = minMove(state, depth);
 		} else {
@@ -102,8 +102,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		for (Entry<Move, List<MachineState>> maxMove : children) {
 			assert (maxMove.getValue().size() == 1);
 			MachineState nextMachineState = maxMove.getValue().get(0);
-			MyState nextState = new MyState(nextMachineState,
-					state.getTurnNumber() + 1, minPlayer);
+			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth - 1);
 			if ((maxEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() > maxEntry
@@ -124,8 +123,7 @@ public class HeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		for (Entry<Move, List<MachineState>> minMove : children) {
 			assert (minMove.getValue().size() == 1);
 			MachineState nextMachineState = minMove.getValue().get(0);
-			MyState nextState = new MyState(nextMachineState,
-					state.getTurnNumber() + 1, maxPlayer);
+			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth - 1);
 			if ((minEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() < minEntry

@@ -1,5 +1,7 @@
 package interfaces;
 
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+
 import state.LabeledState;
 import state.MyState;
 
@@ -18,16 +20,19 @@ public interface IStateLabeler {
 	 * @param state
 	 *            State to be labeled.
 	 * @return Corresponding labeled state.
+	 * @throws GoalDefinitionException 
 	 */
-	LabeledState label(MyState state);
+	LabeledState label(MyState state) throws GoalDefinitionException;
 
 	/**
-	 * Get value of state.
+	 * Create a label to the state with given value.
 	 * 
 	 * @param state
-	 *            State to be evaluated.
-	 * @return State's (goal) value.
+	 *            State to be labeled.
+	 * @param value
+	 *            Label value.
+	 * @return Corresponding labeled state.
 	 */
-	double getValue(MyState state);
+	LabeledState createLabel(MyState state, double value);
 
 }

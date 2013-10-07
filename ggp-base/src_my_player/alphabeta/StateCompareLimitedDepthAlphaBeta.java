@@ -116,10 +116,10 @@ public class StateCompareLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta 
 		} else if (depth <= 0) {
 			Verbose.printVerbose("reached final depth", Verbose.MIN_MAX_VERBOSE);
 			entry = new StateCompareAlphaBetaEntry(state, state, null, 0);
-		} else if (state.getControlingPlayer() == maxPlayer) {
+		} else if (state.getRole() == maxPlayer) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = maxMove(state, alpha, beta, depth);
-		} else if (state.getControlingPlayer() == minPlayer) {
+		} else if (state.getRole() == minPlayer) {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = minMove(state, alpha, beta, depth);
 		} else {

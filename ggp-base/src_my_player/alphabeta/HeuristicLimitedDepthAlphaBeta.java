@@ -122,10 +122,10 @@ public class HeuristicLimitedDepthAlphaBeta implements LimitedDepthAlphaBeta {
 					+ heuristicValue, Verbose.MIN_MAX_VERBOSE);
 			entry = new HeuristicAlphaBetaEntry(heuristicValue, heuristicValue,
 					null, 0);
-		} else if (state.getControlingPlayer() == maxPlayer) {
+		} else if (state.getRole() == maxPlayer) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = maxMove(state, alpha, beta, depth);
-		} else if (state.getControlingPlayer() == minPlayer) {
+		} else if (state.getRole() == minPlayer) {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = minMove(state, alpha, beta, depth);
 		} else {

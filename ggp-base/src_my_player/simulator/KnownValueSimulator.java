@@ -19,6 +19,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import debugging.TicTacToeBoardPrint;
 import debugging.Verbose;
+import state.MinMaxValueStateLabeler;
 import state.MyState;
 
 /**
@@ -29,22 +30,25 @@ import state.MyState;
  * @author Ophir De Jager
  * 
  */
-public class KnownValueSimulator implements MapValueSimulator{
-	
+public class KnownValueSimulator implements MapValueSimulator {
+
 	private static int NO_VALUE_FOUND = Integer.MIN_VALUE;
-	
+
 	protected StateMachine machine;
 	protected List<Role> roles;
 	protected Map<MyState, Integer> knownStates;
 	protected Role myRole;
 	protected Role oponentRole;
+	private MinMaxValueStateLabeler labeler;
 	private ArrayList<Observer> observers;
 
-	public KnownValueSimulator(StateMachine machine, Role myRole, Role oponentRole) {
+	public KnownValueSimulator(StateMachine machine, Role myRole,
+			Role oponentRole) {
 		this.machine = machine;
 		this.myRole = myRole;
 		this.oponentRole = oponentRole;
 		this.roles = machine.getRoles();
+		this.labeler = new MinMaxValueStateLabeler(machine, myRole);
 		knownStates = new HashMap<MyState, Integer>();
 		this.observers = new ArrayList<Observer>();
 		assert (roles.size() == 2);
@@ -84,67 +88,79 @@ public class KnownValueSimulator implements MapValueSimulator{
 	public List<MyState> simulate(List<List<GdlTerm>> moveHistory,
 			Role controlingPlayer) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException {
-		MachineState machineState = getStateFromMoveHistory(moveHistory);
-		MyState myState = new MyState(machineState, moveHistory.size(),
-				controlingPlayer);
+		MyState myState = new MyState(getStateFromMoveHistory(moveHistory),
+				moveHistory.size(), controlingPlayer,
+				getNextPlayer(controlingPlayer));
 		List<MyState> simulation = new ArrayList<MyState>();
 		simulation.add(myState);
-		while (!(knownStates.containsKey(myState) || machine.isTerminal(machineState))) {
-			machineState = machine.getRandomNextState(machineState);
+		while (!(knownStates.containsKey(myState) || machine.isTerminal(myState
+				.getState()))) {
 			controlingPlayer = getNextPlayer(controlingPlayer);
-			myState = new MyState(machineState, myState.getTurnNumber() + 1,
-					controlingPlayer);
+			myState = MyState.createChild(myState,
+					machine.getRandomNextState(myState.getState()));
 			simulation.add(myState);
 		}
 		addStatesToKnown(simulation);
 		return simulation;
 	}
 
-	private void addStatesToKnown(List<MyState> simulation) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException {
+	private void addStatesToKnown(List<MyState> simulation)
+			throws MoveDefinitionException, TransitionDefinitionException,
+			GoalDefinitionException {
 		int lastIndex = simulation.size();
-		ListIterator<MyState> reverseIterator = simulation.listIterator(lastIndex); 
+		ListIterator<MyState> reverseIterator = simulation
+				.listIterator(lastIndex);
 		MyState finalState = reverseIterator.previous();
-		if (!knownStates.containsKey(finalState) && machine.isTerminal(finalState.getState())){
-			knownStates.put(finalState, finalState.evaluateTerminalState(machine, myRole));
+		if (!knownStates.containsKey(finalState)
+				&& machine.isTerminal(finalState.getState())) {
+			knownStates.put(finalState, (int) labeler.label(finalState).getValue());
 		}
-		while (reverseIterator.hasPrevious()){
+		while (reverseIterator.hasPrevious()) {
 			MyState currentState = reverseIterator.previous();
 			Integer minMaxValue = checkChildrens(currentState);
-			if(minMaxValue == NO_VALUE_FOUND){
+			if (minMaxValue == NO_VALUE_FOUND) {
 				break;
 			}
 			knownStates.put(currentState, minMaxValue);
-			Verbose.printVerbose("Found state with value " + minMaxValue + " and depth " + currentState.getTurnNumber() +": ", Verbose.SIMULATOR_MIN_MAX);
-			TicTacToeBoardPrint.printTicTacToe(currentState.getState().getContents(), Verbose.TIC_TAC_TOE_SIMULATOR);
+			Verbose.printVerbose("Found state with value " + minMaxValue
+					+ " and depth " + currentState.getTurnNumber() + ": ",
+					Verbose.SIMULATOR_MIN_MAX);
+			TicTacToeBoardPrint.printTicTacToe(currentState.getState()
+					.getContents(), Verbose.TIC_TAC_TOE_SIMULATOR);
 		}
 	}
 
-	private Integer checkChildrens(MyState currentState) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException {
-		List<MachineState> states = machine.getNextStates(currentState.getState());
-		Role currentRole = currentState.getControlingPlayer();
+	private Integer checkChildrens(MyState currentState)
+			throws MoveDefinitionException, TransitionDefinitionException,
+			GoalDefinitionException {
+		List<MachineState> states = machine.getNextStates(currentState
+				.getState());
+		Role currentRole = currentState.getRole();
 		boolean allChildrenValuesKnown = true;
-		int bestResult = currentRole.equals(myRole) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-		
-		for (MachineState state : states){
-			if (knownStates.containsKey(state)){
-				bestResult = betterValue(currentRole, bestResult, knownStates.get(state));
-			}
-			else if (machine.isTerminal(state)){
-				MyState terminalState = new MyState(state, currentState.getTurnNumber() + 1, getNextPlayer(currentState.getControlingPlayer()));
-				int stateValue = terminalState.evaluateTerminalState(machine, myRole);
+		int bestResult = currentRole.equals(myRole) ? Integer.MIN_VALUE
+				: Integer.MAX_VALUE;
+
+		for (MachineState state : states) {
+			if (knownStates.containsKey(state)) {
+				bestResult = betterValue(currentRole, bestResult,
+						knownStates.get(state));
+			} else if (machine.isTerminal(state)) {
+				MyState terminalState = MyState.createChild(currentState, state);
+				int stateValue = (int) labeler.label(terminalState).getValue();
 				knownStates.put(terminalState, stateValue);
 				bestResult = betterValue(currentRole, bestResult, stateValue);
-			}
-			else{
+			} else {
 				allChildrenValuesKnown = false;
 			}
 		}
-		if(allChildrenValuesKnown) return bestResult;
+		if (allChildrenValuesKnown)
+			return bestResult;
 		return NO_VALUE_FOUND;
 	}
 
 	private int betterValue(Role currentRole, int firstVal, int secondVal) {
-		if (currentRole.equals(myRole)) return Math.max(firstVal, secondVal);
+		if (currentRole.equals(myRole))
+			return Math.max(firstVal, secondVal);
 		return Math.min(firstVal, secondVal);
 	}
 
@@ -191,7 +207,7 @@ public class KnownValueSimulator implements MapValueSimulator{
 
 	@Override
 	public void notifyObservers(Event event) {
-		for(Observer observer: observers) {
+		for (Observer observer : observers) {
 			observer.observe(event);
 		}
 	}

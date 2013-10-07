@@ -29,7 +29,7 @@ import statecompare.ComparerGenerator;
 import statecompare.StateComparer;
 import debugging.Verbose;
 
-public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
+public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer {
 
 	private int turnNumber;
 	private boolean isInitialize;
@@ -41,11 +41,13 @@ public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
 	private MapValueSimulator simulator;
 	private StateComparer comparer;
 	private LimitedDepthMinMax minmax;
+	private Role oponent;
 
 	public ConfigurableComparerParaPlayer(StateMachineGamer caller) {
 		super(caller);
 		this.turnNumber = 0;
 		this.isInitialize = false;
+		this.oponent = null;
 	}
 
 	@Override
@@ -65,8 +67,10 @@ public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		if(!isInitialize){
-			Verbose.printVerboseError("Heuristic player is not initialize, use default values", Verbose.UNIMPLEMENTED_OPTION);
+		if (!isInitialize) {
+			Verbose.printVerboseError(
+					"Heuristic player is not initialize, use default values",
+					Verbose.UNIMPLEMENTED_OPTION);
 			defaultInitialization();
 		}
 		StateMachine machine = getStateMachine();
@@ -75,7 +79,8 @@ public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
 				machine, simulator, comparerBuilder);
 		try {
 			comparer = g.generateComparer(exampleAmount);
-			minmax = minmaxFactory.createCompareLimitedDepthMinMax(machine, getRole(), comparer);
+			minmax = minmaxFactory.createCompareLimitedDepthMinMax(machine,
+					getRole(), comparer);
 			minmax.setDepth(minmaxDepth);
 		} catch (ClassifierBuildException e) {
 			e.printStackTrace();
@@ -85,17 +90,19 @@ public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
 	private MapValueSimulator buildSimulator() {
 		StateMachine machine = getStateMachine();
 		Role myRole = getRole();
-		Role oponentRole = (myRole.equals(machine.getRoles().get(0))) ? machine.getRoles().get(1) : machine.getRoles().get(0);
+		Role oponentRole = (myRole.equals(machine.getRoles().get(0))) ? machine
+				.getRoles().get(1) : machine.getRoles().get(0);
 		return simulatorFactory.createSimulator(machine, myRole, oponentRole);
 	}
-
 
 	private void defaultInitialization() {
 		isInitialize = true;
 		this.exampleAmount = 100;
-		this.simulatorFactory = SimulatorType.BASIC_SIMULATOR.getSimulatorFactory();
+		this.simulatorFactory = SimulatorType.BASIC_SIMULATOR
+				.getSimulatorFactory();
 		this.minmaxFactory = MinMaxType.BASIC_HUERISTIC_MINMAX.getFactory();
-		this.comparerBuilder = BuilderType.SIMPLE.getBuilderFactory().createComparerBuilder();
+		this.comparerBuilder = BuilderType.SIMPLE.getBuilderFactory()
+				.createComparerBuilder();
 		this.minmaxDepth = 3;
 	}
 
@@ -111,7 +118,7 @@ public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
 		try {
 			if (moves.size() > 1) {
 				selection = minmax.bestMove(new MyState(getCurrentState(),
-						turnNumber, getRole()));
+						turnNumber, getRole(), getOponent()));
 			}
 		} catch (MinMaxException | ClassificationException e) {
 			e.printStackTrace();
@@ -130,22 +137,33 @@ public class ConfigurableComparerParaPlayer extends ParaStateMachinePlayer{
 		return selection;
 	}
 
+	private Role getOponent() {
+		if (oponent == null) {
+			List<Role> roles = getStateMachine().getRoles();
+			oponent = roles.get(0).equals(getRole()) ? roles.get(1) : roles
+					.get(0);
+		}
+		return oponent;
+	}
+
 	@Override
 	public void stateMachineStop() {
 		minmax.clear();
+		oponent = null;
 	}
-	
+
 	@Override
 	public void stateMachineAbort() {
 		minmax.clear();
+		oponent = null;
 	}
 
 	@Override
 	public void analyze(Game g, long timeout) throws GameAnalysisException {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub

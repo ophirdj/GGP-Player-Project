@@ -16,6 +16,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
+import state.MinMaxValueStateLabeler;
 import state.MyState;
 
 /**
@@ -26,12 +27,13 @@ import state.MyState;
  * @author Ophir De Jager
  * 
  */
-public class Simulator implements MapValueSimulator{
-	
+public class Simulator implements MapValueSimulator {
+
 	protected StateMachine machine;
 	protected List<Role> roles;
 	protected Map<MyState, Integer> terminalStates;
 	protected Role myRole;
+	private MinMaxValueStateLabeler labeler;
 	protected Role oponentRole;
 	private ArrayList<Observer> observers;
 
@@ -41,6 +43,7 @@ public class Simulator implements MapValueSimulator{
 		this.oponentRole = oponentRole;
 		this.roles = machine.getRoles();
 		terminalStates = new HashMap<MyState, Integer>();
+		this.labeler = new MinMaxValueStateLabeler(machine, myRole);
 		this.observers = new ArrayList<Observer>();
 		assert (roles.size() == 2);
 	}
@@ -79,19 +82,17 @@ public class Simulator implements MapValueSimulator{
 	public List<MyState> simulate(List<List<GdlTerm>> moveHistory,
 			Role controlingPlayer) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException {
-		MachineState machineState = getStateFromMoveHistory(moveHistory);
-		MyState myState = new MyState(machineState, moveHistory.size(),
-				controlingPlayer);
+		MyState myState = new MyState(getStateFromMoveHistory(moveHistory),
+				moveHistory.size(), controlingPlayer,
+				getNextPlayer(controlingPlayer));
 		List<MyState> simulation = new ArrayList<MyState>();
 		simulation.add(myState);
-		while (!machine.isTerminal(machineState)) {
-			machineState = machine.getRandomNextState(machineState);
-			controlingPlayer = getNextPlayer(controlingPlayer);
-			myState = new MyState(machineState, myState.getTurnNumber() + 1,
-					controlingPlayer);
+		while (!machine.isTerminal(myState.getState())) {
+			myState = MyState.createChild(myState,
+					machine.getRandomNextState(myState.getState()));
 			simulation.add(myState);
 		}
-		terminalStates.put(myState, myState.evaluateTerminalState(machine, myRole));
+		terminalStates.put(myState, (int) labeler.label(myState).getValue());
 		return simulation;
 	}
 
@@ -130,7 +131,7 @@ public class Simulator implements MapValueSimulator{
 	public Map<MyState, Integer> getStateValueMap() {
 		return terminalStates;
 	}
-	
+
 	@Override
 	public void addObserver(Observer observer) {
 		observers.add(observer);
@@ -138,7 +139,7 @@ public class Simulator implements MapValueSimulator{
 
 	@Override
 	public void notifyObservers(Event event) {
-		for(Observer observer: observers) {
+		for (Observer observer : observers) {
 			observer.observe(event);
 		}
 	}

@@ -5,21 +5,21 @@ import java.util.Set;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Role;
-import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 
-public class MyState {
+public final class MyState {
 
 	private MachineState state;
 	private int turn;
 	private Role role;
+	private Role oponent;
 
-	public MyState(MachineState state, int turnNumber, Role controlingPlayer) {
+	public MyState(MachineState state, int turnNumber, Role role, Role oponent) {
 		this.state = state;
 		this.turn = turnNumber;
-		this.role = controlingPlayer;
+		this.role = role;
+		this.oponent = oponent;
 	}
-	
+
 	public MachineState getState() {
 		return state;
 	}
@@ -31,22 +31,48 @@ public class MyState {
 	public int getTurnNumber() {
 		return turn;
 	}
-	
-	public Role getControlingPlayer() {
+
+	public Role getRole() {
 		return role;
 	}
-	
+
+	public Role getOponent() {
+		return oponent;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		return result;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
-		if((obj != null) && (obj instanceof MyState)){
-			return state.equals(((MyState)obj).getState());
+		if (this == obj) {
+			return true;
 		}
-		return false;
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		MyState other = (MyState) obj;
+		if (state == null) {
+			if (other.state != null) {
+				return false;
+			}
+		} else if (!state.equals(other.state)) {
+			return false;
+		}
+		return true;
 	}
-	
-	public int evaluateTerminalState(StateMachine machine, Role myRole) throws GoalDefinitionException{
-		Role oponentRole = (machine.getRoles().get(0).equals(myRole)) ? machine.getRoles().get(1) : machine.getRoles().get(0);
-		return machine.getGoal(state, myRole) - machine.getGoal(state, oponentRole);
+
+	public static MyState createChild(MyState parent, MachineState child) {
+		return new MyState(child, parent.getTurnNumber() + 1,
+				parent.getOponent(), parent.getRole());
 	}
 
 }

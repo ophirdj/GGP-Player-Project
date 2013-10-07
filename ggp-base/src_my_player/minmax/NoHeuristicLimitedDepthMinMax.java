@@ -74,10 +74,10 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 		} else if(depth <= 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
 			return new MinMaxEntry(0, null, 0);
-		} else if (maxPlayer.equals(state.getControlingPlayer())) {
+		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = maxMove(state, depth);
-		} else if (minPlayer.equals(state.getControlingPlayer())) {
+		} else if (minPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			entry = minMove(state, depth);
 		} else {
@@ -95,8 +95,7 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 				state.getState(), maxPlayer).entrySet()) {
 			assert (maxMove.getValue().size() == 1);
 			MachineState nextMachineState = maxMove.getValue().get(0);
-			MyState nextState = new MyState(nextMachineState,
-					state.getTurnNumber() + 1, minPlayer);
+			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth - 1);
 			if ((maxEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() > maxEntry
@@ -115,8 +114,7 @@ public class NoHeuristicLimitedDepthMinMax implements LimitedDepthMinMax{
 				state.getState(), minPlayer).entrySet()) {
 			assert (minMove.getValue().size() == 1);
 			MachineState nextMachineState = minMove.getValue().get(0);
-			MyState nextState = new MyState(nextMachineState,
-					state.getTurnNumber() + 1, maxPlayer);
+			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth - 1);
 			if ((minEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() < minEntry

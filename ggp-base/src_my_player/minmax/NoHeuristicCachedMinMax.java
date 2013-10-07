@@ -104,9 +104,9 @@ public class NoHeuristicCachedMinMax implements MinMax {
 			reporter.visitTerminal();
 			return new MinMaxEntry(machine.getGoal(state.getState(), maxPlayer)
 					- machine.getGoal(state.getState(), minPlayer), null, 0);
-		} else if (maxPlayer.equals(state.getControlingPlayer())) {
+		} else if (maxPlayer.equals(state.getRole())) {
 			minmaxEntry = maxMove(state, depth);
-		} else if (minPlayer.equals(state.getControlingPlayer())) {
+		} else if (minPlayer.equals(state.getRole())) {
 			minmaxEntry = minMove(state, depth);
 		} else {
 			throw new MinMaxException(
@@ -127,8 +127,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		for (Entry<Move, List<MachineState>> maxMove : children) {
 			assert (maxMove.getValue().size() == 1);
 			MachineState nextMachineState = maxMove.getValue().get(0);
-			MyState nextState = new MyState(nextMachineState,
-					state.getTurnNumber() + 1, minPlayer);
+			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth + 1);
 			if ((maxEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() > maxEntry
@@ -149,8 +148,7 @@ public class NoHeuristicCachedMinMax implements MinMax {
 		for (Entry<Move, List<MachineState>> minMove : children) {
 			assert (minMove.getValue().size() == 1);
 			MachineState nextMachineState = minMove.getValue().get(0);
-			MyState nextState = new MyState(nextMachineState,
-					state.getTurnNumber() + 1, maxPlayer);
+			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmaxValueOf(nextState, depth + 1);
 			if ((minEntry == null)
 					|| ((nextEntry != null) && (nextEntry.getValue() < minEntry

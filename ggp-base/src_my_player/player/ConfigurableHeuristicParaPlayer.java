@@ -46,11 +46,13 @@ public class ConfigurableHeuristicParaPlayer extends ParaStateMachinePlayer{
 	private ClassifierBuilder classifierBuilder;
 	private int minmaxDepth;
 	private MapValueSimulator simulator;
+	private Role oponent;
 
 	public ConfigurableHeuristicParaPlayer(StateMachineGamer caller) {
 		super(caller);
 		this.turnNumber = 0;
 		this.isInitialize = false;
+		this.oponent = null;
 	}
 	
 	@Override
@@ -124,7 +126,7 @@ public class ConfigurableHeuristicParaPlayer extends ParaStateMachinePlayer{
 		try {
 			if (moves.size() > 1) {
 				selection = minmax.bestMove(new MyState(getCurrentState(),
-						turnNumber, getRole()));
+						turnNumber, getRole(), getOponent()));
 			}
 		} catch (MinMaxException | ClassificationException e) {
 			e.printStackTrace();
@@ -143,14 +145,25 @@ public class ConfigurableHeuristicParaPlayer extends ParaStateMachinePlayer{
 		return selection;
 	}
 
+	private Role getOponent() {
+		if (oponent == null) {
+			List<Role> roles = getStateMachine().getRoles();
+			oponent = roles.get(0).equals(getRole()) ? roles.get(1) : roles
+					.get(0);
+		}
+		return oponent;
+	}
+
 	@Override
 	public void stateMachineStop() {
 		minmax.clear();
+		oponent = null;
 	}
 
 	@Override
 	public void stateMachineAbort() {
 		minmax.clear();
+		oponent = null;
 	}
 
 	@Override

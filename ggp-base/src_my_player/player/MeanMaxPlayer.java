@@ -15,6 +15,7 @@ import org.ggp.base.player.gamer.exception.GameAnalysisException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -28,10 +29,12 @@ public class MeanMaxPlayer extends StateMachineGamer {
 
 	private LimitedDepthMinMax minmax;
 	private int turnNumber;
+	private Role oponent;
 
 	public MeanMaxPlayer() {
 		this.minmax = null;
 		this.turnNumber = 0;
+		this.oponent = null;
 	}
 
 	@Override
@@ -43,8 +46,7 @@ public class MeanMaxPlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		minmax = new NoHeuristicLimitedDepthMinMax(getStateMachine(),
-				getRole());
+		minmax = new NoHeuristicLimitedDepthMinMax(getStateMachine(), getRole());
 		minmax.setDepth(3);
 	}
 
@@ -60,7 +62,7 @@ public class MeanMaxPlayer extends StateMachineGamer {
 		try {
 			if (moves.size() > 1) {
 				selection = minmax.bestMove(new MyState(getCurrentState(),
-						turnNumber, getRole()));
+						turnNumber, getRole(), getOponent()));
 			}
 		} catch (MinMaxException | ClassificationException e) {
 			e.printStackTrace();
@@ -79,14 +81,25 @@ public class MeanMaxPlayer extends StateMachineGamer {
 		return selection;
 	}
 
+	private Role getOponent() {
+		if (oponent == null) {
+			List<Role> roles = getStateMachine().getRoles();
+			oponent = roles.get(0).equals(getRole()) ? roles.get(1) : roles
+					.get(0);
+		}
+		return oponent;
+	}
+
 	@Override
 	public void stateMachineStop() {
 		minmax.clear();
+		oponent = null;
 	}
 
 	@Override
 	public void stateMachineAbort() {
 		minmax.clear();
+		oponent = null;
 	}
 
 	@Override
@@ -99,7 +112,7 @@ public class MeanMaxPlayer extends StateMachineGamer {
 	public String getName() {
 		return getClass().getSimpleName();
 	}
-	
+
 	@Override
 	public DetailPanel getDetailPanel() {
 		return new SimpleDetailPanel();

@@ -39,8 +39,7 @@ public class StateGenerator {
 		ArrayList<Entry<Move, MyState>> childrenStates = new ArrayList<Entry<Move, MyState>>(
 				nextStates.size());
 		for (Entry<Move, List<MachineState>> child : nextStates.entrySet()) {
-			MyState childState = new MyState(child.getValue().get(0),
-					fatherState.getTurnNumber() + 1, nextPlayer);
+			MyState childState = MyState.createChild(fatherState, child.getValue().get(0));
 			childrenStates.add(new AbstractMap.SimpleEntry<Move, MyState>(child
 					.getKey(), childState));
 		}
