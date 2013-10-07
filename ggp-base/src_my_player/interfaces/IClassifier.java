@@ -1,6 +1,14 @@
 package interfaces;
 
+import java.util.List;
+import java.util.Set;
+
+import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
+
+import state.LabeledState;
 import state.MyState;
+import weka.core.Instances;
 
 /**
  * Interface for classifier that will be used in the minmax.
@@ -12,7 +20,24 @@ import state.MyState;
 public interface IClassifier {
 
 	/**
-	 * Classifies a state.
+	 * Create data set of labeled examples for classifier building.
+	 * 
+	 * @param contents
+	 *            A set of state contents.
+	 * @param rules
+	 *            Game Rules.
+	 * @param dataset
+	 *            A set of labeled states.
+	 * @return A labeled data set.
+	 */
+	Instances createDataset(Set<GdlSentence> contents, List<Gdl> rules,
+			Set<LabeledState> dataset);
+	
+	/**
+	 * Interface for feature extraction from GDL and creation of data sets for
+	 * classifier building.
+	 * 
+	 * Also used to classify a state.
 	 * 
 	 * @param state
 	 *            State to be classified.
@@ -30,8 +55,9 @@ public interface IClassifier {
 	 *            Classification of 2nd state.
 	 * @return True if (and only if) the 1st classification is better than the
 	 *         2nd.
+	 * @throws ClassificationException 
 	 */
-	boolean isBetterValue(ClassifierValue value1, ClassifierValue value2);
+	boolean isBetterValue(ClassifierValue value1, ClassifierValue value2) throws ClassificationException;
 
 	/**
 	 * Interface for classifications of the classifier
