@@ -1,1 +1,14 @@
-*
+/gamestatistics
+/logging
+/main
+/playerstatistics
+/org
+/alphabeta
+/debugging
+/external
+/heuristics
+/minmax
+/player
+/simulator
+/state
+/statecompare
