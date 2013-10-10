@@ -33,8 +33,8 @@ import states.MyState;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.LinearRegression;
 
-public class ConfigurablePlayer extends StateMachineGamer {
-
+public abstract class ConfigurablePlayer extends StateMachineGamer {
+	
 	private ConfigurationPanel configPanel;
 	private PlayerDetatilPanel detatilPanel;
 	private IMinMax minmax;
@@ -69,7 +69,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel.getStateClassifierFactory();
 		try {
-			IClassifier classifier = classifierFactory.createClassifier(game.getName(),
+			IClassifier classifier = classifierFactory.createClassifier(labeler, game.getName(),
 							simulator.getAllContents(),
 							game.getRules(),
 							simulator.getLabeledStates(), wekaClassifier);

@@ -8,23 +8,21 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
-import classifier.ClassifierBuildingException;
-import classifier.heuristic.HeuristicClassifierInfrastructure;
-
+import states.IStateLabeler;
 import states.LabeledState;
 import states.MyState;
 import utils.BinariesValues;
-
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.ProtectedProperties;
+import classifier.ClassifierBuildingException;
+import classifier.heuristic.HeuristicClassifierInfrastructure;
 
 public class SimpleHeuristicClassifier extends
 		HeuristicClassifierInfrastructure {
@@ -32,9 +30,9 @@ public class SimpleHeuristicClassifier extends
 	private HashMap<Attribute, GdlSentence> attributeToSentence;
 	private Instances dataset;
 
-	public SimpleHeuristicClassifier(String gameName, Set<GdlSentence> contents, List<Gdl> rules,
+	public SimpleHeuristicClassifier(IStateLabeler labeler, String gameName, Set<GdlSentence> contents, List<Gdl> rules,
 			Collection<LabeledState> labeledExamples, Classifier classifier) throws ClassifierBuildingException {
-		super(classifier);
+		super(labeler, classifier);
 		this.attributeToSentence = new HashMap<Attribute, GdlSentence>(
 				contents.size());
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>(

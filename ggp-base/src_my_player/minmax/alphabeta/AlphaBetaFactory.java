@@ -1,4 +1,4 @@
-package minmax.simpleMinMax;
+package minmax.alphabeta;
 
 import minmax.IMinMax;
 import minmax.IMinMaxFactory;
@@ -9,17 +9,17 @@ import org.ggp.base.util.statemachine.StateMachine;
 import classifier.IClassifier;
 
 
-public class SimpleMinMaxFactory implements IMinMaxFactory {
+public class AlphaBetaFactory implements IMinMaxFactory {
 
 	@Override
 	public IMinMax createMinMax(StateMachine machine, Role maxPlayer,
 			IClassifier classifier) {
-		return new SimpleMinMax(machine, maxPlayer, classifier);
+		return new AlphaBeta(machine, maxPlayer, classifier);
 	}
 
 	
 	@Override
 	public String toString() {
-		return SimpleMinMax.class.getSimpleName();
+		return AlphaBeta.class.getSimpleName();
 	}
 }

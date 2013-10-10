@@ -1,5 +1,7 @@
 package classifier.heuristic;
 
+import states.IStateLabeler;
+import states.LabeledState;
 import states.MyState;
 import utils.Verbose;
 import weka.classifiers.Classifier;
@@ -12,9 +14,11 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 	
 	private Classifier regressionClassifier;
 	private boolean isTrained;
+	private IStateLabeler labeler;
 	
-	public HeuristicClassifierInfrastructure(Classifier classifier) {
+	public HeuristicClassifierInfrastructure(IStateLabeler labeler, Classifier classifier) {
 		this.regressionClassifier = classifier;
+		this.labeler = labeler;
 		this.isTrained = false;
 	}
 	
@@ -33,6 +37,10 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 			throws ClassificationException {
 		assertTrained();
 		try {
+			LabeledState labeled = labeler.label(state); 
+			if (labeled != null){
+				return new DoubleValue(labeled.getValue());
+			}
 			return new DoubleValue(regressionClassifier.classifyInstance(stateToInstance(state)));
 		} catch (Exception e) {
 			Verbose.printVerboseError("Classification failed", Verbose.UNEXPECTED_VALUE);

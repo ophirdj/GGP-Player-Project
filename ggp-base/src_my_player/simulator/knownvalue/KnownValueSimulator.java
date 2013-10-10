@@ -1,4 +1,4 @@
-package simulator.knownValueSimulator;
+package simulator.knownvalue;
 
 import java.util.ArrayList;
 import java.util.Collection;
