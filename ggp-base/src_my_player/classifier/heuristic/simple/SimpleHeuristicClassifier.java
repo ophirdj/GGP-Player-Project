@@ -14,7 +14,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import states.IStateLabeler;
 import states.LabeledState;
 import states.MyState;
-import utils.BinariesValues;
+import utils.BinaryValues;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -22,7 +22,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.ProtectedProperties;
 import classifier.ClassifierBuildingException;
-import classifier.heuristic.HeuristicClassifierInfrastructure;
+import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 
 public class SimpleHeuristicClassifier extends
 		HeuristicClassifierInfrastructure {
@@ -39,7 +39,7 @@ public class SimpleHeuristicClassifier extends
 				contents.size() + 1);
 		for (GdlSentence sentence : contents) {
 			Attribute attribute = new Attribute(sentence.toString(),
-					BinariesValues.getValues());
+					BinaryValues.getValues());
 			attributeToSentence.put(attribute, sentence);
 			attributes.add(attribute);
 		}
@@ -72,9 +72,9 @@ public class SimpleHeuristicClassifier extends
 		for (Entry<Attribute, GdlSentence> entry : attributeToSentence
 				.entrySet()) {
 			if (sentences.contains(entry.getValue())) {
-				featureVector.setValue(entry.getKey(), BinariesValues.TRUE_VALUE);
+				featureVector.setValue(entry.getKey(), BinaryValues.TRUE_VALUE);
 			} else {
-				featureVector.setValue(entry.getKey(), BinariesValues.FALSE_VALUE);
+				featureVector.setValue(entry.getKey(), BinaryValues.FALSE_VALUE);
 			}
 		}
 		return featureVector;

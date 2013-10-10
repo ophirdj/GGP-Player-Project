@@ -5,7 +5,7 @@ import states.LabeledState;
 import states.MyState;
 import utils.Verbose;
 import classifier.IClassifier;
-import classifier.heuristic.HeuristicClassifierInfrastructure.DoubleValue;
+import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure.DoubleValue;
 
 public class NoHeuristicClassifier implements IClassifier {
 

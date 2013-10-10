@@ -1,7 +1,7 @@
 package classifier.comparer;
 
 import states.MyState;
-import utils.BinariesValues;
+import utils.BinaryValues;
 import utils.Verbose;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
@@ -47,7 +47,7 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 		try {
 			double classificationIndex = classificationClassifier.classifyInstance(example);
 			String label = example.dataset().classAttribute().value((int) classificationIndex);
-			return BinariesValues.getResult(label);
+			return BinaryValues.getResult(label);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ClassificationException();
@@ -82,6 +82,11 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 
 		public MyState getValue() {
 			return value;
+		}
+		
+		@Override
+		public String toString() {
+			return value.toString();
 		}
 	}
 

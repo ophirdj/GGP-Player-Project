@@ -92,7 +92,6 @@ public final class PlayerPanel extends JPanel
 			    gamers.remove(gamer);
 			}
 		}
-		typeComboBox.setSelectedItem("ConfigurablePlayer"); //FIXME: return to random (or maybe not?)
 
 		JPanel managerPanel = new JPanel(new GridBagLayout());
 		managerPanel.setBorder(new TitledBorder("Manager"));

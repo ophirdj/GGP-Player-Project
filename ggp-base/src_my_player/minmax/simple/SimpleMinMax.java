@@ -116,7 +116,7 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 			if(bestEntry == null){
 				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
 			}
-			else if(isBetterThen(nextEntry, bestEntry, state.getRole())) {
+			else if(isBetterThan(nextEntry, bestEntry, state.getRole())) {
 				bestEntry = new MinMaxEntry (nextEntry.getValue(), move.getKey());
 			}
 		}
@@ -127,7 +127,7 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 	 * Return true if (and only if) nextEntry is better then bestEntry.
 	 * Meaning, only return true if the player will want to switch to nextEntry.
 	 */
-	private boolean isBetterThen(MinMaxEntry nextEntry, MinMaxEntry bestEntry,
+	private boolean isBetterThan(MinMaxEntry nextEntry, MinMaxEntry bestEntry,
 			Role controlingPlayer) throws ClassificationException {
 		if(controlingPlayer.equals(maxPlayer)){
 			return classifier.isBetterValue(nextEntry.getValue(), bestEntry.getValue());

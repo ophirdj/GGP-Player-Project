@@ -60,12 +60,13 @@ public abstract class ConfigurablePlayer extends StateMachineGamer {
 		IStateLabeler labeler = new MinMaxValueStateLabeler(machine, getRole());
 		ISimulator simulator = configPanel.getSimulatorFactory()
 				.createSimulator(machine, labeler, getRole());
+		simulator.addObserver(detatilPanel);
 		MyState initalState = buildInitialState(machine);
 		int exampleAmount = configPanel.getExampleAmount();
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
 		}
-		Classifier wekaClassifier = new LinearRegression();
+		Classifier wekaClassifier = new LinearRegression(); //FIXME: need more general way to do it!
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel.getStateClassifierFactory();
 		try {
@@ -75,6 +76,7 @@ public abstract class ConfigurablePlayer extends StateMachineGamer {
 							simulator.getLabeledStates(), wekaClassifier);
 			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine, getRole(), classifier);
 			minmax.setDepth(configPanel.getMinMaxDepth());
+			minmax.addObserver(detatilPanel);
 		} catch (ClassifierBuildingException e) {
 			e.printStackTrace();
 		}
