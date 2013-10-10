@@ -12,7 +12,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 
 import logging.CSVGenerator;
-import minmax.MinMax;
+import minmax.IMinMax.MinMaxEvent;
 
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.player.gamer.event.GamerCompletedMatchEvent;
@@ -91,8 +91,8 @@ public class PlayerDetatilPanel extends DetailPanel {
 	public void observe(Event event) {
 		if (event instanceof GamerNewMatchEvent) {
 			observe((GamerNewMatchEvent) event);
-		} else if (event instanceof MinMax.MinMaxEvent) {
-			observe((MinMax.MinMaxEvent) event);
+		} else if (event instanceof MinMaxEvent) {
+			observe((MinMaxEvent) event);
 		} else if (event instanceof GamerCompletedMatchEvent) {
 			if(savePlayerData.isSelected()) {
 				saveMatchTable();
@@ -138,7 +138,7 @@ public class PlayerDetatilPanel extends DetailPanel {
 		logPath = log.getAbsolutePath();
 	}
 
-	private void observe(MinMax.MinMaxEvent event) {
+	private void observe(MinMaxEvent event) {
 		String move = event.getMove().toString();
 		Integer exploredNodes = event.getExploredNodes();
 		Integer expandedNodes = event.getExpandedNodes();
