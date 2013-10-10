@@ -64,14 +64,6 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 	
 	protected abstract Instance stateToInstance(MyState state);
 	
-	public static class ClassifierBuildingException extends Exception{
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -1288857757045972372L;
-	}
-	
 	public static class DoubleValue implements ClassifierValue{
 		private Double value;
 		

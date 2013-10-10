@@ -15,13 +15,13 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 import playerstatistics.PlayerDetatilPanel;
 
-public class ConfigurablePlayer extends StateMachineGamer {
+public class ConfigurablePlayerDec extends StateMachineGamer {
 
 	private ConfigurationPanel configPanel;
 	private ParaStateMachinePlayer copiedPlayer;
 	private DetailPanel detatilPanel;
 
-	public ConfigurablePlayer() {
+	public ConfigurablePlayerDec() {
 		this.configPanel = new ConfigurationPanel();
 		this.detatilPanel = new PlayerDetatilPanel(getName(), configPanel.savePlayerData);
 		this.copiedPlayer = null;

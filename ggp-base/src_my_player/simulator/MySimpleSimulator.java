@@ -62,7 +62,7 @@ public class MySimpleSimulator implements ISimulator{
 	public void Simulate(MyState rootState) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException {
 		List<MyState> simulation = new ArrayList<MyState>();
 		MyState state = rootState;
-		while(!labeled.containsKey(state) || machine.isTerminal(state.getState())) {
+		while(!labeled.containsKey(state) && !machine.isTerminal(state.getState())) {
 			simulation.add(state);
 			addContents(state);
 			MachineState nextState = machine.getRandomNextState(state.getState());

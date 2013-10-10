@@ -15,7 +15,7 @@ public enum PlayerType {
 
 				@Override
 				public ParaStateMachinePlayer createParaStateMachinePlayer(
-						ConfigurablePlayer caller) {
+						ConfigurablePlayerDec caller) {
 					return new ConfigurableHeuristicParaPlayer(caller);
 				}
 				
@@ -39,7 +39,7 @@ public enum PlayerType {
 
 				@Override
 				public ParaStateMachinePlayer createParaStateMachinePlayer(
-						ConfigurablePlayer caller) {
+						ConfigurablePlayerDec caller) {
 					//return new ConfigurableComparerParaPlayer(caller);
 					Verbose.printVerboseError("Not supported type", Verbose.UNIMPLEMENTED_OPTION);
 					return new ConfigurableHeuristicParaPlayer(caller);

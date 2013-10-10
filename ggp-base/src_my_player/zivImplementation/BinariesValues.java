@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BinariesValues {
-	private static final String TRUE_VALUE = "TRUE";
-	private static final String FALSE_VALUE = "FALSE";
+	public static final String TRUE_VALUE = "TRUE";
+	public static final String FALSE_VALUE = "FALSE";
 	private static final List<String> binaryValues = getBinaryValues();
 
 	private static List<String> getBinaryValues() {

@@ -2,13 +2,20 @@ package state;
 
 public class LabeledState {
 
+	private MyState state;
+	private double value;
+
 	public LabeledState(MyState state, double value) {
-		// TODO Auto-generated constructor stub
+		this.state = state;
+		this.value = value;
 	}
 
 	public double getValue() {
-		// TODO Auto-generated method stub
-		return 0;
+		return value;
 	}
 
+	public MyState getState() {
+		return state;
+	}
+	
 }
