@@ -28,19 +28,21 @@ import org.ggp.base.util.ui.timer.JTimerBar;
 public final class VisualizationPanel extends JPanel implements Observer
 {
 	private final Game theGame;
-	private final VisualizationPanel myThis;
 	private JTabbedPane tabs = new JTabbedPane();
 	private final JTimerBar timerBar;
 	private static final Object tabLock = new Object();
+	private boolean isClosed;
+	private int activeRenderers;
 
 	public VisualizationPanel(Game theGame)
 	{
 		super(new GridBagLayout());
 		this.theGame = theGame;
-		this.myThis = this;
 		this.timerBar = new JTimerBar();
 		this.add(tabs, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 5, 5));		
 		this.add(timerBar, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 5, 5));
+		isClosed = false;
+		activeRenderers = 0;
 	}
 
 	private int stepCount = 1;
@@ -48,7 +50,7 @@ public final class VisualizationPanel extends JPanel implements Observer
 	{
 	    if (event instanceof ServerNewGameStateEvent) {
 	        MachineState s = ((ServerNewGameStateEvent)event).getState();
-	        RenderThread rt = new RenderThread(s, stepCount++);
+	        RenderThread rt = new RenderThread(s, stepCount++, this);
 	        rt.start();
 		} else if (event instanceof ServerTimeEvent) {
 			timerBar.time(((ServerTimeEvent) event).getTime(), 500);
@@ -56,52 +58,78 @@ public final class VisualizationPanel extends JPanel implements Observer
 			timerBar.stop();
 		} else if (event instanceof ServerNewMatchEvent) {
 			MachineState s = ((ServerNewMatchEvent) event).getInitialState();
-			RenderThread rt = new RenderThread(s, stepCount);
+			RenderThread rt = new RenderThread(s, stepCount, this);
 			rt.start();
 		}
+	}
+	
+	public synchronized void close() {
+		while(activeRenderers > 0) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		this.isClosed = true;
 	}
 	
 	private class RenderThread extends Thread {  
 	    private final MachineState s;
 	    private final int stepNum;
+		private final VisualizationPanel callerThis;
 	    
-	    public RenderThread(MachineState s, int stepNum) {
+	    public RenderThread(MachineState s, int stepNum, VisualizationPanel callerThis) {
 	        this.s = s;
 	        this.stepNum = stepNum;
+	        this.callerThis = callerThis;
 	    }
 	    
 	    @Override
 	    public void run()
 	    {
-	        JPanel newPanel = null;
-	        try {
-                String XML = Match.renderStateXML(s.getContents());
-                String XSL = theGame.getStylesheet();
-                if (XSL != null) {
-                    newPanel = new VizContainerPanel(XML, XSL, myThis);
-                }
-	        } catch(Exception ex) {
-	            ex.printStackTrace();
-	        }
-	        
-	        if(newPanel != null) {
-	            // Add the rendered panel as a new tab
-	            synchronized(tabLock) {
-	                boolean atEnd = (tabs.getSelectedIndex() == tabs.getTabCount()-1);
-	                try {
-	                    for(int i = tabs.getTabCount(); i < stepNum; i++)
-	                        tabs.add(new Integer(i+1).toString(), new JPanel());
-	                    tabs.setComponentAt(stepNum-1, newPanel);
-	                    tabs.setTitleAt(stepNum-1, new Integer(stepNum).toString());
-
-	                    if(atEnd) {             
-	                        tabs.setSelectedIndex(tabs.getTabCount()-1);
-	                    }
-	                } catch(Exception ex) {
-	                    System.err.println("Adding rendered visualization panel failed for: " + theGame.getKey());
-	                }
-	            }
-	        }
+	    	boolean canRender = false;
+	    	synchronized (callerThis) {
+	    		canRender = !callerThis.isClosed;
+	    		if(canRender) {
+	    			++callerThis.activeRenderers;
+	    		}
+			}
+	    	if (canRender) {
+	    		JPanel newPanel = null;
+	    		try {
+	    			String XML = Match.renderStateXML(s.getContents());
+	    			String XSL = theGame.getStylesheet();
+	    			if (XSL != null) {
+	    				newPanel = new VizContainerPanel(XML, XSL, callerThis);
+	    			}
+	    		} catch(Exception ex) {
+	    			ex.printStackTrace();
+	    		}
+	    		
+	    		if(newPanel != null) {
+	    			// Add the rendered panel as a new tab
+	    			synchronized(tabLock) {
+	    				boolean atEnd = (tabs.getSelectedIndex() == tabs.getTabCount()-1);
+	    				try {
+	    					for(int i = tabs.getTabCount(); i < stepNum; i++)
+	    						tabs.add(new Integer(i+1).toString(), new JPanel());
+	    					tabs.setComponentAt(stepNum-1, newPanel);
+	    					tabs.setTitleAt(stepNum-1, new Integer(stepNum).toString());
+	    					
+	    					if(atEnd) {             
+	    						tabs.setSelectedIndex(tabs.getTabCount()-1);
+	    					}
+	    				} catch(Exception ex) {
+	    					System.err.println("Adding rendered visualization panel failed for: " + theGame.getKey());
+	    				}
+	    			}
+	    		}
+	    		synchronized (callerThis) {
+	    			--callerThis.activeRenderers;
+	    			callerThis.notify();
+	    		}
+	    	}
 	    }
 	}
 

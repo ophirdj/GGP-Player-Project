@@ -18,7 +18,7 @@ import javax.swing.JTabbedPane;
 public class CloseableTabs {
 	private final static int CLOSE_ICON_SIZE = 8;
 	
-	public static void addClosableTab(JTabbedPane tabPane, JComponent tabContent, String tabName, AbstractAction closeAction) {
+	public static JButton addClosableTab(JTabbedPane tabPane, JComponent tabContent, String tabName, AbstractAction closeAction) {
 		JPanel tabTopPanel = new JPanel(new GridBagLayout());
 		tabTopPanel.setOpaque(false);
 				
@@ -36,5 +36,7 @@ public class CloseableTabs {
 
 		tabPane.addTab(tabName, tabContent);
 		tabPane.setTabComponentAt(tabPane.getTabCount()-1, tabTopPanel);
+		
+		return btnClose;
 	}
 }

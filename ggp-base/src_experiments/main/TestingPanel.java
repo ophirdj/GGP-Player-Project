@@ -51,8 +51,10 @@ import org.ggp.base.util.ui.JLabelBold;
 import org.ggp.base.util.ui.NativeUI;
 import org.ggp.base.util.ui.PlayerSelector;
 
-@SuppressWarnings("serial")
 public final class TestingPanel extends JPanel implements ActionListener {
+
+	private static final long serialVersionUID = -3528004351716680625L;
+
 	static void createAndShowGUI(TestingPanel serverPanel, String title) {
 		JFrame frame = new JFrame(title);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -88,8 +90,7 @@ public final class TestingPanel extends JPanel implements ActionListener {
 	private final SchedulingPanel schedulingPanel;
 	private final StatisticsPanel statisticsPanel;
 
-	@SuppressWarnings("rawtypes")
-	private final List<JComboBox> playerFields;
+	private final List<JComboBox<String>> playerFields;
 	private final List<JLabel> roleLabels;
 	private final JButton runButton;
 
@@ -103,12 +104,10 @@ public final class TestingPanel extends JPanel implements ActionListener {
 
 	private final GameSelector gameSelector;
 	private final PlayerSelector playerSelector;
-	@SuppressWarnings("rawtypes")
-	private final JList playerSelectorList;
+	private final JList<String> playerSelectorList;
 
 	private final Object runLock;
 
-	@SuppressWarnings("rawtypes")
 	public TestingPanel() {
 		super(new GridBagLayout());
 
@@ -126,7 +125,7 @@ public final class TestingPanel extends JPanel implements ActionListener {
 		playersPanel = new JPanel(new GridBagLayout());
 
 		roleLabels = new ArrayList<JLabel>();
-		playerFields = new ArrayList<JComboBox>();
+		playerFields = new ArrayList<JComboBox<String>>();
 		theGame = null;
 
 		switchRoles = new JCheckBox("Switch roles between games?", false);
@@ -238,6 +237,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 	}
 
 	class OverviewPanel extends JPanel {
+
+		private static final long serialVersionUID = -9044010610644724689L;
+
 		public OverviewPanel() {
 			super(new GridBagLayout());
 			add(schedulingPanel, new GridBagConstraints(0, 0, 1, 1, 2.0, 1.0,
@@ -300,14 +302,16 @@ public final class TestingPanel extends JPanel implements ActionListener {
 
 	private AbstractAction runButtonMethod() {
 		return new AbstractAction("Start Experiment!") {
-			@SuppressWarnings("rawtypes")
+
+			private static final long serialVersionUID = -5534006812153723920L;
+
 			public void actionPerformed(ActionEvent evt) {
 				final int startClock = (Integer) startClockSpinner.getValue();
 				final int playClock = (Integer) playClockSpinner.getValue();
 				final int numberOfGames = (Integer) numberOfGamesSpinner
 						.getValue();
 				final List<PlayerPresence> thePlayers = new ArrayList<PlayerPresence>();
-				for (JComboBox playerField : playerFields) {
+				for (JComboBox<String> playerField : playerFields) {
 					String name = playerField.getSelectedItem().toString();
 					thePlayers.add(playerSelector.getPlayerPresence(name));
 				}
@@ -372,6 +376,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 
 	private AbstractAction testPlayerButtonMethod() {
 		return new AbstractAction("Test") {
+
+			private static final long serialVersionUID = -2800795236609002800L;
+
 			public void actionPerformed(ActionEvent evt) {
 				if (playerSelectorList.getSelectedValue() != null) {
 					final Game testGame = GameRepository.getDefaultRepository()
@@ -396,6 +403,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 
 	private AbstractAction addPlayerButtonMethod() {
 		return new AbstractAction("Add") {
+
+			private static final long serialVersionUID = 1976050741288904029L;
+
 			public void actionPerformed(ActionEvent evt) {
 				String hostport = JOptionPane
 						.showInputDialog(
@@ -416,6 +426,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 
 	private AbstractAction removePlayerButtonMethod() {
 		return new AbstractAction("Remove") {
+
+			private static final long serialVersionUID = 7501607136763989699L;
+
 			public void actionPerformed(ActionEvent evt) {
 				if (playerSelectorList.getSelectedValue() != null) {
 					playerSelector.removePlayer(playerSelectorList
@@ -454,20 +467,17 @@ public final class TestingPanel extends JPanel implements ActionListener {
 			tab.addTab("Error", errorPanel);
 			tab.addTab("Visualization", visualizationPanel);
 			tab.addTab("States", statesPanel);
-			matchesTabbedPane.addTab(matchId, tab);
+			JButton closeButton = CloseableTabs.addClosableTab(matchesTabbedPane, tab, matchId,
+					addTabCloseButton(tab, visualizationPanel));
 
 			match.setCryptographicKeys(signingKeys);
 			match.setPlayerNamesFromHost(playerNames);
 
 			GameServer gameServer = new GameServer(match, hosts, ports);
-			// FIXME: somehow adding the panels as observers to game server
-			// causes a memory leak (they are not freed). Please investigate &
-			// fix this because I would very much like to actually see the
-			// players playing
-			// gameServer.addObserver(errorPanel);
-			// gameServer.addObserver(historyPanel);
-			// gameServer.addObserver(visualizationPanel);
-			// gameServer.addObserver(statesPanel);
+			gameServer.addObserver(errorPanel);
+			gameServer.addObserver(historyPanel);
+			gameServer.addObserver(visualizationPanel);
+			gameServer.addObserver(statesPanel);
 			gameServer.addObserver(schedulingPanel);
 			gameServer.addObserver(statisticsPanel);
 			gameServer.start();
@@ -491,10 +501,27 @@ public final class TestingPanel extends JPanel implements ActionListener {
 			}
 
 			gameServer.join();
-			matchesTabbedPane.remove(tab);
-
+			closeButton.doClick();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private AbstractAction addTabCloseButton(final Component tabToClose,
+			final VisualizationPanel visualizationPanel) {
+		return new AbstractAction("x") {
+
+			private static final long serialVersionUID = 846256002308622567L;
+
+			public void actionPerformed(ActionEvent evt) {
+				for (int i = 0; i < matchesTabbedPane.getTabCount(); i++) {
+					if (tabToClose == matchesTabbedPane.getComponentAt(i)) {
+						matchesTabbedPane.remove(tabToClose);
+						visualizationPanel.close(); // need to do this to
+													// prevent memory leak
+					}
+				}
+			}
+		};
 	}
 }

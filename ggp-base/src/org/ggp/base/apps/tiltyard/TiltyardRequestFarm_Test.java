@@ -9,7 +9,6 @@ import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
 
 import junit.framework.TestCase;
-
 import external.JSON.JSONObject;
 
 public class TiltyardRequestFarm_Test extends TestCase {
@@ -107,7 +106,8 @@ public class TiltyardRequestFarm_Test extends TestCase {
         @Override
         public void run() {
             try {
-            	ServerSocket listener = new ServerSocket(12345);
+            	@SuppressWarnings("resource")
+				ServerSocket listener = new ServerSocket(12345);
                 while (true) {
                     try {
                         Socket connection = listener.accept();
@@ -131,7 +131,8 @@ public class TiltyardRequestFarm_Test extends TestCase {
         @Override
         public void run() {
             try {
-            	ServerSocket listener = new ServerSocket(12346);
+            	@SuppressWarnings("resource")
+				ServerSocket listener = new ServerSocket(12346);
                 while (true) {
                     try {
                         Socket connection = listener.accept();

@@ -10,6 +10,7 @@ public class BaseHashing {
     // Computes the SHA1 hash of a given input string, and represents
     // that hash as a hexadecimal string.
     public static String computeSHA1Hash(String theData) {
+    	Formatter hexFormat = null;
         try {
             MessageDigest SHA1 = MessageDigest.getInstance("SHA1");
             DigestInputStream theDigestStream = new DigestInputStream(
@@ -18,7 +19,7 @@ public class BaseHashing {
             while (theDigestStream.read() != -1);
             byte[] theHash = SHA1.digest();
 
-            Formatter hexFormat = new Formatter();
+            hexFormat = new Formatter();
             for (byte x : theHash) {
                 hexFormat.format("%02x", x);
             }
@@ -26,6 +27,10 @@ public class BaseHashing {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+        	if (hexFormat != null) {
+        		hexFormat.close();
+        	}
         }
     }
 }
