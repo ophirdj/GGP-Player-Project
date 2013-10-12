@@ -1,10 +1,14 @@
-package minmax.alphabeta;
+package minmax.simple.cached;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import minmax.MinMaxInfrastructure;
+import minmax.MinMaxCache;
+import minmax.MinMaxCache.CacheEntry;
+import minmax.simple.SimpleMinMax;
 
+import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -18,22 +22,19 @@ import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
-/**
- * A simple implementation of the min-max algorithm. No cache or alpha-beta.
- * 
- * @author ronen
- * 
- */
-public class AlphaBeta extends MinMaxInfrastructure {
+public class CachedSimpleMinMax extends SimpleMinMax {
 
-	public AlphaBeta(StateMachine machine, Role maxPlayer,
+	private MinMaxCache<MinMaxEntry> cache;
+
+	public CachedSimpleMinMax(StateMachine machine, Role maxPlayer,
 			IClassifier classifier) {
 		super(machine, maxPlayer, classifier);
+		this.cache = new MinMaxCache<MinMaxEntry>();
 	}
 
 	@Override
 	public void clear() {
-		// do nothing
+		cache.clear();
 	}
 
 	@Override
@@ -47,9 +48,10 @@ public class AlphaBeta extends MinMaxInfrastructure {
 		long startTime = System.currentTimeMillis();
 		Move move;
 		try {
-			move = alphabeta(state, getDepth(), null, null).getMove();
+			cache.prune();
+			move = minmax(state, getDepth()).getMove();
 			long endTime = System.currentTimeMillis();
-			reporter.reportAndReset(move, 0, getDepth(), endTime - startTime);
+			reporter.reportAndReset(move, cache.size(), getDepth(), endTime - startTime);
 			return move;
 		} catch (ClassificationException e) {
 			e.printStackTrace();
@@ -59,11 +61,15 @@ public class AlphaBeta extends MinMaxInfrastructure {
 		}
 	}
 
-	protected MinMaxEntry alphabeta(MyState state, int depth,
-			ClassifierValue alpha, ClassifierValue beta)
+	@Override
+	protected MinMaxEntry minmax(MyState state, int depth)
 			throws ClassificationException, MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
 			MinMaxException {
+		if (cache.contains(state, depth)) {
+			reporter.cacheHit();
+			return cache.get(state);
+		}
 		reporter.exploreNode();
 		MinMaxEntry minmaxEntry = null;
 		if (isTerminal(state)) {
@@ -72,15 +78,18 @@ public class AlphaBeta extends MinMaxInfrastructure {
 			Verbose.printVerbose("Final State with goal value " + goalValue,
 					Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = new MinMaxEntry(goalValue, null);
+			CacheEntry<MinMaxEntry> e = new CacheEntry<MinMaxEntry>(
+					minmaxEntry, CacheEntry.TERMINAL_STATE_DEPTH);
+			cache.put(state, e);
 		} else if (depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = new MinMaxEntry(getValue(state), null);
 		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = executeMove(state, depth, alpha, beta);
+			minmaxEntry = executeMove(state, depth);
 		} else if (minPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MIN PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = executeMove(state, depth, alpha, beta);
+			minmaxEntry = executeMove(state, depth);
 		} else {
 			throw new MinMaxException(
 					"minmax error: no match for controlingPlayer");
@@ -88,37 +97,27 @@ public class AlphaBeta extends MinMaxInfrastructure {
 		return minmaxEntry;
 	}
 
-	protected MinMaxEntry executeMove(MyState state, int depth,
-			ClassifierValue alpha, ClassifierValue beta)
+	@Override
+	protected MinMaxEntry executeMove(MyState state, int depth)
 			throws MoveDefinitionException, TransitionDefinitionException,
 			GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry bestEntry = null;
-		List<Entry<Move, MyState>> children = expand(state);
+		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
+				state.getState(), state.getRole()).entrySet();
 		reporter.expandNode(children.size());
-		int nodesVisited = 0;
-		for (Entry<Move, MyState> move : children) {
-			++nodesVisited;
-			MyState nextState = move.getValue();
-			MinMaxEntry nextEntry = alphabeta(nextState, depth - 1, alpha, beta);
-
+		for (Entry<Move, List<MachineState>> move : children) {
+			assert (move.getValue().size() == 1);
+			MachineState nextMachineState = move.getValue().get(0);
+			MyState nextState = MyState.createChild(state, nextMachineState);
+			MinMaxEntry nextEntry = minmax(nextState, depth - 1);
 			if (bestEntry == null) {
 				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
 			} else if (isBetterThan(nextEntry, bestEntry, state.getRole())) {
 				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
 			}
-
-			if (state.getRole().equals(maxPlayer)) {
-				alpha = bestEntry.getValue();
-			} else {
-				beta = bestEntry.getValue();
-			}
-
-			if (alpha != null && beta != null
-					&& !isBetterThan(beta, alpha, maxPlayer)) {
-				reporter.prune(children.size() - nodesVisited);
-				break;
-			}
 		}
+		cache.put(state, new CacheEntry<MinMaxEntry>(bestEntry, depth));
 		return bestEntry;
 	}
+
 }

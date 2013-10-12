@@ -1,9 +1,11 @@
-package minmax.alphabeta;
+package minmax.alphabeta.cached;
 
 import java.util.List;
 import java.util.Map.Entry;
 
-import minmax.MinMaxInfrastructure;
+import minmax.MinMaxCache;
+import minmax.MinMaxCache.CacheEntry;
+import minmax.alphabeta.AlphaBeta;
 
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -18,22 +20,19 @@ import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
-/**
- * A simple implementation of the min-max algorithm. No cache or alpha-beta.
- * 
- * @author ronen
- * 
- */
-public class AlphaBeta extends MinMaxInfrastructure {
+public class CachedAlphaBeta extends AlphaBeta {
 
-	public AlphaBeta(StateMachine machine, Role maxPlayer,
+	private MinMaxCache<MinMaxEntry> cache;
+
+	public CachedAlphaBeta(StateMachine machine, Role maxPlayer,
 			IClassifier classifier) {
 		super(machine, maxPlayer, classifier);
+		this.cache = new MinMaxCache<MinMaxEntry>();
 	}
 
 	@Override
 	public void clear() {
-		// do nothing
+		cache.clear();
 	}
 
 	@Override
@@ -43,27 +42,37 @@ public class AlphaBeta extends MinMaxInfrastructure {
 		if (state == null) {
 			throw new MinMaxException();
 		}
-		Verbose.printVerbose("START MINMAX", Verbose.MIN_MAX_VERBOSE);
+		Verbose.printVerbose("CachedAlphaBeta: getMove start",
+				Verbose.MIN_MAX_VERBOSE);
 		long startTime = System.currentTimeMillis();
 		Move move;
 		try {
+			cache.prune();
 			move = alphabeta(state, getDepth(), null, null).getMove();
 			long endTime = System.currentTimeMillis();
-			reporter.reportAndReset(move, 0, getDepth(), endTime - startTime);
+			reporter.reportAndReset(move, cache.size(), getDepth(), endTime - startTime);
+			Verbose.printVerbose("CachedAlphaBeta: getMove end",
+					Verbose.MIN_MAX_VERBOSE);
 			return move;
 		} catch (ClassificationException e) {
-			e.printStackTrace();
-			Verbose.printVerboseError("Classification fail",
+			Verbose.printVerboseError(
+					"CachedAlphaBeta: getMove exiting due to classification error",
 					Verbose.MIN_MAX_VERBOSE);
+			e.printStackTrace();
 			throw new MinMaxException();
 		}
 	}
 
+	@Override
 	protected MinMaxEntry alphabeta(MyState state, int depth,
 			ClassifierValue alpha, ClassifierValue beta)
 			throws ClassificationException, MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
 			MinMaxException {
+		if (cache.contains(state, depth)) {
+			reporter.cacheHit();
+			return cache.get(state);
+		}
 		reporter.exploreNode();
 		MinMaxEntry minmaxEntry = null;
 		if (isTerminal(state)) {
@@ -72,6 +81,9 @@ public class AlphaBeta extends MinMaxInfrastructure {
 			Verbose.printVerbose("Final State with goal value " + goalValue,
 					Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = new MinMaxEntry(goalValue, null);
+			CacheEntry<MinMaxEntry> e = new CacheEntry<MinMaxEntry>(
+					minmaxEntry, CacheEntry.TERMINAL_STATE_DEPTH);
+			cache.put(state, e);
 		} else if (depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = new MinMaxEntry(getValue(state), null);
@@ -88,6 +100,7 @@ public class AlphaBeta extends MinMaxInfrastructure {
 		return minmaxEntry;
 	}
 
+	@Override
 	protected MinMaxEntry executeMove(MyState state, int depth,
 			ClassifierValue alpha, ClassifierValue beta)
 			throws MoveDefinitionException, TransitionDefinitionException,
@@ -101,9 +114,8 @@ public class AlphaBeta extends MinMaxInfrastructure {
 			MyState nextState = move.getValue();
 			MinMaxEntry nextEntry = alphabeta(nextState, depth - 1, alpha, beta);
 
-			if (bestEntry == null) {
-				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
-			} else if (isBetterThan(nextEntry, bestEntry, state.getRole())) {
+			if (bestEntry == null
+					|| isBetterThan(nextEntry, bestEntry, state.getRole())) {
 				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
 			}
 
@@ -119,6 +131,7 @@ public class AlphaBeta extends MinMaxInfrastructure {
 				break;
 			}
 		}
+		cache.put(state, new CacheEntry<MinMaxEntry>(bestEntry, depth));
 		return bestEntry;
 	}
 }

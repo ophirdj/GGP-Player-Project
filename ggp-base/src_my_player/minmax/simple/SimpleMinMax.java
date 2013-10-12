@@ -31,30 +31,14 @@ import utils.Verbose;
  *
  */
 public class SimpleMinMax extends MinMaxInfrastructure {
-	
-	private StateMachine machine;
-	private Role maxPlayer;
-	private IClassifier classifier;
-	private Role minPlayer;
-	private List<Role> roles;
 
 	public SimpleMinMax(StateMachine machine, Role maxPlayer, IClassifier classifier) {
-		this.roles = machine.getRoles();
-		assert (roles.size() == 2);
-		this.machine = machine;
-		this.maxPlayer = maxPlayer;
-		this.minPlayer = nextRole(maxPlayer);
-		this.classifier = classifier;
+		super(machine, maxPlayer, classifier);
 	}
 
-	/**
-	 * Return the role of the other player.
-	 * @param role The current role.
-	 * @return The next (other) role.
-	 */
-	private Role nextRole(Role role) {
-		return roles.get(0).equals(role) ? roles.get(1) : roles
-				.get(0);
+	@Override
+	public void clear() {
+		// do nothing
 	}
 	
 	@Override
@@ -67,7 +51,7 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 		long startTime = System.currentTimeMillis();
 		Move move;
 		try {
-			move = valueOf(state, getDepth()).getMove();
+			move = minmax(state, getDepth()).getMove();
 			long endTime = System.currentTimeMillis();
 			reporter.reportAndReset(move, 0, getDepth(), endTime - startTime);
 			return move;
@@ -78,17 +62,17 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 		}
 	}
 	
-	private MinMaxEntry valueOf(MyState state, int depth) throws ClassificationException, MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, MinMaxException{
+	protected MinMaxEntry minmax(MyState state, int depth) throws ClassificationException, MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, MinMaxException{
 		reporter.exploreNode();
 		MinMaxEntry minmaxEntry = null;
-		if (machine.isTerminal(state.getState())) {
+		if (isTerminal(state)) {
 			reporter.visitTerminal();
-			ClassifierValue goalValue = classifier.getValue(state);
+			ClassifierValue goalValue = getValue(state);
 			Verbose.printVerbose("Final State with goal value " + goalValue, Verbose.MIN_MAX_VERBOSE);
-			return new MinMaxEntry(goalValue, null);
+			minmaxEntry = new MinMaxEntry(goalValue, null);
 		} else if(depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
-			return new MinMaxEntry(classifier.getValue(state), null);
+			minmaxEntry = new MinMaxEntry(getValue(state), null);
 		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = executeMove(state, depth);
@@ -102,7 +86,7 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 		return minmaxEntry;
 	}
 
-	private MinMaxEntry executeMove(MyState state, int depth) throws MoveDefinitionException,
+	protected MinMaxEntry executeMove(MyState state, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry bestEntry = null;
 		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
@@ -112,7 +96,7 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 			assert (move.getValue().size() == 1);
 			MachineState nextMachineState = move.getValue().get(0);
 			MyState nextState = MyState.createChild(state, nextMachineState);
-			MinMaxEntry nextEntry = valueOf(nextState, depth - 1);
+			MinMaxEntry nextEntry = minmax(nextState, depth - 1);
 			if(bestEntry == null){
 				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
 			}
@@ -121,47 +105,6 @@ public class SimpleMinMax extends MinMaxInfrastructure {
 			}
 		}
 		return bestEntry;
-	}
-	
-	/*
-	 * Return true if (and only if) nextEntry is better then bestEntry.
-	 * Meaning, only return true if the player will want to switch to nextEntry.
-	 */
-	private boolean isBetterThan(MinMaxEntry nextEntry, MinMaxEntry bestEntry,
-			Role controlingPlayer) throws ClassificationException {
-		if(controlingPlayer.equals(maxPlayer)){
-			return classifier.isBetterValue(nextEntry.getValue(), bestEntry.getValue());
-		}
-		//Controling player is min player.
-		else{
-			return classifier.isBetterValue(bestEntry.getValue(), nextEntry.getValue());
-		}
-	}
-
-
-	public static class MinMaxEntry{
-		private final ClassifierValue value;
-		private final Move bestMove;
-
-		public MinMaxEntry(ClassifierValue value, Move bestMove) {
-			Verbose.printVerbose("State value is " + value, Verbose.MIN_MAX_VERBOSE);
-			this.value = value;
-			this.bestMove = bestMove;
-		}
-
-		public ClassifierValue getValue() {
-			return value;
-		}
-
-		public Move getMove() {
-			return bestMove;
-		}
-		
-	}
-
-	@Override
-	public void clear() {
-		
 	}
 
 }
