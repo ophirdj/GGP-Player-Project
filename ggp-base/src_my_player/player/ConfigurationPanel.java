@@ -1,6 +1,5 @@
 package player;
 
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -15,20 +14,17 @@ import javax.swing.JSpinner;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.SpinnerNumberModel;
 
+import labeler.IStateLabelerFactory;
 import minmax.IMinMaxFactory;
 
 import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
-import classifier.IClassifierFactory;
-
 import simulator.ISimulatorFactory;
+import classifier.IClassifierFactory;
 
 public class ConfigurationPanel extends ConfigPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2406490153748470242L;
 
 	private final JSpinner exampleAmountSpinner;
@@ -43,6 +39,7 @@ public class ConfigurationPanel extends ConfigPanel {
 	// private JButton printButton;
 
 	private JComboBox<IMinMaxFactory> minMaxList;
+	private JComboBox<IStateLabelerFactory> labelerList;
 	private JComboBox<ISimulatorFactory> simulatorList;
 	private JComboBox<IClassifierFactory> classifierList;
 	public final JCheckBox savePlayerData;
@@ -57,14 +54,14 @@ public class ConfigurationPanel extends ConfigPanel {
 		int panelNumber = 0;
 
 		int spinnerRowCount = 0;
-		spinnersPanel.add(new JLabel("Examples amount:"),
+		spinnersPanel.add(new JLabel("Number of simulations:"),
 				new GridBagConstraints(0, spinnerRowCount, 1, 1, 0.0, 0.0,
 						GridBagConstraints.EAST, GridBagConstraints.NONE,
 						new Insets(5, 5, 1, 5), 5, 5));
 		spinnersPanel.add(exampleAmountSpinner, new GridBagConstraints(1,
 				spinnerRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		spinnersPanel.add(new JLabel("MinMax Depth:"), new GridBagConstraints(
+		spinnersPanel.add(new JLabel("Min-Max depth:"), new GridBagConstraints(
 				0, spinnerRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
 		spinnersPanel.add(minMaxDepthSpinner, new GridBagConstraints(1,
@@ -78,43 +75,59 @@ public class ConfigurationPanel extends ConfigPanel {
 		int checkRowCount = 0;
 		this.checkPanel = new JPanel(new GridBagLayout());
 
-		
-		
+		List<Class<?>> labelersFactories = ProjectSearcher
+				.getAllClassesThatAre(IStateLabelerFactory.class);
+		this.labelerList = new JComboBox<IStateLabelerFactory>();
+		ListIterator<Class<?>> iterator = labelersFactories.listIterator();
+		while (iterator.hasNext()) {
+			try {
+				IStateLabelerFactory factory = (IStateLabelerFactory) iterator
+						.next().newInstance();
+				this.labelerList.addItem(factory);
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+				iterator.remove();
+			}
+		}
+
 		List<Class<?>> simulatorsFactories = ProjectSearcher
 				.getAllClassesThatAre(ISimulatorFactory.class);
 		this.simulatorList = new JComboBox<ISimulatorFactory>();
-		ListIterator<Class<?>> iterator = simulatorsFactories.listIterator();
+		iterator = simulatorsFactories.listIterator();
 		while (iterator.hasNext()) {
 			try {
-				ISimulatorFactory factory = (ISimulatorFactory) iterator.next().newInstance();
+				ISimulatorFactory factory = (ISimulatorFactory) iterator.next()
+						.newInstance();
 				this.simulatorList.addItem(factory);
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 				iterator.remove();
 			}
 		}
-		
+
 		List<Class<?>> minmaxFactories = ProjectSearcher
 				.getAllClassesThatAre(IMinMaxFactory.class);
 		this.minMaxList = new JComboBox<IMinMaxFactory>();
 		iterator = minmaxFactories.listIterator();
 		while (iterator.hasNext()) {
 			try {
-				IMinMaxFactory factory = (IMinMaxFactory) iterator.next().newInstance();
+				IMinMaxFactory factory = (IMinMaxFactory) iterator.next()
+						.newInstance();
 				this.minMaxList.addItem(factory);
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 				iterator.remove();
 			}
 		}
-		
+
 		List<Class<?>> classifierFactories = ProjectSearcher
 				.getAllClassesThatAre(IClassifierFactory.class);
 		this.classifierList = new JComboBox<IClassifierFactory>();
 		iterator = classifierFactories.listIterator();
 		while (iterator.hasNext()) {
 			try {
-				IClassifierFactory factory = (IClassifierFactory) iterator.next().newInstance();
+				IClassifierFactory factory = (IClassifierFactory) iterator
+						.next().newInstance();
 				this.classifierList.addItem(factory);
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
@@ -122,22 +135,28 @@ public class ConfigurationPanel extends ConfigPanel {
 			}
 		}
 
-		checkPanel.add(new JLabel("min max kind:"), new GridBagConstraints(0,
+		checkPanel.add(new JLabel("Labeler type:"), new GridBagConstraints(0,
 				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(minMaxList, new GridBagConstraints(1,
-				checkRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+		checkPanel.add(labelerList, new GridBagConstraints(1, checkRowCount++,
+				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(new JLabel("simulator kind:"), new GridBagConstraints(0,
+		checkPanel.add(new JLabel("Simulator type:"), new GridBagConstraints(0,
 				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
 		checkPanel.add(simulatorList, new GridBagConstraints(1,
 				checkRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(new JLabel("builder kind:"), new GridBagConstraints(0,
+		checkPanel.add(new JLabel("Builder type:"), new GridBagConstraints(0,
 				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(classifierList, new GridBagConstraints(1, checkRowCount++,
+		checkPanel.add(classifierList, new GridBagConstraints(1,
+				checkRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
+		checkPanel.add(new JLabel("Min-Max type:"), new GridBagConstraints(0,
+				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
+		checkPanel.add(minMaxList, new GridBagConstraints(1, checkRowCount++,
 				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
 		checkPanelConstraints = new GridBagConstraints(panelNumber++, 0, 1, 1,
@@ -148,34 +167,40 @@ public class ConfigurationPanel extends ConfigPanel {
 		savePlayerData = new JCheckBox("Save data?", false);
 		add(savePlayerData);
 	}
-	
-	public void setEditble(boolean isEditable){
-		((DefaultEditor)exampleAmountSpinner.getEditor()).getTextField().setEditable(isEditable);
-		((DefaultEditor)minMaxDepthSpinner.getEditor()).getTextField().setEditable(isEditable);
+
+	public void setEditble(boolean isEditable) {
+		((DefaultEditor) exampleAmountSpinner.getEditor()).getTextField()
+				.setEditable(isEditable);
+		((DefaultEditor) minMaxDepthSpinner.getEditor()).getTextField()
+				.setEditable(isEditable);
 		simulatorList.setEditable(isEditable);
+		labelerList.setEditable(isEditable);
 		minMaxList.setEditable(isEditable);
 		classifierList.setEditable(isEditable);
 		savePlayerData.setEnabled(isEditable);
 	}
-	
-	
-	public int getMinMaxDepth(){
-		return (int)minMaxDepthSpinner.getValue();
+
+	public int getMinMaxDepth() {
+		return (int) minMaxDepthSpinner.getValue();
 	}
-	
-	public int getExampleAmount(){
-		return (int)exampleAmountSpinner.getValue();
+
+	public int getExampleAmount() {
+		return (int) exampleAmountSpinner.getValue();
 	}
 
 	public ISimulatorFactory getSimulatorFactory() {
-		return (ISimulatorFactory)simulatorList.getSelectedItem();
+		return (ISimulatorFactory) simulatorList.getSelectedItem();
+	}
+
+	public IStateLabelerFactory getLabelerFactory() {
+		return (IStateLabelerFactory) labelerList.getSelectedItem();
 	}
 
 	public IMinMaxFactory getMinmaxFactory() {
-		return (IMinMaxFactory)minMaxList.getSelectedItem();
+		return (IMinMaxFactory) minMaxList.getSelectedItem();
 	}
 
 	public IClassifierFactory getStateClassifierFactory() {
-		return (IClassifierFactory)classifierList.getSelectedItem();
+		return (IClassifierFactory) classifierList.getSelectedItem();
 	}
 }

@@ -1,6 +1,6 @@
 package classifier.heuristic.blind;
 
-import states.IStateLabeler;
+import labeler.IStateLabeler;
 import states.LabeledState;
 import states.MyState;
 import utils.Verbose;

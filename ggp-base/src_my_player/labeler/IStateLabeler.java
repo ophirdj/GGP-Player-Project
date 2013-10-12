@@ -1,6 +1,9 @@
-package states;
+package labeler;
 
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+
+import states.LabeledState;
+import states.MyState;
 
 
 /**
@@ -32,5 +35,17 @@ public interface IStateLabeler {
 	 * @return Corresponding labeled state.
 	 */
 	LabeledState createLabel(MyState state, double value);
+
+	/**
+	 * 
+	 * @return The minimal value a state can get.
+	 */
+	double getMinValue();
+	
+	/**
+	 * 
+	 * @return The maximal value a state can get.
+	 */
+	double getMaxValue();
 
 }

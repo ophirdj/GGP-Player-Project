@@ -8,10 +8,11 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import labeler.IStateLabeler;
+
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
-import states.IStateLabeler;
 import states.LabeledState;
 import states.MyState;
 import utils.BinaryValues;
@@ -44,7 +45,7 @@ public class SimpleHeuristicClassifier extends
 			attributes.add(attribute);
 		}
 		Properties props = new Properties();
-		props.setProperty("range", "(-100, 100)");
+		props.setProperty("range", "(" + labeler.getMinValue() + ", " +  labeler.getMaxValue() + ")");
 		Attribute classAttribute = new Attribute("state value", new ProtectedProperties(props));
 		attributes.add(classAttribute);
 		this.dataset = new Instances(gameName, attributes, 0);

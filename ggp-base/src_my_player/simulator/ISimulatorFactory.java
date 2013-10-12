@@ -1,10 +1,10 @@
 package simulator;
 
 
+import labeler.IStateLabeler;
+
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-
-import states.IStateLabeler;
 
 public interface ISimulatorFactory {
 	

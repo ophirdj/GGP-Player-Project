@@ -1,11 +1,18 @@
-package states;
+package labeler.minmax;
 
 import java.util.List;
 
 
+
+
+import labeler.IStateLabeler;
+
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+
+import states.LabeledState;
+import states.MyState;
 
 
 public class MinMaxValueStateLabeler implements IStateLabeler {
@@ -35,6 +42,16 @@ public class MinMaxValueStateLabeler implements IStateLabeler {
 	@Override
 	public LabeledState createLabel(MyState state, double value) {
 		return new LabeledState(state, value);
+	}
+
+	@Override
+	public double getMinValue() {
+		return -100;
+	}
+
+	@Override
+	public double getMaxValue() {
+		return 100;
 	}
 
 }

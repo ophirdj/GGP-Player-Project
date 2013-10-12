@@ -1,8 +1,8 @@
 package player;
 
-
 import java.util.List;
 
+import labeler.IStateLabeler;
 import minmax.IMinMax;
 import minmax.IMinMax.MinMaxException;
 
@@ -21,22 +21,19 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
+import playerstatistics.PlayerDetatilPanel;
+import simulator.ISimulator;
+import states.MyState;
+import weka.classifiers.Classifier;
+import weka.classifiers.functions.LinearRegression;
 import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
 import classifier.IClassifierFactory;
 
-import playerstatistics.PlayerDetatilPanel;
-import simulator.ISimulator;
-import states.IStateLabeler;
-import states.MinMaxValueStateLabeler;
-import states.MyState;
-import weka.classifiers.Classifier;
-import weka.classifiers.functions.LinearRegression;
-
 public class ConfigurablePlayer extends StateMachineGamer {
-	
+
 	private static int numInstances = -1;
-	
+
 	private final int myNumber;
 	private ConfigurationPanel configPanel;
 	private PlayerDetatilPanel detatilPanel;
@@ -61,7 +58,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			GoalDefinitionException {
 		configPanel.setEditble(false);
 		StateMachine machine = getStateMachine();
-		IStateLabeler labeler = new MinMaxValueStateLabeler(machine, getRole());
+		IStateLabeler labeler = configPanel.getLabelerFactory()
+				.createStateLabeler(getStateMachine(), getRole());
 		ISimulator simulator = configPanel.getSimulatorFactory()
 				.createSimulator(machine, labeler, getRole());
 		simulator.addObserver(detatilPanel);
@@ -70,15 +68,19 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
 		}
-		Classifier wekaClassifier = new LinearRegression(); //FIXME: need more general way to do it!
+		Classifier wekaClassifier = new LinearRegression(); // FIXME: need more
+															// general way to do
+															// it!
 		Game game = getMatch().getGame();
-		IClassifierFactory classifierFactory = configPanel.getStateClassifierFactory();
+		IClassifierFactory classifierFactory = configPanel
+				.getStateClassifierFactory();
 		try {
-			IClassifier classifier = classifierFactory.createClassifier(labeler, game.getName(),
-							simulator.getAllContents(),
-							game.getRules(),
-							simulator.getLabeledStates(), wekaClassifier);
-			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine, getRole(), classifier);
+			IClassifier classifier = classifierFactory.createClassifier(
+					labeler, game.getName(), simulator.getAllContents(),
+					game.getRules(), simulator.getLabeledStates(),
+					wekaClassifier);
+			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine,
+					getRole(), classifier);
 			minmax.setDepth(configPanel.getMinMaxDepth());
 			minmax.addObserver(detatilPanel);
 		} catch (ClassifierBuildingException e) {
@@ -130,8 +132,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		StateMachine machine = getStateMachine();
 		Role myRole = getRole();
 		List<Role> roles = machine.getRoles();
-		return roles.get(0).equals(myRole) ? roles.get(1) : roles
-				.get(0);
+		return roles.get(0).equals(myRole) ? roles.get(1) : roles.get(0);
 	}
 
 	@Override
@@ -152,7 +153,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 	@Override
 	public String getName() {
-		if(myNumber <= 0) {
+		if (myNumber <= 0) {
 			return getClass().getSimpleName();
 		} else {
 			return getClass().getSimpleName() + myNumber;
