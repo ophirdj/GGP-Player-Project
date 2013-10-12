@@ -33,14 +33,18 @@ import states.MyState;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.LinearRegression;
 
-public abstract class ConfigurablePlayer extends StateMachineGamer {
+public class ConfigurablePlayer extends StateMachineGamer {
 	
+	private static int numInstances = -1;
+	
+	private final int myNumber;
 	private ConfigurationPanel configPanel;
 	private PlayerDetatilPanel detatilPanel;
 	private IMinMax minmax;
 	private int turnNumber;
 
 	public ConfigurablePlayer() {
+		this.myNumber = ++numInstances;
 		this.configPanel = new ConfigurationPanel();
 		this.detatilPanel = new PlayerDetatilPanel(getName(),
 				configPanel.savePlayerData);
@@ -148,7 +152,11 @@ public abstract class ConfigurablePlayer extends StateMachineGamer {
 
 	@Override
 	public String getName() {
-		return getClass().getSimpleName();
+		if(myNumber <= 0) {
+			return getClass().getSimpleName();
+		} else {
+			return getClass().getSimpleName() + myNumber;
+		}
 	}
 
 	@Override
