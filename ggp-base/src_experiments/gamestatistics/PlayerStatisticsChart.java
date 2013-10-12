@@ -4,11 +4,15 @@ import gamestatistics.ResultExtractor.GameResult;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.PieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
 
 import utils.Verbose;
@@ -34,6 +38,13 @@ public class PlayerStatisticsChart {
 		dataset.setValue(TIES, playerStats.getNumTies());
 		chart = ChartFactory.createPieChart(name, dataset, true, true, false);
 		chartPanel = new ChartPanel(chart);
+		
+		PiePlot plot = (PiePlot) chart.getPlot();
+		plot.setSimpleLabels(true);
+		plot.setIgnoreZeroValues(true);
+		PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
+	            "{1} ({2})", new DecimalFormat("0"), new DecimalFormat("0%"));
+		plot.setLabelGenerator(gen);
 	}
 
 	public String getName() {

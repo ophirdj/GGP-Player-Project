@@ -106,12 +106,8 @@ public final class TestingPanel extends JPanel implements ActionListener {
 	private final PlayerSelector playerSelector;
 	private final JList<String> playerSelectorList;
 
-	private final Object runLock;
-
 	public TestingPanel() {
 		super(new GridBagLayout());
-
-		runLock = new Object();
 
 		runButton = new JButton(runButtonMethod());
 		startClockSpinner = new JSpinner(new SpinnerNumberModel(600, 5, 600, 1));
@@ -351,23 +347,21 @@ public final class TestingPanel extends JPanel implements ActionListener {
 
 					@Override
 					public void run() {
-						synchronized (runLock) {
-							while (numGames > 0) {
-								startTestingServer(theGame, players, "Base",
-										startTime, playTime,
-										shouldSave.isSelected(),
-										shouldPublish.isSelected());
-								--numGames;
-								if (switchPlayers) {
-									PlayerPresence firstPlayer = players.get(0);
-									for (int i = 0; i < players.size() - 1; ++i) {
-										players.set(i, players.get(i + 1));
-									}
-									players.set(players.size() - 1, firstPlayer);
+						while (numGames > 0) {
+							startTestingServer(theGame, players, "Base",
+									startTime, playTime,
+									shouldSave.isSelected(),
+									shouldPublish.isSelected());
+							--numGames;
+							if (switchPlayers) {
+								PlayerPresence firstPlayer = players.get(0);
+								for (int i = 0; i < players.size() - 1; ++i) {
+									players.set(i, players.get(i + 1));
 								}
+								players.set(players.size() - 1, firstPlayer);
 							}
-							statisticsPanel.saveWhenNecessary();
 						}
+						statisticsPanel.saveWhenNecessary();
 					}
 				})).start();
 			}
@@ -467,7 +461,8 @@ public final class TestingPanel extends JPanel implements ActionListener {
 			tab.addTab("Error", errorPanel);
 			tab.addTab("Visualization", visualizationPanel);
 			tab.addTab("States", statesPanel);
-			JButton closeButton = CloseableTabs.addClosableTab(matchesTabbedPane, tab, matchId,
+			JButton closeButton = CloseableTabs.addClosableTab(
+					matchesTabbedPane, tab, matchId,
 					addTabCloseButton(tab, visualizationPanel));
 
 			match.setCryptographicKeys(signingKeys);

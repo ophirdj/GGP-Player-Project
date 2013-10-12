@@ -27,10 +27,12 @@ public final class StatisticsPanel extends JPanel implements Observer {
 
 	private static final long serialVersionUID = 4020968909765268404L;
 
+	private static final String SCORES_FILENAME = "scores.png";
 	private static final String TABLE_FILENAME = "statistics table.csv";
 
 	private JTabbedPane tabsPane;
 	private StatisticsTable table;
+	private ScoreChart scores;
 	private List<PlayerStatisticsChart> playersCharts;
 	private File sessionDir;
 
@@ -44,8 +46,11 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		tabsPane = new JTabbedPane();
 
 		table = new StatisticsTable(this);
-		tabsPane.addTab("Statistics Table",
+		tabsPane.addTab("Summary",
 				new JScrollPane(table.getTableView()));
+		
+		scores = new ScoreChart();
+		tabsPane.addTab("High Scores", scores.getChart());
 
 		add(tabsPane, BorderLayout.CENTER);
 	}
@@ -81,6 +86,7 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		List<GameResult> results = ResultExtractor.getGameResults(goals);
 
 		table.updateTable(players, goals, results);
+		scores.updateScores(players, goals);
 		for (PlayerStatisticsChart playerChart : playersCharts) {
 			int playerIndex = players.indexOf(playerChart.getName());
 			if (playerIndex >= 0) {
@@ -97,6 +103,8 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		if (sessionDir != null) {
 			File tableFile = new File(sessionDir, TABLE_FILENAME);
 			table.save(tableFile.getAbsolutePath());
+			File scoreFile = new File(sessionDir, SCORES_FILENAME);
+			scores.save(scoreFile.getAbsolutePath());
 			for (PlayerStatistics playerStats : table.getPlayersStats()) {
 				File playerFile = new File(sessionDir, playerStats.getName()
 						+ ".png");
