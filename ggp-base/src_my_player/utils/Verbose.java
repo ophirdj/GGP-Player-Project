@@ -13,7 +13,7 @@ public class Verbose {
 	public static final long UNIMPLEMENTED_OPTION = 1 << 9;
 	public static final long PLAYER = 1 << 10;
 	
-	public static final long verbose = PLAYER;
+	public static final long verbose = 0;
 
 	public static boolean isVerbose(long verboseType){
 		return (verboseType & verbose) != 0;
