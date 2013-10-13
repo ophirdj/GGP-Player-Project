@@ -24,8 +24,8 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import playerstatistics.PlayerDetatilPanel;
 import simulator.ISimulator;
 import states.MyState;
+import utils.Verbose;
 import weka.classifiers.Classifier;
-import weka.classifiers.functions.LinearRegression;
 import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
 import classifier.IClassifierFactory;
@@ -67,10 +67,9 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		int exampleAmount = configPanel.getExampleAmount();
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
+		Verbose.printVerbose("current simulation is: " + counter, Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
-		Classifier wekaClassifier = new LinearRegression(); // FIXME: need more
-															// general way to do
-															// it!
+		Classifier wekaClassifier = configPanel.getWekaClassifer();
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel
 				.getStateClassifierFactory();

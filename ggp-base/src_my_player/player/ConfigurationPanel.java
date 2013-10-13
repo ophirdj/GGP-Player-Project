@@ -21,6 +21,7 @@ import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 import simulator.ISimulatorFactory;
+import wekaclassifier.IWekaClassifier;
 import classifier.IClassifierFactory;
 
 public class ConfigurationPanel extends ConfigPanel {
@@ -42,6 +43,7 @@ public class ConfigurationPanel extends ConfigPanel {
 	private JComboBox<IStateLabelerFactory> labelerList;
 	private JComboBox<ISimulatorFactory> simulatorList;
 	private JComboBox<IClassifierFactory> classifierList;
+	private JComboBox<IWekaClassifier> wekaClassifierList;
 	public final JCheckBox savePlayerData;
 
 	public ConfigurationPanel() {
@@ -134,6 +136,21 @@ public class ConfigurationPanel extends ConfigPanel {
 				iterator.remove();
 			}
 		}
+		
+		List<Class<?>> wekaClassifiers = ProjectSearcher
+				.getAllClassesThatAre(IWekaClassifier.class);
+		this.wekaClassifierList = new JComboBox<IWekaClassifier>();
+		iterator = wekaClassifiers.listIterator();
+		while (iterator.hasNext()) {
+			try {
+				IWekaClassifier wekaClassifier = (IWekaClassifier) iterator
+						.next().newInstance();
+				this.wekaClassifierList.addItem(wekaClassifier);
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+				iterator.remove();
+			}
+		}
 
 		checkPanel.add(new JLabel("Labeler type:"), new GridBagConstraints(0,
 				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
@@ -157,6 +174,12 @@ public class ConfigurationPanel extends ConfigPanel {
 				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
 		checkPanel.add(minMaxList, new GridBagConstraints(1, checkRowCount++,
+				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
+		checkPanel.add(new JLabel("weka classifier used:"), new GridBagConstraints(0,
+				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
+		checkPanel.add(wekaClassifierList, new GridBagConstraints(1, checkRowCount++,
 				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
 		checkPanelConstraints = new GridBagConstraints(panelNumber++, 0, 1, 1,
@@ -202,5 +225,9 @@ public class ConfigurationPanel extends ConfigPanel {
 
 	public IClassifierFactory getStateClassifierFactory() {
 		return (IClassifierFactory) classifierList.getSelectedItem();
+	}
+	
+	public IWekaClassifier getWekaClassifer(){
+		return (IWekaClassifier) wekaClassifierList.getSelectedItem();
 	}
 }
