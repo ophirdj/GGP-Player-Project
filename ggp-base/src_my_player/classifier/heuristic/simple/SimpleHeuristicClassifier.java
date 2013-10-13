@@ -31,8 +31,10 @@ public class SimpleHeuristicClassifier extends
 	private HashMap<Attribute, GdlSentence> attributeToSentence;
 	private Instances dataset;
 
-	public SimpleHeuristicClassifier(IStateLabeler labeler, String gameName, Set<GdlSentence> contents, List<Gdl> rules,
-			Collection<LabeledState> labeledExamples, Classifier classifier) throws ClassifierBuildingException {
+	public SimpleHeuristicClassifier(IStateLabeler labeler, String gameName,
+			Set<GdlSentence> contents, List<Gdl> rules,
+			Collection<LabeledState> labeledExamples, Classifier classifier)
+			throws ClassifierBuildingException {
 		super(labeler, classifier);
 		this.attributeToSentence = new HashMap<Attribute, GdlSentence>(
 				contents.size());
@@ -45,28 +47,36 @@ public class SimpleHeuristicClassifier extends
 			attributes.add(attribute);
 		}
 		Properties props = new Properties();
-		props.setProperty("range", "(" + labeler.getMinValue() + ", " +  labeler.getMaxValue() + ")");
-		Attribute classAttribute = new Attribute("state value", new ProtectedProperties(props));
+		props.setProperty("range",
+				"(" + labeler.getMinValue() + ", " + labeler.getMaxValue()
+						+ ")");
+		Attribute classAttribute = new Attribute("state value",
+				new ProtectedProperties(props));
 		attributes.add(classAttribute);
 		this.dataset = new Instances(gameName, attributes, 0);
 		dataset.setClass(classAttribute);
 		fillDataset(dataset, labeledExamples);
 		train(dataset);
+		// we don't want to save the examples after we train the classifier
+		emptyDataset(dataset);
+	}
+
+	private void emptyDataset(Instances dataset) {
+		dataset.delete();
 	}
 
 	private void fillDataset(Instances dataset,
 			Collection<LabeledState> labeledExamples) {
-		for(LabeledState example : labeledExamples){
+		for (LabeledState example : labeledExamples) {
 			Instance instance = stateToInstance(example.getState());
 			instance.setClassValue(example.getValue());
 			dataset.add(instance);
 		}
 	}
-	
+
 	@Override
 	protected Instance stateToInstance(MyState state) {
-		Instance featureVector = new DenseInstance(
-				dataset.numAttributes());
+		Instance featureVector = new DenseInstance(dataset.numAttributes());
 		featureVector.setDataset(dataset);
 
 		Set<GdlSentence> sentences = state.getContents();
@@ -75,7 +85,8 @@ public class SimpleHeuristicClassifier extends
 			if (sentences.contains(entry.getValue())) {
 				featureVector.setValue(entry.getKey(), BinaryValues.TRUE_VALUE);
 			} else {
-				featureVector.setValue(entry.getKey(), BinaryValues.FALSE_VALUE);
+				featureVector
+						.setValue(entry.getKey(), BinaryValues.FALSE_VALUE);
 			}
 		}
 		return featureVector;

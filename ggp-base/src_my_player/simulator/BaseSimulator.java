@@ -1,5 +1,6 @@
 package simulator;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import labeler.IStateLabeler;
@@ -22,6 +23,7 @@ public abstract class BaseSimulator implements ISimulator {
 		this.machine = machine;
 		this.labeler = labeler;
 		this.reporter = new SimulatorReporter();
+		this.contents = new HashSet<GdlSentence>();
 	}
 
 	@Override
