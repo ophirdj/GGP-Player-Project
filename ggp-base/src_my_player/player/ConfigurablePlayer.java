@@ -67,7 +67,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		int exampleAmount = configPanel.getExampleAmount();
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
-		Verbose.printVerbose("current simulation is: " + counter, Verbose.CURRENT_SIMULATION_VERBOSE);
+			Verbose.printVerbose("current simulation is: " + counter + " of: "
+					+ exampleAmount, Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
 		Classifier wekaClassifier = configPanel.getWekaClassifer();
 		Game game = getMatch().getGame();
