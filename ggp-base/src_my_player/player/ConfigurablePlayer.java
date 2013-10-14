@@ -57,34 +57,59 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 		configPanel.setEditble(false);
+		Verbose.printVerboseNoNewLine("getting machine... ", Verbose.PLAYER);
 		StateMachine machine = getStateMachine();
+		Verbose.printVerbose("success", Verbose.PLAYER);
+		Verbose.printVerboseNoNewLine("getting labeler... ", Verbose.PLAYER);
 		IStateLabeler labeler = configPanel.getLabelerFactory()
 				.createStateLabeler(getStateMachine(), getRole());
+		Verbose.printVerbose("success", Verbose.PLAYER);
+		Verbose.printVerboseNoNewLine("getting simulator... ", Verbose.PLAYER);
 		ISimulator simulator = configPanel.getSimulatorFactory()
 				.createSimulator(machine, labeler, getRole());
+		Verbose.printVerbose("success", Verbose.PLAYER);
 		simulator.addObserver(detatilPanel);
+		Verbose.printVerboseNoNewLine("building initial state... ", Verbose.PLAYER);
 		MyState initalState = buildInitialState(machine);
+		Verbose.printVerbose("success", Verbose.PLAYER);
+		Verbose.printVerboseNoNewLine("getting number of examples... ", Verbose.PLAYER);
 		int exampleAmount = configPanel.getExampleAmount();
+		Verbose.printVerbose("success", Verbose.PLAYER);
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
 			Verbose.printVerbose("current simulation is: " + counter + " of: "
 					+ exampleAmount, Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
+		
+		Verbose.printVerboseNoNewLine("getting classifier type... ",
+				Verbose.PLAYER);
 		Classifier wekaClassifier = configPanel.getWekaClassifer();
+		Verbose.printVerbose("success", Verbose.PLAYER);
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel
 				.getStateClassifierFactory();
 		try {
+			Verbose.printVerboseNoNewLine("getting classifier... ",
+					Verbose.PLAYER);
 			IClassifier classifier = classifierFactory.createClassifier(
 					labeler, game.getName(), simulator.getAllContents(),
 					game.getRules(), simulator.getLabeledStates(),
 					wekaClassifier);
+			Verbose.printVerbose("success", Verbose.PLAYER);
+			Verbose.printVerboseNoNewLine("getting minmax... ", Verbose.PLAYER);
 			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine,
 					getRole(), classifier);
+			Verbose.printVerbose("success", Verbose.PLAYER);
+			Verbose.printVerboseNoNewLine("setting minmax depth... ",
+					Verbose.PLAYER);
 			minmax.setDepth(configPanel.getMinMaxDepth());
+			Verbose.printVerbose("success", Verbose.PLAYER);
 			minmax.addObserver(detatilPanel);
 		} catch (ClassifierBuildingException e) {
 			e.printStackTrace();
+			Verbose.printVerboseError(
+					"an error has occured in configurable player " + myNumber,
+					Verbose.UNEXPECTED_VALUE);
 		}
 		turnNumber = 0;
 		configPanel.setEditble(true);
@@ -147,8 +172,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 	@Override
 	public void analyze(Game g, long timeout) throws GameAnalysisException {
-		// TODO Auto-generated method stub
-
+		// do nothing (not supposed to be implemented)
 	}
 
 	@Override

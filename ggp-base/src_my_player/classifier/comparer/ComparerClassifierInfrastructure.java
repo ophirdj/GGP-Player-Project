@@ -24,6 +24,7 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 			classificationClassifier.buildClassifier(data);
 			this.isTrained = true;
 		} catch (Exception e) {
+			Verbose.printVerboseError(e.getMessage(), Verbose.UNEXPECTED_VALUE);
 			e.printStackTrace();
 			throw new ClassifierBuildingException();
 		}

@@ -11,6 +11,7 @@ public class Verbose {
 	public static final long GRAPHIC_VAL = 1 << 7;
 	public static final long FILE_IO = 1 << 8;
 	public static final long UNIMPLEMENTED_OPTION = 1 << 9;
+	public static final long PLAYER = 1 << 10;
 	
 	public static final long verbose = 0;
 
