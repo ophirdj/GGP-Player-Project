@@ -70,7 +70,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		simulator.addObserver(detatilPanel);
 		Verbose.printVerboseNoNewLine("building initial state... ", Verbose.PLAYER);
-		MyState initalState = buildInitialState(machine);
+		MyState initalState = buildInitialState();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Verbose.printVerboseNoNewLine("getting number of examples... ", Verbose.PLAYER);
 		int exampleAmount = configPanel.getExampleAmount();
@@ -115,11 +115,15 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		configPanel.setEditble(true);
 	}
 
-	private static MyState buildInitialState(StateMachine machine) {
-		Role startingRole = machine.getRoles().get(0);
-		Role secondRole = machine.getRoles().get(1);
-		return new MyState(machine.getInitialState(), 0, startingRole,
-				secondRole);
+	private MyState buildInitialState() throws MoveDefinitionException {
+		StateMachine machine = getStateMachine();
+		Role myRole = getRole();
+		Role otherRole = machine.getRoles().get(0).equals(myRole) ? machine.getRoles().get(1) : machine.getRoles().get(0);
+		if(machine.getLegalMoves(machine.getInitialState(), getRole()).size() > 1) {
+			return new MyState(machine.getInitialState(), 0, myRole, otherRole);
+		} else {
+			return new MyState(machine.getInitialState(), 0, otherRole, myRole);
+		}
 	}
 
 	@Override
