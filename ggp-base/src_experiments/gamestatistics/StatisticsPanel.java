@@ -93,6 +93,8 @@ public final class StatisticsPanel extends JPanel implements Observer {
 				playerChart.update(results.get(playerIndex));
 			}
 		}
+		
+		saveWhenNecessary();
 	}
 
 	public void startSavingToDirectory(File sessionDir) {
@@ -101,17 +103,29 @@ public final class StatisticsPanel extends JPanel implements Observer {
 
 	public void saveWhenNecessary() {
 		if (sessionDir != null) {
-			File tableFile = new File(sessionDir, TABLE_FILENAME);
-			table.save(tableFile.getAbsolutePath());
-			File scoreFile = new File(sessionDir, SCORES_FILENAME);
-			scores.save(scoreFile.getAbsolutePath());
+			saveTable();
+			saveScoreChart();
 			for (PlayerStatistics playerStats : table.getPlayersStats()) {
-				File playerFile = new File(sessionDir, playerStats.getName()
-						+ ".png");
-				(new PlayerStatisticsChart(playerStats)).save(playerFile
-						.getAbsolutePath());
+				savePlayerChart(playerStats);
 			}
 		}
+	}
+
+	private void savePlayerChart(PlayerStatistics playerStats) {
+		File playerFile = new File(sessionDir, playerStats.getName()
+				+ ".png");
+		(new PlayerStatisticsChart(playerStats)).save(playerFile
+				.getAbsolutePath());
+	}
+
+	private void saveScoreChart() {
+		File scoreFile = new File(sessionDir, SCORES_FILENAME);
+		scores.save(scoreFile.getAbsolutePath());
+	}
+
+	private void saveTable() {
+		File tableFile = new File(sessionDir, TABLE_FILENAME);
+		table.save(tableFile.getAbsolutePath());
 	}
 
 	public void switchToChart(PlayerStatistics playerStats) {
