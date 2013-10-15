@@ -27,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import org.ggp.base.apps.server.error.ErrorPanel;
@@ -98,6 +99,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 	private final JSpinner playClockSpinner;
 	private final JSpinner numberOfGamesSpinner;
 
+	private final static String NOT_RUNNING = "not running game";
+	private final JTextField gamesRemainedTextField;
+	
 	private final JCheckBox shouldPublish;
 	private final JCheckBox shouldSave;
 	private final JCheckBox switchRoles;
@@ -116,6 +120,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 				1));
 		matchesTabbedPane = new JTabbedPane();
 
+		gamesRemainedTextField = new JTextField(NOT_RUNNING);
+		gamesRemainedTextField.setEditable(false);
+		
 		managerPanel = new JPanel(new GridBagLayout());
 		gamePanel = new JPanel(new GridBagLayout());
 		playersPanel = new JPanel(new GridBagLayout());
@@ -124,8 +131,8 @@ public final class TestingPanel extends JPanel implements ActionListener {
 		playerFields = new ArrayList<JComboBox<String>>();
 		theGame = null;
 
-		switchRoles = new JCheckBox("Switch roles between games?", false);
-		shouldSave = new JCheckBox("Save experiment to disk?", false);
+		switchRoles = new JCheckBox("Switch roles between games?", true);
+		shouldSave = new JCheckBox("Save experiment to disk?", true);
 		shouldPublish = new JCheckBox("Publish match to the web?", false);
 
 		runButton.setEnabled(false);
@@ -168,13 +175,19 @@ public final class TestingPanel extends JPanel implements ActionListener {
 		gamePanel.add(numberOfGamesSpinner, new GridBagConstraints(1,
 				nRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(1, 5, 5, 5), 5, 5));
-		gamePanel.add(switchRoles, new GridBagConstraints(1, nRowCount++, 1, 1,
+		gamePanel.add(new JLabel("Number Of Games Remain:"), new GridBagConstraints(0,
+				nRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+				GridBagConstraints.NONE, new Insets(1, 5, 5, 5), 5, 5));
+		gamePanel.add(gamesRemainedTextField, new GridBagConstraints(1,
+				nRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+				GridBagConstraints.HORIZONTAL, new Insets(1, 5, 5, 5), 5, 5));
+		gamePanel.add(switchRoles, new GridBagConstraints(0, nRowCount, 1, 1,
 				0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
 		gamePanel.add(shouldSave, new GridBagConstraints(1, nRowCount++, 1, 1,
 				0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		gamePanel.add(shouldPublish, new GridBagConstraints(1, nRowCount++, 1,
+		gamePanel.add(shouldPublish, new GridBagConstraints(0, nRowCount++, 1,
 				1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(1, 5, 5, 5), 5, 5));
 		gamePanel.add(runButton, new GridBagConstraints(1, nRowCount, 1, 1,
@@ -348,11 +361,15 @@ public final class TestingPanel extends JPanel implements ActionListener {
 					@Override
 					public void run() {
 						while (numGames > 0) {
+							gamesRemainedTextField.setText(Integer.toString(numGames));
 							startTestingServer(theGame, players, "Base",
 									startTime, playTime,
 									shouldSave.isSelected(),
 									shouldPublish.isSelected());
 							--numGames;
+							if (numGames == 0){
+								gamesRemainedTextField.setText(NOT_RUNNING);
+							}
 							if (switchPlayers) {
 								PlayerPresence firstPlayer = players.get(0);
 								for (int i = 0; i < players.size() - 1; ++i) {

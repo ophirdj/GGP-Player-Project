@@ -26,7 +26,6 @@ import simulator.ISimulator;
 import states.MyState;
 import utils.Verbose;
 import weka.classifiers.Classifier;
-import weka.classifiers.functions.LinearRegression;
 import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
 import classifier.IClassifierFactory;
@@ -78,12 +77,13 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
+			Verbose.printVerbose("current simulation is: " + counter + " of: "
+					+ exampleAmount, Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
+		
 		Verbose.printVerboseNoNewLine("getting classifier type... ",
 				Verbose.PLAYER);
-		Classifier wekaClassifier = new LinearRegression(); // FIXME: need more
-															// general way to do
-															// it!
+		Classifier wekaClassifier = configPanel.getWekaClassifer();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel
