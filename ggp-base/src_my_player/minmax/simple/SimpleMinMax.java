@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import minmax.MinMaxInfrastructure;
+import minmax.limiteddepth.LimitedDepthMinMaxInfrastructure;
 
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -18,7 +18,6 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
-
 import states.MyState;
 import utils.Verbose;
 
@@ -30,7 +29,7 @@ import utils.Verbose;
  * @author ronen
  *
  */
-public class SimpleMinMax extends MinMaxInfrastructure {
+public class SimpleMinMax extends LimitedDepthMinMaxInfrastructure {
 
 	public SimpleMinMax(StateMachine machine, Role maxPlayer, IClassifier classifier) {
 		super(machine, maxPlayer, classifier);

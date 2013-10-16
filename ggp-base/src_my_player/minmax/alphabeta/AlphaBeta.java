@@ -3,7 +3,7 @@ package minmax.alphabeta;
 import java.util.List;
 import java.util.Map.Entry;
 
-import minmax.MinMaxInfrastructure;
+import minmax.limiteddepth.LimitedDepthMinMaxInfrastructure;
 
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -24,7 +24,7 @@ import classifier.IClassifier.ClassifierValue;
  * @author ronen
  * 
  */
-public class AlphaBeta extends MinMaxInfrastructure {
+public class AlphaBeta extends LimitedDepthMinMaxInfrastructure {
 
 	public AlphaBeta(StateMachine machine, Role maxPlayer,
 			IClassifier classifier) {

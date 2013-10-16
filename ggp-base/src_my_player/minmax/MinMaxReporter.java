@@ -49,7 +49,7 @@ public class MinMaxReporter extends BasicReporter {
 
 	public void reportAndReset(Move selectedMove, int nodesInCache, int searchDepth, long duration) {
 		notifyObservers(new MinMaxEvent(selectedMove, exploredNodes, expandedNodes, prunedNodes, terminalNodes,
-				nodesInCache, cacheHits, searchDepth, sumBranchingFactor / expandedNodes, duration));
+				nodesInCache, cacheHits, searchDepth, sumBranchingFactor / (double) expandedNodes, duration));
 		resetCount();
 	}
 	

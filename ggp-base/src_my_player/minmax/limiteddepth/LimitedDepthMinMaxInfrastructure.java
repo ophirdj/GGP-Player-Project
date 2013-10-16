@@ -1,7 +1,11 @@
-package minmax;
+package minmax.limiteddepth;
 
 import java.util.List;
 import java.util.Map.Entry;
+
+import minmax.IMinMax;
+import minmax.MinMaxReporter;
+import minmax.StateExpander;
 
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
@@ -18,7 +22,7 @@ import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
 
-public abstract class MinMaxInfrastructure implements IMinMax {
+public abstract class LimitedDepthMinMaxInfrastructure implements IMinMax {
 	
 	public static class MinMaxEntry {
 		private final ClassifierValue value;
@@ -49,7 +53,7 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 	protected MinMaxReporter reporter;
 	private int minMaxDepth;
 	
-	public MinMaxInfrastructure(StateMachine machine, Role maxPlayer,
+	public LimitedDepthMinMaxInfrastructure(StateMachine machine, Role maxPlayer,
 			IClassifier classifier) {
 		List<Role> roles = machine.getRoles();
 		assert (roles.size() == 2);
@@ -139,6 +143,11 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 	@Override
 	public synchronized void setDepth(int minMaxDepth) {
 		this.minMaxDepth = minMaxDepth;
+	}
+	
+	@Override
+	public void finishBy(long timeout) {
+		// do nothing
 	}
 
 }
