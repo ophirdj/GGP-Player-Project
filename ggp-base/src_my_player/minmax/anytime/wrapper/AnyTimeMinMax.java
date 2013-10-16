@@ -1,4 +1,4 @@
-package minmax.anytime;
+package minmax.anytime.wrapper;
 
 import minmax.IMinMax;
 
@@ -70,7 +70,7 @@ public class AnyTimeMinMax implements IMinMax {
 	}
 
 	@Override
-	public void finishBy(long timeout) {
+	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
 

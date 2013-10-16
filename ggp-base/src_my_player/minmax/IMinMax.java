@@ -47,7 +47,7 @@ public interface IMinMax extends Subject {
 	 * @param timeout
 	 *            Computation deadline
 	 */
-	void finishBy(long timeout);
+	void setTimeout(long timeout);
 
 	/**
 	 * Clear minmax meta-data.

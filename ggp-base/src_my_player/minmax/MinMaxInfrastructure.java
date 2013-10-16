@@ -1,11 +1,7 @@
-package minmax.limiteddepth;
+package minmax;
 
 import java.util.List;
 import java.util.Map.Entry;
-
-import minmax.IMinMax;
-import minmax.MinMaxReporter;
-import minmax.StateExpander;
 
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
@@ -21,50 +17,46 @@ import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
+public abstract class MinMaxInfrastructure implements IMinMax {
 
-public abstract class LimitedDepthMinMaxInfrastructure implements IMinMax {
-	
 	public static class MinMaxEntry {
-		private final ClassifierValue value;
-		private final Move bestMove;
-		
-		public MinMaxEntry(ClassifierValue value, Move bestMove) {
+		public final ClassifierValue value;
+		public final Move move;
+		public final boolean noHeuristic;
+
+		public MinMaxEntry(ClassifierValue value, Move move, boolean noHeuristic) {
 			Verbose.printVerbose("State value is " + value,
 					Verbose.MIN_MAX_VERBOSE);
 			this.value = value;
-			this.bestMove = bestMove;
-		}
-		
-		public ClassifierValue getValue() {
-			return value;
-		}
-		
-		public Move getMove() {
-			return bestMove;
+			this.move = move;
+			this.noHeuristic = noHeuristic;
 		}
 	}
 
 	private static final int DEFAULT_MINMAX_DEPTH = 2;
-	
+
 	protected StateMachine machine;
 	protected IClassifier classifier;
 	protected Role minPlayer;
 	protected Role maxPlayer;
 	protected MinMaxReporter reporter;
 	private int minMaxDepth;
-	
-	public LimitedDepthMinMaxInfrastructure(StateMachine machine, Role maxPlayer,
+	private long timeout;
+
+	public MinMaxInfrastructure(StateMachine machine, Role maxPlayer,
 			IClassifier classifier) {
 		List<Role> roles = machine.getRoles();
 		assert (roles.size() == 2);
 		this.machine = machine;
 		this.maxPlayer = maxPlayer;
-		this.minPlayer = roles.get(0).equals(maxPlayer) ? roles.get(1) : roles.get(0);
+		this.minPlayer = roles.get(0).equals(maxPlayer) ? roles.get(1) : roles
+				.get(0);
 		this.classifier = classifier;
 		this.reporter = new MinMaxReporter();
 		minMaxDepth = DEFAULT_MINMAX_DEPTH;
+		timeout = Long.MIN_VALUE;
 	}
-	
+
 	/**
 	 * Check if a state is terminal.
 	 * 
@@ -102,30 +94,30 @@ public abstract class LimitedDepthMinMaxInfrastructure implements IMinMax {
 			ClassificationException {
 		return StateExpander.expand(machine, state, classifier, maxPlayer);
 	}
-	
+
 	/**
 	 * Return true if (and only if) entry1 is better then entry2. Meaning, only
 	 * return true if the player will want to switch to entry2.
 	 */
 	protected boolean isBetterThan(MinMaxEntry entry1, MinMaxEntry entry2,
 			Role controlingPlayer) throws ClassificationException {
-		return isBetterThan(entry1.getValue(), entry2.getValue(),
+		return isBetterThan(entry1.value, entry2.value,
 				controlingPlayer);
 	}
-	
+
 	/**
 	 * Return true if (and only if) value1 is better then value2.
 	 */
 	protected boolean isBetterThan(ClassifierValue value1,
 			ClassifierValue value2, Role controlingPlayer)
-					throws ClassificationException {
+			throws ClassificationException {
 		if (controlingPlayer.equals(maxPlayer)) {
 			return classifier.isBetterValue(value1, value2);
 		} else {
 			return classifier.isBetterValue(value2, value1);
 		}
 	}
-	
+
 	@Override
 	public void addObserver(Observer observer) {
 		reporter.addObserver(observer);
@@ -140,14 +132,18 @@ public abstract class LimitedDepthMinMaxInfrastructure implements IMinMax {
 		return minMaxDepth;
 	}
 
+	public synchronized long getTimeout() {
+		return timeout;
+	}
+
 	@Override
 	public synchronized void setDepth(int minMaxDepth) {
 		this.minMaxDepth = minMaxDepth;
 	}
-	
+
 	@Override
-	public void finishBy(long timeout) {
-		// do nothing
+	public synchronized void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 
 }

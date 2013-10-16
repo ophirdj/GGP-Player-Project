@@ -140,7 +140,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Move selection = null;
 		try {
 			if (moves.size() > 1) {
-				minmax.finishBy(timeout);
+				minmax.setTimeout(timeout - 1500);
 				selection = minmax.getMove(new MyState(getCurrentState(),
 						turnNumber, getRole(), getOponent()));
 			}

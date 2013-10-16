@@ -1,4 +1,4 @@
-package minmax.anytime;
+package minmax.anytime.wrapper;
 
 import minmax.IMinMax;
 import minmax.IMinMax.MinMaxException;

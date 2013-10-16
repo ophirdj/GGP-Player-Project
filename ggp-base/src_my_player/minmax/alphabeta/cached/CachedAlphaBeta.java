@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import minmax.MinMaxCache;
+import minmax.MinMaxInfrastructure;
 import minmax.MinMaxCache.CacheEntry;
-import minmax.alphabeta.AlphaBeta;
 
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -20,7 +20,7 @@ import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
-public class CachedAlphaBeta extends AlphaBeta {
+public final class CachedAlphaBeta extends MinMaxInfrastructure {
 
 	private MinMaxCache<MinMaxEntry> cache;
 
@@ -48,9 +48,10 @@ public class CachedAlphaBeta extends AlphaBeta {
 		Move move;
 		try {
 			cache.prune();
-			move = alphabeta(state, getDepth(), null, null).getMove();
+			move = alphabeta(state, getDepth(), null, null).move;
 			long endTime = System.currentTimeMillis();
-			reporter.reportAndReset(move, cache.size(), getDepth(), endTime - startTime);
+			reporter.reportAndReset(move, cache.size(), getDepth(), endTime
+					- startTime);
 			Verbose.printVerbose("CachedAlphaBeta: getMove end",
 					Verbose.MIN_MAX_VERBOSE);
 			return move;
@@ -63,8 +64,7 @@ public class CachedAlphaBeta extends AlphaBeta {
 		}
 	}
 
-	@Override
-	protected MinMaxEntry alphabeta(MyState state, int depth,
+	private MinMaxEntry alphabeta(MyState state, int depth,
 			ClassifierValue alpha, ClassifierValue beta)
 			throws ClassificationException, MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
@@ -80,13 +80,13 @@ public class CachedAlphaBeta extends AlphaBeta {
 			ClassifierValue goalValue = getValue(state);
 			Verbose.printVerbose("Final State with goal value " + goalValue,
 					Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = new MinMaxEntry(goalValue, null);
+			minmaxEntry = new MinMaxEntry(goalValue, null, true);
 			CacheEntry<MinMaxEntry> e = new CacheEntry<MinMaxEntry>(
 					minmaxEntry, CacheEntry.TERMINAL_STATE_DEPTH);
 			cache.put(state, e);
 		} else if (depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = new MinMaxEntry(getValue(state), null);
+			minmaxEntry = new MinMaxEntry(getValue(state), null, false);
 		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = executeMove(state, depth, alpha, beta);
@@ -100,8 +100,7 @@ public class CachedAlphaBeta extends AlphaBeta {
 		return minmaxEntry;
 	}
 
-	@Override
-	protected MinMaxEntry executeMove(MyState state, int depth,
+	private MinMaxEntry executeMove(MyState state, int depth,
 			ClassifierValue alpha, ClassifierValue beta)
 			throws MoveDefinitionException, TransitionDefinitionException,
 			GoalDefinitionException, ClassificationException, MinMaxException {
@@ -116,13 +115,13 @@ public class CachedAlphaBeta extends AlphaBeta {
 
 			if (bestEntry == null
 					|| isBetterThan(nextEntry, bestEntry, state.getRole())) {
-				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
+				bestEntry = new MinMaxEntry(nextEntry.value, move.getKey(), nextEntry.noHeuristic);
 			}
 
 			if (state.getRole().equals(maxPlayer)) {
-				alpha = bestEntry.getValue();
+				alpha = bestEntry.value;
 			} else {
-				beta = bestEntry.getValue();
+				beta = bestEntry.value;
 			}
 
 			if (alpha != null && beta != null

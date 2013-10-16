@@ -1,4 +1,4 @@
-package minmax.anytime;
+package minmax.anytime.wrapper;
 
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;

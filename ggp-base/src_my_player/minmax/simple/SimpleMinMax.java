@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import minmax.limiteddepth.LimitedDepthMinMaxInfrastructure;
+import minmax.MinMaxInfrastructure;
 
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -29,7 +29,7 @@ import utils.Verbose;
  * @author ronen
  *
  */
-public class SimpleMinMax extends LimitedDepthMinMaxInfrastructure {
+public final class SimpleMinMax extends MinMaxInfrastructure {
 
 	public SimpleMinMax(StateMachine machine, Role maxPlayer, IClassifier classifier) {
 		super(machine, maxPlayer, classifier);
@@ -50,7 +50,7 @@ public class SimpleMinMax extends LimitedDepthMinMaxInfrastructure {
 		long startTime = System.currentTimeMillis();
 		Move move;
 		try {
-			move = minmax(state, getDepth()).getMove();
+			move = minmax(state, getDepth()).move;
 			long endTime = System.currentTimeMillis();
 			reporter.reportAndReset(move, 0, getDepth(), endTime - startTime);
 			return move;
@@ -61,17 +61,17 @@ public class SimpleMinMax extends LimitedDepthMinMaxInfrastructure {
 		}
 	}
 	
-	protected MinMaxEntry minmax(MyState state, int depth) throws ClassificationException, MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, MinMaxException{
+	private MinMaxEntry minmax(MyState state, int depth) throws ClassificationException, MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, MinMaxException{
 		reporter.exploreNode();
 		MinMaxEntry minmaxEntry = null;
 		if (isTerminal(state)) {
 			reporter.visitTerminal();
 			ClassifierValue goalValue = getValue(state);
 			Verbose.printVerbose("Final State with goal value " + goalValue, Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = new MinMaxEntry(goalValue, null);
+			minmaxEntry = new MinMaxEntry(goalValue, null, true);
 		} else if(depth < 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
-			minmaxEntry = new MinMaxEntry(getValue(state), null);
+			minmaxEntry = new MinMaxEntry(getValue(state), null, false);
 		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = executeMove(state, depth);
@@ -85,7 +85,7 @@ public class SimpleMinMax extends LimitedDepthMinMaxInfrastructure {
 		return minmaxEntry;
 	}
 
-	protected MinMaxEntry executeMove(MyState state, int depth) throws MoveDefinitionException,
+	private MinMaxEntry executeMove(MyState state, int depth) throws MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException {
 		MinMaxEntry bestEntry = null;
 		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
@@ -97,10 +97,10 @@ public class SimpleMinMax extends LimitedDepthMinMaxInfrastructure {
 			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmax(nextState, depth - 1);
 			if(bestEntry == null){
-				bestEntry = new MinMaxEntry(nextEntry.getValue(), move.getKey());
+				bestEntry = new MinMaxEntry(nextEntry.value, move.getKey(), nextEntry.noHeuristic);
 			}
 			else if(isBetterThan(nextEntry, bestEntry, state.getRole())) {
-				bestEntry = new MinMaxEntry (nextEntry.getValue(), move.getKey());
+				bestEntry = new MinMaxEntry (nextEntry.value, move.getKey(), nextEntry.noHeuristic);
 			}
 		}
 		return bestEntry;
