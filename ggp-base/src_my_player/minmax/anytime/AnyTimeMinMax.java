@@ -44,7 +44,7 @@ public class AnyTimeMinMax implements IMinMax {
 		if (System.currentTimeMillis() < timeout) {
 			Verbose.printVerbose("AnyTimeMinMax: starting worker",
 					Verbose.MIN_MAX_VERBOSE);
-			worker.startMinMaxLoop(state);
+			worker.startMinMaxLoop(state, timeout);
 			try {
 				Verbose.printVerbose("AnyTimeMinMax: going to sleep... zZZ",
 						Verbose.MIN_MAX_VERBOSE);

@@ -18,6 +18,7 @@ public class AnyTimeWorker extends Thread {
 	private boolean startMinMaxCalled;
 	private Move move;
 	private MyState state;
+	private long timeout;
 	private boolean stopMinMaxCalled;
 	private MinMaxException minMaxException;
 	private MoveDefinitionException moveDefinitionException;
@@ -30,6 +31,7 @@ public class AnyTimeWorker extends Thread {
 		this.startMinMaxCalled = false;
 		this.move = null;
 		this.state = null;
+		this.timeout = Long.MIN_VALUE;
 		this.stopMinMaxCalled = false;
 		clearExceptions();
 	}
@@ -39,13 +41,13 @@ public class AnyTimeWorker extends Thread {
 		while (true) {
 			clearExceptions();
 			final MyState state = waitForState();
-			loopMinMaxAndSaveExceptions(state);
+			loopMinMaxAndSaveExceptions(state, timeout);
 		}
 	}
 
-	private void loopMinMaxAndSaveExceptions(final MyState state) {
+	private void loopMinMaxAndSaveExceptions(final MyState state, final long timeout) {
 		try {
-			loopMinMax(state);
+			loopMinMax(state, timeout);
 		} catch (MinMaxException e) {
 			Verbose.printVerbose("AnyTimeWorker: caught MinMaxException",
 					Verbose.MIN_MAX_VERBOSE);
@@ -77,15 +79,17 @@ public class AnyTimeWorker extends Thread {
 		this.goalDefinitionException = null;
 	}
 
-	private void loopMinMax(final MyState state) throws MinMaxException,
+	private void loopMinMax(final MyState state, final long timeout) throws MinMaxException,
 			MoveDefinitionException, TransitionDefinitionException,
 			GoalDefinitionException {
 		move = null;
 		for (int depth = 1; depth < maxDepth; ++depth) {
 			Verbose.printVerbose("AnyTimeWorker: starting minmax with depth "
 					+ depth, Verbose.MIN_MAX_VERBOSE);
+			long start = System.currentTimeMillis();
 			minmax.setDepth(depth);
 			Move result = minmax.getMove(state);
+			long end = System.currentTimeMillis();
 			synchronized (this) {
 				move = result;
 			}
@@ -98,6 +102,9 @@ public class AnyTimeWorker extends Thread {
 			} else if (stopped) {
 				Verbose.printVerbose("AnyTimeWorker: unknown interrupt",
 						Verbose.UNEXPECTED_VALUE);
+				return;
+			} else if (end - start > timeout - System.currentTimeMillis()) {
+				//no use to begin next iteration, it's a waste of time
 				return;
 			}
 		}
@@ -130,9 +137,10 @@ public class AnyTimeWorker extends Thread {
 		return state;
 	}
 
-	public synchronized void startMinMaxLoop(MyState state) {
+	public synchronized void startMinMaxLoop(MyState state, long timeout) {
 		startMinMaxCalled = true;
 		this.state = state;
+		this.timeout = timeout;
 		this.notify();
 	}
 
