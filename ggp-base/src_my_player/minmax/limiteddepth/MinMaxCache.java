@@ -1,4 +1,4 @@
-package minmax;
+package minmax.limiteddepth;
 
 import java.util.HashMap;
 import java.util.Iterator;

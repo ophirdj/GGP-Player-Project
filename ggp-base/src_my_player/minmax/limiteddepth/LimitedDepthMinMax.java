@@ -1,7 +1,10 @@
-package minmax;
+package minmax.limiteddepth;
 
 import java.util.List;
 import java.util.Map.Entry;
+
+import minmax.IMinMax;
+import minmax.limiteddepth.MinMaxCache.CacheEntry;
 
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
@@ -17,9 +20,10 @@ import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
-public abstract class MinMaxInfrastructure implements IMinMax {
+public abstract class LimitedDepthMinMax implements IMinMax {
 
 	public static class MinMaxEntry {
+
 		public final ClassifierValue value;
 		public final Move move;
 		public final boolean noHeuristic;
@@ -33,18 +37,16 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 		}
 	}
 
-	private static final int DEFAULT_MINMAX_DEPTH = 2;
+	protected final StateMachine machine;
+	private final IClassifier classifier;
+	protected int minMaxDepth;
+	protected final Role minPlayer;
+	protected final Role maxPlayer;
+	protected final MinMaxReporter reporter;
+	private final MinMaxCache<MinMaxEntry> cache;
 
-	protected StateMachine machine;
-	protected IClassifier classifier;
-	protected Role minPlayer;
-	protected Role maxPlayer;
-	protected MinMaxReporter reporter;
-	private int minMaxDepth;
-	private long timeout;
-
-	public MinMaxInfrastructure(StateMachine machine, Role maxPlayer,
-			IClassifier classifier) {
+	public LimitedDepthMinMax(StateMachine machine, Role maxPlayer,
+			IClassifier classifier, int depth, boolean cached) {
 		List<Role> roles = machine.getRoles();
 		assert (roles.size() == 2);
 		this.machine = machine;
@@ -52,9 +54,18 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 		this.minPlayer = roles.get(0).equals(maxPlayer) ? roles.get(1) : roles
 				.get(0);
 		this.classifier = classifier;
+		this.minMaxDepth = depth;
 		this.reporter = new MinMaxReporter();
-		minMaxDepth = DEFAULT_MINMAX_DEPTH;
-		timeout = Long.MIN_VALUE;
+		this.cache = !cached ? null : new MinMaxCache<MinMaxEntry>();
+	}
+
+	/**
+	 * Check if computation timed out.
+	 * 
+	 * @return True if someone interrupted the computation.
+	 */
+	protected final boolean isTimeout() {
+		return Thread.interrupted();
 	}
 
 	/**
@@ -63,7 +74,7 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 	 * @param state
 	 * @return
 	 */
-	protected boolean isTerminal(MyState state) {
+	protected final boolean isTerminal(MyState state) {
 		return machine.isTerminal(state.getState());
 	}
 
@@ -74,7 +85,7 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 	 * @return
 	 * @throws ClassificationException
 	 */
-	protected ClassifierValue getValue(MyState state)
+	protected final ClassifierValue getValue(MyState state)
 			throws ClassificationException {
 		return classifier.getValue(state);
 	}
@@ -89,7 +100,7 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 	 * @throws TransitionDefinitionException
 	 * @throws ClassificationException
 	 */
-	protected List<Entry<Move, MyState>> expand(MyState state)
+	protected final List<Entry<Move, MyState>> expand(MyState state)
 			throws MoveDefinitionException, TransitionDefinitionException,
 			ClassificationException {
 		return StateExpander.expand(machine, state, classifier, maxPlayer);
@@ -99,16 +110,16 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 	 * Return true if (and only if) entry1 is better then entry2. Meaning, only
 	 * return true if the player will want to switch to entry2.
 	 */
-	protected boolean isBetterThan(MinMaxEntry entry1, MinMaxEntry entry2,
-			Role controlingPlayer) throws ClassificationException {
-		return isBetterThan(entry1.value, entry2.value,
-				controlingPlayer);
+	protected final boolean isBetterThan(MinMaxEntry entry1,
+			MinMaxEntry entry2, Role controlingPlayer)
+			throws ClassificationException {
+		return isBetterThan(entry1.value, entry2.value, controlingPlayer);
 	}
 
 	/**
 	 * Return true if (and only if) value1 is better then value2.
 	 */
-	protected boolean isBetterThan(ClassifierValue value1,
+	protected final boolean isBetterThan(ClassifierValue value1,
 			ClassifierValue value2, Role controlingPlayer)
 			throws ClassificationException {
 		if (controlingPlayer.equals(maxPlayer)) {
@@ -118,32 +129,71 @@ public abstract class MinMaxInfrastructure implements IMinMax {
 		}
 	}
 
+	/**
+	 * Add an entry to cache under a state(if exists).
+	 * 
+	 * @param state
+	 *            Key in cache.
+	 * @param entry
+	 *            Value to be cached.
+	 * @param height
+	 *            Height of the result in search tree.
+	 */
+	protected final void addToCache(MyState state, MinMaxEntry entry,
+			int height) {
+		if (cache != null) {
+			if (entry.noHeuristic) {
+				cache.put(state, new CacheEntry<MinMaxEntry>(entry,
+						CacheEntry.TERMINAL_STATE_DEPTH));
+			} else {
+				cache.put(state, new CacheEntry<MinMaxEntry>(entry, height));
+			}
+		}
+	}
+
+	/**
+	 * Search an entry in the cache.
+	 * 
+	 * @param state
+	 *            What we search.
+	 * @param height
+	 *            What height we look for.
+	 * @return entry exists or null otherwise.
+	 */
+	protected final MinMaxEntry searchCache(MyState state, int height) {
+		if (cache == null || !cache.contains(state, height)) {
+			return null;
+		}
+		reporter.cacheHit();
+		return cache.get(state);
+	}
+
 	@Override
-	public void addObserver(Observer observer) {
+	public final void addObserver(Observer observer) {
 		reporter.addObserver(observer);
 	}
 
 	@Override
-	public void notifyObservers(Event event) {
+	public final void notifyObservers(Event event) {
 		reporter.notifyObservers(event);
 	}
 
-	public synchronized int getDepth() {
-		return minMaxDepth;
-	}
-
-	public synchronized long getTimeout() {
-		return timeout;
+	@Override
+	public final void setDepth(int depth) {
+		this.minMaxDepth = depth;
 	}
 
 	@Override
-	public synchronized void setDepth(int minMaxDepth) {
-		this.minMaxDepth = minMaxDepth;
+	public final void setTimeout(long timeout) {
+		// do nothing
 	}
 
 	@Override
-	public synchronized void setTimeout(long timeout) {
-		this.timeout = timeout;
+	public void clear() {
+		reporter.resetCount();
+		if (cache != null) {
+			cache.clear();
+		}
 	}
 
 }

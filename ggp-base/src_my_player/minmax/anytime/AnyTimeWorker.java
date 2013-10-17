@@ -1,4 +1,4 @@
-package minmax.anytime.wrapper;
+package minmax.anytime;
 
 import minmax.IMinMax;
 import minmax.IMinMax.MinMaxException;
@@ -45,7 +45,8 @@ public class AnyTimeWorker extends Thread {
 		}
 	}
 
-	private void loopMinMaxAndSaveExceptions(final MyState state, final long timeout) {
+	private void loopMinMaxAndSaveExceptions(final MyState state,
+			final long timeout) {
 		try {
 			loopMinMax(state, timeout);
 		} catch (MinMaxException e) {
@@ -79,33 +80,28 @@ public class AnyTimeWorker extends Thread {
 		this.goalDefinitionException = null;
 	}
 
-	private void loopMinMax(final MyState state, final long timeout) throws MinMaxException,
-			MoveDefinitionException, TransitionDefinitionException,
-			GoalDefinitionException {
+	private void loopMinMax(final MyState state, final long timeout)
+			throws MinMaxException, MoveDefinitionException,
+			TransitionDefinitionException, GoalDefinitionException {
 		move = null;
 		for (int depth = 1; depth < maxDepth; ++depth) {
 			Verbose.printVerbose("AnyTimeWorker: starting minmax with depth "
 					+ depth, Verbose.MIN_MAX_VERBOSE);
-			long start = System.currentTimeMillis();
 			minmax.setDepth(depth);
-			Move result = minmax.getMove(state);
-			long end = System.currentTimeMillis();
-			synchronized (this) {
-				move = result;
-			}
-			boolean stopped = interrupted();
-			if (stopped && stopMinMaxCalled) {
-				Verbose.printVerbose("AnyTimeWorker: safely stopped",
-						Verbose.MIN_MAX_VERBOSE);
-				stopMinMaxCalled = false;
-				return;
-			} else if (stopped) {
-				Verbose.printVerbose("AnyTimeWorker: unknown interrupt",
-						Verbose.UNEXPECTED_VALUE);
-				return;
-			} else if (end - start > timeout - System.currentTimeMillis()) {
-				//no use to begin next iteration, it's a waste of time
-				return;
+			try {
+				Move result = minmax.getMove(state);
+				synchronized (this) {
+					move = result;
+				}
+			} catch (InterruptedException e) {
+				if (stopMinMaxCalled) {
+					stopMinMaxCalled = false;
+					return;
+				} else {
+					Verbose.printVerboseError(
+							"AnyTimeWorker: unknown interrupt during minmax",
+							Verbose.UNEXPECTED_VALUE);
+				}
 			}
 		}
 	}
@@ -131,6 +127,9 @@ public class AnyTimeWorker extends Thread {
 				this.wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				Verbose.printVerboseError(
+						"AnyTimeWorker: unknown interrupt while waiting",
+						Verbose.UNEXPECTED_VALUE);
 			}
 		}
 		startMinMaxCalled = false;

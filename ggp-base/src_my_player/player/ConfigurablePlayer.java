@@ -100,7 +100,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("getting minmax... ", Verbose.PLAYER);
 			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine,
-					getRole(), classifier);
+					getRole(), classifier, false, false); // FIXME add checkbox to config panel
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("setting minmax depth... ",
 					Verbose.PLAYER);
@@ -146,6 +146,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			}
 		} catch (MinMaxException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// computation timed out
 		} finally {
 			if (selection == null) {
 				selection = moves.get(0);

@@ -1,4 +1,4 @@
-package minmax.anytime.wrapper;
+package minmax.anytime;
 
 import minmax.IMinMax;
 
@@ -40,7 +40,7 @@ public class AnyTimeMinMax implements IMinMax {
 	@Override
 	public Move getMove(MyState state) throws MinMaxException,
 			MoveDefinitionException, TransitionDefinitionException,
-			GoalDefinitionException {
+			GoalDefinitionException, InterruptedException {
 		if (System.currentTimeMillis() < timeout) {
 			Verbose.printVerbose("AnyTimeMinMax: starting worker",
 					Verbose.MIN_MAX_VERBOSE);

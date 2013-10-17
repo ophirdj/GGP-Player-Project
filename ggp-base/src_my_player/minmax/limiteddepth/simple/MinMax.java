@@ -1,12 +1,11 @@
-package minmax.simple.cached;
+package minmax.limiteddepth.simple;
+
 
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import minmax.MinMaxCache;
-import minmax.MinMaxInfrastructure;
-import minmax.MinMaxCache.CacheEntry;
+import minmax.limiteddepth.LimitedDepthMinMax;
 
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -22,25 +21,23 @@ import classifier.IClassifier;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 
-public final class CachedSimpleMinMax extends MinMaxInfrastructure {
 
-	private MinMaxCache<MinMaxEntry> cache;
+/**
+ * A simple implementation of the min-max algorithm. 
+ * No cache or alpha-beta. 
+ * 
+ * @author ronen
+ *
+ */
+public final class MinMax extends LimitedDepthMinMax {
 
-	public CachedSimpleMinMax(StateMachine machine, Role maxPlayer,
-			IClassifier classifier) {
-		super(machine, maxPlayer, classifier);
-		this.cache = new MinMaxCache<MinMaxEntry>();
+	public MinMax(StateMachine machine, Role maxPlayer, IClassifier classifier, int depth, boolean cached) {
+		super(machine, maxPlayer, classifier, depth, cached);
 	}
-
-	@Override
-	public void clear() {
-		cache.clear();
-	}
-
+	
 	@Override
 	public Move getMove(MyState state) throws MinMaxException,
-			MoveDefinitionException, TransitionDefinitionException,
-			GoalDefinitionException {
+			MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, InterruptedException {
 		if (state == null) {
 			throw new MinMaxException();
 		}
@@ -48,42 +45,35 @@ public final class CachedSimpleMinMax extends MinMaxInfrastructure {
 		long startTime = System.currentTimeMillis();
 		Move move;
 		try {
-			cache.prune();
-			move = minmax(state, getDepth()).move;
+			move = minmax(state, minMaxDepth).move;
 			long endTime = System.currentTimeMillis();
-			reporter.reportAndReset(move, cache.size(), getDepth(), endTime
-					- startTime);
+			reporter.reportAndReset(move, 0, minMaxDepth, endTime - startTime);
 			return move;
 		} catch (ClassificationException e) {
 			e.printStackTrace();
-			Verbose.printVerboseError("Classification fail",
-					Verbose.MIN_MAX_VERBOSE);
+			Verbose.printVerboseError("Classification fail", Verbose.MIN_MAX_VERBOSE);
 			throw new MinMaxException();
 		}
 	}
-
-	private MinMaxEntry minmax(MyState state, int depth)
-			throws ClassificationException, MoveDefinitionException,
-			TransitionDefinitionException, GoalDefinitionException,
-			MinMaxException {
-		if (cache.contains(state, depth)) {
-			reporter.cacheHit();
-			return cache.get(state);
+	
+	private MinMaxEntry minmax(MyState state, int depth) throws ClassificationException, MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, MinMaxException, InterruptedException{
+		if(isTimeout()) {
+			throw new InterruptedException();
 		}
 		reporter.exploreNode();
-		MinMaxEntry minmaxEntry = null;
-		if (isTerminal(state)) {
+		MinMaxEntry minmaxEntry = searchCache(state, depth);
+		if(minmaxEntry != null) {
+			return minmaxEntry;
+		} else if (isTerminal(state)) {
 			reporter.visitTerminal();
 			ClassifierValue goalValue = getValue(state);
-			Verbose.printVerbose("Final State with goal value " + goalValue,
-					Verbose.MIN_MAX_VERBOSE);
+			Verbose.printVerbose("Final State with goal value " + goalValue, Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = new MinMaxEntry(goalValue, null, true);
-			CacheEntry<MinMaxEntry> e = new CacheEntry<MinMaxEntry>(
-					minmaxEntry, CacheEntry.TERMINAL_STATE_DEPTH);
-			cache.put(state, e);
-		} else if (depth < 0) {
+			addToCache(state, minmaxEntry, depth);
+		} else if(depth <= 0) {
 			Verbose.printVerbose("FINAL DEPTH REACHED", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = new MinMaxEntry(getValue(state), null, false);
+			addToCache(state, minmaxEntry, depth);
 		} else if (maxPlayer.equals(state.getRole())) {
 			Verbose.printVerbose("MAX PLAYER MOVE", Verbose.MIN_MAX_VERBOSE);
 			minmaxEntry = executeMove(state, depth);
@@ -97,9 +87,8 @@ public final class CachedSimpleMinMax extends MinMaxInfrastructure {
 		return minmaxEntry;
 	}
 
-	private MinMaxEntry executeMove(MyState state, int depth)
-			throws MoveDefinitionException, TransitionDefinitionException,
-			GoalDefinitionException, ClassificationException, MinMaxException {
+	private MinMaxEntry executeMove(MyState state, int depth) throws MoveDefinitionException,
+			TransitionDefinitionException, GoalDefinitionException, ClassificationException, MinMaxException, InterruptedException {
 		MinMaxEntry bestEntry = null;
 		Set<Entry<Move, List<MachineState>>> children = machine.getNextStates(
 				state.getState(), state.getRole()).entrySet();
@@ -109,13 +98,14 @@ public final class CachedSimpleMinMax extends MinMaxInfrastructure {
 			MachineState nextMachineState = move.getValue().get(0);
 			MyState nextState = MyState.createChild(state, nextMachineState);
 			MinMaxEntry nextEntry = minmax(nextState, depth - 1);
-			if (bestEntry == null) {
-				bestEntry = new MinMaxEntry(nextEntry.value, move.getKey(), nextEntry.noHeuristic);
-			} else if (isBetterThan(nextEntry, bestEntry, state.getRole())) {
+			if(bestEntry == null){
 				bestEntry = new MinMaxEntry(nextEntry.value, move.getKey(), nextEntry.noHeuristic);
 			}
+			else if(isBetterThan(nextEntry, bestEntry, state.getRole())) {
+				bestEntry = new MinMaxEntry (nextEntry.value, move.getKey(), nextEntry.noHeuristic);
+			}
 		}
-		cache.put(state, new CacheEntry<MinMaxEntry>(bestEntry, depth));
+		addToCache(state, bestEntry, depth);
 		return bestEntry;
 	}
 

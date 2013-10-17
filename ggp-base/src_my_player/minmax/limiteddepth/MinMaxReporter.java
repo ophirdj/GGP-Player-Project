@@ -1,4 +1,4 @@
-package minmax;
+package minmax.limiteddepth;
 
 
 import minmax.IMinMax.MinMaxEvent;
