@@ -126,10 +126,7 @@ public class AnyTimeWorker extends Thread {
 			try {
 				this.wait();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
-				Verbose.printVerboseError(
-						"AnyTimeWorker: unknown interrupt while waiting",
-						Verbose.UNEXPECTED_VALUE);
+				// do nothing
 			}
 		}
 		startMinMaxCalled = false;

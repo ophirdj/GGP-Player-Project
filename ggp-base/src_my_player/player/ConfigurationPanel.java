@@ -1,17 +1,18 @@
 package player;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.SpinnerNumberModel;
 
 import labeler.IStateLabelerFactory;
@@ -21,194 +22,168 @@ import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 import simulator.ISimulatorFactory;
+import weka.core.Capabilities;
+import weka.core.Capabilities.Capability;
 import wekaclassifier.IWekaClassifier;
 import classifier.IClassifierFactory;
+import classifier.comparer.simple.SimpleComparerClassifierFactory;
+import classifier.heuristic.simple.SimpleHeuristicClassifierFactory;
 
 public class ConfigurationPanel extends ConfigPanel {
 
-	private static final long serialVersionUID = -2406490153748470242L;
+	private static final long serialVersionUID = -581259385199768198L;
 
-	private final JSpinner exampleAmountSpinner;
-	private final JSpinner minMaxDepthSpinner;
+	private final JComboBox<IStateLabelerFactory> labelerList = initComboBox(IStateLabelerFactory.class);
+	private final JComboBox<ISimulatorFactory> simulatorList = initComboBox(ISimulatorFactory.class);
+	private final JComboBox<IMinMaxFactory> minMaxList = initComboBox(IMinMaxFactory.class);
+	private final JComboBox<IWekaClassifier> wekaClassifierList = initComboBox(IWekaClassifier.class);
 
-	private JPanel spinnersPanel;
-	private GridBagConstraints spinnersPanelConstraints;
+	public final JCheckBox savePlayerData = new JCheckBox("Save Data?", false);
+	private final JCheckBox simulatorAnytime = new JCheckBox("Anytime?", false);
+	private final JCheckBox minmaxCached = new JCheckBox("Cached?", false);
+	private final JCheckBox minmaxAnytime = new JCheckBox("Anytime?", false);
 
-	private JPanel checkPanel;
-	private GridBagConstraints checkPanelConstraints;
-
-	// private JButton printButton;
-
-	private JComboBox<IMinMaxFactory> minMaxList;
-	private JComboBox<IStateLabelerFactory> labelerList;
-	private JComboBox<ISimulatorFactory> simulatorList;
-	private JComboBox<IClassifierFactory> classifierList;
-	private JComboBox<IWekaClassifier> wekaClassifierList;
-	public final JCheckBox savePlayerData;
+	private final JSpinner numSimulations = new JSpinner(
+			new SpinnerNumberModel(100, 1, 9999, 50));
+	private final JSpinner minmaxDepth = new JSpinner(new SpinnerNumberModel(4,
+			1, 20, 1));
 
 	public ConfigurationPanel() {
 		super(new GridBagLayout());
-		this.spinnersPanel = new JPanel(new GridBagLayout());
-		exampleAmountSpinner = new JSpinner(new SpinnerNumberModel(100, 1,
-				99999, 50));
-		minMaxDepthSpinner = new JSpinner(new SpinnerNumberModel(3, 1, 10, 1));
 
-		int panelNumber = 0;
+		simulatorAnytime.addItemListener(new ItemListener() {
 
-		int spinnerRowCount = 0;
-		spinnersPanel.add(new JLabel("Number of simulations:"),
-				new GridBagConstraints(0, spinnerRowCount, 1, 1, 0.0, 0.0,
-						GridBagConstraints.EAST, GridBagConstraints.NONE,
-						new Insets(5, 5, 1, 5), 5, 5));
-		spinnersPanel.add(exampleAmountSpinner, new GridBagConstraints(1,
-				spinnerRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				numSimulations.setEnabled(!simulatorAnytime.isSelected());
+			}
+
+		});
+
+		minmaxAnytime.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				minmaxDepth.setEnabled(!minmaxAnytime.isSelected());
+			}
+
+		});
+
+		int rowCount = 0;
+
+		add(new JLabel("Labeler:"), new GridBagConstraints(0, rowCount, 1, 1,
+				0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(labelerList, new GridBagConstraints(1, rowCount++, 3, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
+
+		++rowCount;
+
+		add(new JLabel("Simulator:"), new GridBagConstraints(0, rowCount, 1, 1,
+				0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(simulatorList, new GridBagConstraints(1, rowCount, 3, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
+
+		++rowCount;
+
+		add(simulatorAnytime, new GridBagConstraints(1, rowCount, 1, 1, 0.0,
+				0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(new JLabel("Simulations:"), new GridBagConstraints(2, rowCount, 1,
+				1, 0.0, 0.0, GridBagConstraints.EAST,
 				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		spinnersPanel.add(new JLabel("Min-Max depth:"), new GridBagConstraints(
-				0, spinnerRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		spinnersPanel.add(minMaxDepthSpinner, new GridBagConstraints(1,
-				spinnerRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		spinnersPanelConstraints = new GridBagConstraints(panelNumber++, 0, 1,
-				1, 0.0, 0.0, GridBagConstraints.FIRST_LINE_START,
-				GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 5, 5);
-		this.add(spinnersPanel, spinnersPanelConstraints);
+		add(numSimulations, new GridBagConstraints(3, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
 
-		int checkRowCount = 0;
-		this.checkPanel = new JPanel(new GridBagLayout());
+		++rowCount;
 
-		List<Class<?>> labelersFactories = ProjectSearcher
-				.getAllClassesThatAre(IStateLabelerFactory.class);
-		this.labelerList = new JComboBox<IStateLabelerFactory>();
-		ListIterator<Class<?>> iterator = labelersFactories.listIterator();
-		while (iterator.hasNext()) {
-			try {
-				IStateLabelerFactory factory = (IStateLabelerFactory) iterator
-						.next().newInstance();
-				this.labelerList.addItem(factory);
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				iterator.remove();
-			}
-		}
+		add(new JLabel("Algorithm:"), new GridBagConstraints(0, rowCount, 1, 1,
+				0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(minMaxList, new GridBagConstraints(1, rowCount, 3, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
 
-		List<Class<?>> simulatorsFactories = ProjectSearcher
-				.getAllClassesThatAre(ISimulatorFactory.class);
-		this.simulatorList = new JComboBox<ISimulatorFactory>();
-		iterator = simulatorsFactories.listIterator();
-		while (iterator.hasNext()) {
-			try {
-				ISimulatorFactory factory = (ISimulatorFactory) iterator.next()
-						.newInstance();
-				this.simulatorList.addItem(factory);
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				iterator.remove();
-			}
-		}
+		++rowCount;
 
-		List<Class<?>> minmaxFactories = ProjectSearcher
-				.getAllClassesThatAre(IMinMaxFactory.class);
-		this.minMaxList = new JComboBox<IMinMaxFactory>();
-		iterator = minmaxFactories.listIterator();
-		while (iterator.hasNext()) {
-			try {
-				IMinMaxFactory factory = (IMinMaxFactory) iterator.next()
-						.newInstance();
-				this.minMaxList.addItem(factory);
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				iterator.remove();
-			}
-		}
-
-		List<Class<?>> classifierFactories = ProjectSearcher
-				.getAllClassesThatAre(IClassifierFactory.class);
-		this.classifierList = new JComboBox<IClassifierFactory>();
-		iterator = classifierFactories.listIterator();
-		while (iterator.hasNext()) {
-			try {
-				IClassifierFactory factory = (IClassifierFactory) iterator
-						.next().newInstance();
-				this.classifierList.addItem(factory);
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				iterator.remove();
-			}
-		}
+		add(minmaxAnytime, new GridBagConstraints(1, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(new JLabel("Depth:"), new GridBagConstraints(2, rowCount, 1, 1,
+				0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(minmaxDepth, new GridBagConstraints(3, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
 		
-		List<Class<?>> wekaClassifiers = ProjectSearcher
-				.getAllClassesThatAre(IWekaClassifier.class);
-		this.wekaClassifierList = new JComboBox<IWekaClassifier>();
-		iterator = wekaClassifiers.listIterator();
-		while (iterator.hasNext()) {
-			try {
-				IWekaClassifier wekaClassifier = (IWekaClassifier) iterator
-						.next().newInstance();
-				this.wekaClassifierList.addItem(wekaClassifier);
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				iterator.remove();
-			}
-		}
+		++rowCount;
+		
+		add(minmaxCached, new GridBagConstraints(1, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
 
-		checkPanel.add(new JLabel("Labeler type:"), new GridBagConstraints(0,
-				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(labelerList, new GridBagConstraints(1, checkRowCount++,
-				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(new JLabel("Simulator type:"), new GridBagConstraints(0,
-				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(simulatorList, new GridBagConstraints(1,
-				checkRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(new JLabel("Builder type:"), new GridBagConstraints(0,
-				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(classifierList, new GridBagConstraints(1,
-				checkRowCount++, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(new JLabel("Min-Max type:"), new GridBagConstraints(0,
-				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(minMaxList, new GridBagConstraints(1, checkRowCount++,
-				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(new JLabel("weka classifier used:"), new GridBagConstraints(0,
-				checkRowCount, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.NONE, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanel.add(wekaClassifierList, new GridBagConstraints(1, checkRowCount++,
-				1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-				GridBagConstraints.HORIZONTAL, new Insets(5, 5, 1, 5), 5, 5));
-		checkPanelConstraints = new GridBagConstraints(panelNumber++, 0, 1, 1,
-				0.0, 0.0, GridBagConstraints.FIRST_LINE_END,
-				GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 5, 5);
-		this.add(checkPanel, checkPanelConstraints);
+		++rowCount;
 
-		savePlayerData = new JCheckBox("Save data?", false);
-		add(savePlayerData);
+		add(new JLabel("Classifier:"), new GridBagConstraints(0, rowCount, 1,
+				1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(wekaClassifierList, new GridBagConstraints(1, rowCount, 3, 1, 0.0,
+				0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
+		
+		++rowCount;
+		
+		add(savePlayerData, new GridBagConstraints(0, rowCount, 1, 1, 0.0,
+				0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
 	}
 
-	public void setEditble(boolean isEditable) {
-		((DefaultEditor) exampleAmountSpinner.getEditor()).getTextField()
-				.setEditable(isEditable);
-		((DefaultEditor) minMaxDepthSpinner.getEditor()).getTextField()
-				.setEditable(isEditable);
-		simulatorList.setEditable(isEditable);
-		labelerList.setEditable(isEditable);
-		minMaxList.setEditable(isEditable);
-		classifierList.setEditable(isEditable);
-		savePlayerData.setEnabled(isEditable);
+	@SuppressWarnings("unchecked")
+	private <T> JComboBox<T> initComboBox(Class<T> type) {
+		JComboBox<T> combobox = new JComboBox<T>();
+		List<Class<?>> items = ProjectSearcher.getAllClassesThatAre(type);
+		ListIterator<Class<?>> iterator = items.listIterator();
+		while (iterator.hasNext()) {
+			try {
+				T item = (T) iterator.next().newInstance();
+				combobox.addItem(item);
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+				iterator.remove();
+			}
+		}
+		return combobox;
+	}
+
+	@Override
+	public void setEnabled(boolean isEnabled) {
+		for (Component component : getComponents()) {
+			component.setEnabled(isEnabled);
+		}
 	}
 
 	public int getMinMaxDepth() {
-		return (int) minMaxDepthSpinner.getValue();
+		return (int) minmaxDepth.getValue();
 	}
 
 	public int getExampleAmount() {
-		return (int) exampleAmountSpinner.getValue();
+		return (int) numSimulations.getValue();
+	}
+
+	public boolean isSimulatorAnytime() {
+		return simulatorAnytime.isSelected();
+	}
+
+	public boolean isMinMaxAnytime() {
+		return minmaxAnytime.isSelected();
+	}
+
+	public boolean isMinMaxCached() {
+		return minmaxCached.isSelected();
 	}
 
 	public ISimulatorFactory getSimulatorFactory() {
@@ -223,11 +198,17 @@ public class ConfigurationPanel extends ConfigPanel {
 		return (IMinMaxFactory) minMaxList.getSelectedItem();
 	}
 
-	public IClassifierFactory getStateClassifierFactory() {
-		return (IClassifierFactory) classifierList.getSelectedItem();
+	public IClassifierFactory getClassifierFactory() {
+		IWekaClassifier classifier = getWekaClassifer();
+		Capabilities capabilities = classifier.getCapabilities();
+		if (capabilities.handles(Capability.BINARY_CLASS)) {
+			return new SimpleComparerClassifierFactory();
+		}
+		return new SimpleHeuristicClassifierFactory();
 	}
-	
-	public IWekaClassifier getWekaClassifer(){
+
+	public IWekaClassifier getWekaClassifer() {
 		return (IWekaClassifier) wekaClassifierList.getSelectedItem();
 	}
+
 }

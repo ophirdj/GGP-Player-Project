@@ -56,7 +56,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		configPanel.setEditble(false);
+		configPanel.setEnabled(false);
 		Verbose.printVerboseNoNewLine("getting machine... ", Verbose.PLAYER);
 		StateMachine machine = getStateMachine();
 		Verbose.printVerbose("success", Verbose.PLAYER);
@@ -89,7 +89,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel
-				.getStateClassifierFactory();
+				.getClassifierFactory();
 		try {
 			Verbose.printVerboseNoNewLine("getting classifier... ",
 					Verbose.PLAYER);
@@ -100,7 +100,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("getting minmax... ", Verbose.PLAYER);
 			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine,
-					getRole(), classifier, false, false); // FIXME add checkbox to config panel
+					getRole(), classifier, configPanel.isMinMaxCached(),
+					configPanel.isMinMaxAnytime());
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("setting minmax depth... ",
 					Verbose.PLAYER);
@@ -114,7 +115,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 					Verbose.UNEXPECTED_VALUE);
 		}
 		turnNumber = 0;
-		configPanel.setEditble(true);
+		configPanel.setEnabled(true);
 	}
 
 	private MyState buildInitialState() throws MoveDefinitionException {

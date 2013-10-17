@@ -65,7 +65,7 @@ public abstract class LimitedDepthMinMax implements IMinMax {
 	 * @return True if someone interrupted the computation.
 	 */
 	protected final boolean isTimeout() {
-		return Thread.interrupted();
+		return Thread.currentThread().isInterrupted();
 	}
 
 	/**

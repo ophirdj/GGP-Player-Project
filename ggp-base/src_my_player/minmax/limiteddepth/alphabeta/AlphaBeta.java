@@ -45,6 +45,9 @@ public final class AlphaBeta extends LimitedDepthMinMax {
 			Verbose.printVerboseError("Classification fail",
 					Verbose.MIN_MAX_VERBOSE);
 			throw new MinMaxException();
+		} catch (InterruptedException e) {
+			reporter.resetCount();
+			throw e;
 		}
 	}
 

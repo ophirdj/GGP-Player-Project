@@ -53,6 +53,9 @@ public final class MinMax extends LimitedDepthMinMax {
 			e.printStackTrace();
 			Verbose.printVerboseError("Classification fail", Verbose.MIN_MAX_VERBOSE);
 			throw new MinMaxException();
+		} catch (InterruptedException e) {
+			reporter.resetCount();
+			throw e;
 		}
 	}
 	
