@@ -1,15 +1,13 @@
 package minmax.limiteddepth;
 
-
 import minmax.IMinMax.MinMaxEvent;
 
 import org.ggp.base.util.statemachine.Move;
 
 import utils.BasicReporter;
 
+public final class MinMaxReporter extends BasicReporter {
 
-public class MinMaxReporter extends BasicReporter {
-	
 	private int exploredNodes;
 	private int expandedNodes;
 	private int prunedNodes;
@@ -25,32 +23,36 @@ public class MinMaxReporter extends BasicReporter {
 		cacheHits = 0;
 		sumBranchingFactor = 0;
 	}
-	
+
 	public void exploreNode() {
 		++exploredNodes;
 	}
-	
+
 	public void expandNode(int numChildren) {
 		++expandedNodes;
 		sumBranchingFactor += numChildren;
 	}
-	
+
 	public void prune(int numPruned) {
 		prunedNodes += numPruned;
 	}
-	
+
 	public void visitTerminal() {
 		++terminalNodes;
 	}
-	
+
 	public void cacheHit() {
 		++cacheHits;
 	}
 
-	public void reportAndReset(Move selectedMove, int nodesInCache, int searchDepth, long duration) {
-		notifyObservers(new MinMaxEvent(selectedMove, exploredNodes, expandedNodes, prunedNodes, terminalNodes,
-				nodesInCache, cacheHits, searchDepth, sumBranchingFactor / (double) expandedNodes, duration));
+	public void reportAndReset(Move selectedMove, int nodesInCache,
+			int searchDepth, long duration) {
+		double branchingFactor = ((expandedNodes == 0) ? 0
+				: (sumBranchingFactor / (double) expandedNodes));
+		notifyObservers(new MinMaxEvent(selectedMove, exploredNodes,
+				expandedNodes, prunedNodes, terminalNodes, nodesInCache,
+				cacheHits, searchDepth, branchingFactor, duration));
 		resetCount();
 	}
-	
+
 }

@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import simulator.BaseSimulator;
+import simulator.base.BaseSimulator;
 import states.LabeledState;
 import states.MyState;
 
@@ -33,19 +33,21 @@ public final class TerminalStatesSimulator extends BaseSimulator {
 		List<MyState> simulation = new ArrayList<MyState>();
 		MyState state = rootState;
 		while (!machine.isTerminal(state.getState())) {
+			reporter.discoverState();
 			simulation.add(state);
 			addContents(state);
 			MachineState nextState = machine.getRandomNextState(state
 					.getState());
 			state = MyState.createChild(state, nextState);
 		}
+		reporter.discoverState();
 		simulation.add(state);
 		addContents(state);
 		labeled.add(labeler.label(simulation.get(simulation.size() - 1)));
 	}
 
 	@Override
-	public Collection<LabeledState> getLabeledStates() {
+	protected Collection<LabeledState> SimulatorGetLabeledStates() {
 		return labeled;
 	}
 

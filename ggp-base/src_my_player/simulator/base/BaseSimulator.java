@@ -1,5 +1,6 @@
-package simulator;
+package simulator.base;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,14 +11,16 @@ import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.StateMachine;
 
+import simulator.ISimulator;
+import states.LabeledState;
 import states.MyState;
 
 public abstract class BaseSimulator implements ISimulator {
 
 	protected final StateMachine machine;
 	protected final IStateLabeler labeler;
-	private Set<GdlSentence> contents;
-	protected SimulatorReporter reporter;
+	private final Set<GdlSentence> contents;
+	protected final SimulatorReporter reporter;
 
 	public BaseSimulator(StateMachine machine, IStateLabeler labeler) {
 		this.machine = machine;
@@ -44,5 +47,14 @@ public abstract class BaseSimulator implements ISimulator {
 	public final Set<GdlSentence> getAllContents() {
 		return contents;
 	}
+	
+	@Override
+	public final Collection<LabeledState> getLabeledStates() {
+		Collection<LabeledState> labeledStates = SimulatorGetLabeledStates();
+		reporter.reportAndReset(contents, labeledStates);
+		return labeledStates;
+	}
+
+	protected abstract Collection<LabeledState> SimulatorGetLabeledStates();
 
 }

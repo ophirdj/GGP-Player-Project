@@ -20,7 +20,7 @@ import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
 import states.MyState;
 
-public class StateExpander {
+public final class StateExpander {
 
 	public static List<Entry<Move, MyState>> expand(StateMachine machine,
 			MyState state, IClassifier classifier, Role maxPlayer)

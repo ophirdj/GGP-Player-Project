@@ -25,17 +25,17 @@ public class PlayerStatisticsChart {
 	private static final String DEFEATS = "Defeats";
 	private static final String TIES = "Ties";
 
-	private final String name;
+	public final String name;
 	private DefaultPieDataset dataset;
 	private JFreeChart chart;
-	private final ChartPanel chartPanel;
+	public final ChartPanel chartPanel;
 
 	public PlayerStatisticsChart(PlayerStatistics playerStats) {
-		name = playerStats.getName();
+		name = playerStats.name;
 		dataset = new DefaultPieDataset();
-		dataset.setValue(VICTORIES, playerStats.getNumVictories());
-		dataset.setValue(DEFEATS, playerStats.getNumDefeats());
-		dataset.setValue(TIES, playerStats.getNumTies());
+		dataset.setValue(VICTORIES, playerStats.numVictories);
+		dataset.setValue(DEFEATS, playerStats.numDefeats);
+		dataset.setValue(TIES, playerStats.numTies);
 		chart = ChartFactory.createPieChart(name, dataset, true, true, false);
 		chartPanel = new ChartPanel(chart);
 		
@@ -45,14 +45,6 @@ public class PlayerStatisticsChart {
 		PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
 	            "{1} ({2})", new DecimalFormat("0"), new DecimalFormat("0%"));
 		plot.setLabelGenerator(gen);
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public ChartPanel getChart() {
-		return chartPanel;
 	}
 
 	public void update(GameResult gameResult) {

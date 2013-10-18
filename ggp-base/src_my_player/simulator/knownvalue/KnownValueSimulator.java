@@ -16,7 +16,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import simulator.BaseSimulator;
+import simulator.base.BaseSimulator;
 import states.LabeledState;
 import states.MyState;
 
@@ -39,12 +39,14 @@ public final class KnownValueSimulator extends BaseSimulator {
 		MyState state = rootState;
 		while (!labeled.containsKey(state)
 				&& !machine.isTerminal(state.getState())) {
+			reporter.discoverState();
 			simulation.add(state);
 			addContents(state);
 			MachineState nextState = machine.getRandomNextState(state
 					.getState());
 			state = MyState.createChild(state, nextState);
 		}
+		reporter.discoverState();
 		simulation.add(state);
 		addContents(state);
 		labelSimulation(simulation);
@@ -102,7 +104,7 @@ public final class KnownValueSimulator extends BaseSimulator {
 	}
 
 	@Override
-	public Collection<LabeledState> getLabeledStates() {
+	protected Collection<LabeledState> SimulatorGetLabeledStates() {
 		return labeled.values();
 	}
 

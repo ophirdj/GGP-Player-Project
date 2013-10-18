@@ -3,7 +3,7 @@ package gamestatistics;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResultExtractor {
+public final class ResultExtractor {
 	
 	public static enum GameResult {
 		WIN,

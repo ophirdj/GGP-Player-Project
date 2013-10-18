@@ -1,5 +1,6 @@
 package logging;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -7,14 +8,19 @@ import utils.Verbose;
 
 
 
-public class CSVGenerator {
+public final class CSVGenerator {
 
 	private FileWriter writer;
 	private int numFields;
 
-	public CSVGenerator(String filename, String headers[]) throws IOException {
+	public CSVGenerator(String directoryPath, String filename, String headers[]) throws IOException {
 		try {
-			this.writer = new FileWriter(filename);
+			File directory = new File(directoryPath);
+			if(!directory.exists()) {
+				directory.mkdirs();
+			}
+			File file = new File(directory, filename);
+			this.writer = new FileWriter(file);
 			this.numFields = headers.length;
 			for(int i = 0; i < numFields - 1; i++) {
 				writer.append(headers[i]);

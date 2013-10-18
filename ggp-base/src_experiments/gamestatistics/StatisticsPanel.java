@@ -13,6 +13,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.ScrollPaneConstants;
 
 import org.ggp.base.server.event.ServerMatchUpdatedEvent;
 import org.ggp.base.util.match.Match;
@@ -30,10 +31,10 @@ public final class StatisticsPanel extends JPanel implements Observer {
 	private static final String SCORES_FILENAME = "scores.png";
 	private static final String TABLE_FILENAME = "statistics table.csv";
 
-	private JTabbedPane tabsPane;
-	private StatisticsTable table;
-	private ScoreChart scores;
-	private List<PlayerStatisticsChart> playersCharts;
+	private final JTabbedPane tabsPane;
+	private final StatisticsTable table;
+	private final ScoreChart scores;
+	private final List<PlayerStatisticsChart> playersCharts;
 	private File sessionDir;
 
 	public StatisticsPanel() {
@@ -46,15 +47,16 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		tabsPane = new JTabbedPane();
 
 		table = new StatisticsTable(this);
-		tabsPane.addTab("Summary",
-				new JScrollPane(table.getTableView()));
-		
+		tabsPane.addTab("Summary", new JScrollPane(table.statsTable,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+
 		scores = new ScoreChart();
 		tabsPane.addTab("High Scores", scores.getChart());
 
 		add(tabsPane, BorderLayout.CENTER);
 	}
-	
+
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(400, 600);
@@ -88,12 +90,12 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		table.updateTable(players, goals, results);
 		scores.updateScores(players, goals);
 		for (PlayerStatisticsChart playerChart : playersCharts) {
-			int playerIndex = players.indexOf(playerChart.getName());
+			int playerIndex = players.indexOf(playerChart.name);
 			if (playerIndex >= 0) {
 				playerChart.update(results.get(playerIndex));
 			}
 		}
-		
+
 		saveWhenNecessary();
 	}
 
@@ -103,7 +105,7 @@ public final class StatisticsPanel extends JPanel implements Observer {
 
 	public void saveWhenNecessary() {
 		if (sessionDir != null) {
-			saveTable();
+			table.save(sessionDir.getAbsolutePath(), TABLE_FILENAME);
 			saveScoreChart();
 			for (PlayerStatistics playerStats : table.getPlayersStats()) {
 				savePlayerChart(playerStats);
@@ -112,8 +114,7 @@ public final class StatisticsPanel extends JPanel implements Observer {
 	}
 
 	private void savePlayerChart(PlayerStatistics playerStats) {
-		File playerFile = new File(sessionDir, playerStats.getName()
-				+ ".png");
+		File playerFile = new File(sessionDir, playerStats.name + ".png");
 		(new PlayerStatisticsChart(playerStats)).save(playerFile
 				.getAbsolutePath());
 	}
@@ -123,15 +124,10 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		scores.save(scoreFile.getAbsolutePath());
 	}
 
-	private void saveTable() {
-		File tableFile = new File(sessionDir, TABLE_FILENAME);
-		table.save(tableFile.getAbsolutePath());
-	}
-
 	public void switchToChart(PlayerStatistics playerStats) {
 		for (int i = 0; i < tabsPane.getTabCount(); ++i) {
 			String tabName = tabsPane.getTitleAt(i);
-			if (tabName != null && tabName.equals(playerStats.getName())) {
+			if (tabName != null && tabName.equals(playerStats.name)) {
 				tabsPane.setSelectedIndex(i);
 				return;
 			}
@@ -139,8 +135,8 @@ public final class StatisticsPanel extends JPanel implements Observer {
 		PlayerStatisticsChart playerChart = new PlayerStatisticsChart(
 				playerStats);
 		playersCharts.add(playerChart);
-		CloseableTabs.addClosableTab(tabsPane, playerChart.getChart(),
-				playerChart.getName(), addTabCloseButton(playerChart));
+		CloseableTabs.addClosableTab(tabsPane, playerChart.chartPanel,
+				playerChart.name, addTabCloseButton(playerChart));
 		tabsPane.setSelectedIndex(tabsPane.getTabCount() - 1);
 	}
 
@@ -151,7 +147,7 @@ public final class StatisticsPanel extends JPanel implements Observer {
 			private static final long serialVersionUID = 846256002308622567L;
 
 			public void actionPerformed(ActionEvent evt) {
-				tabsPane.remove(playerChart.getChart());
+				tabsPane.remove(playerChart.chartPanel);
 				playersCharts.remove(playerChart);
 			}
 		};

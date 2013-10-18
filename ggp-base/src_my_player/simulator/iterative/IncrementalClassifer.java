@@ -3,13 +3,14 @@ package simulator.iterative;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
+
+import labeler.IStateLabeler;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
-import labeler.IStateLabeler;
 import states.LabeledState;
 import states.MyState;
 import utils.BinaryValues;
@@ -19,8 +20,8 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.ProtectedProperties;
-import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
+import classifier.IClassifierFactory.ClassifierBuildingException;
 import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 
 public class IncrementalClassifer extends HeuristicClassifierInfrastructure implements IClassifier {

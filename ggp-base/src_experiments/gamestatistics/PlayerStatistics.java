@@ -1,15 +1,15 @@
 package gamestatistics;
 
-public class PlayerStatistics {
+public final class PlayerStatistics {
 
-	
-	private final String name;
-	private final int numVictories;
-	private final int numDefeats;
-	private final int numTies;
-	private final int totalScore;
+	public final String name;
+	public final int numVictories;
+	public final int numDefeats;
+	public final int numTies;
+	public final int totalScore;
 
-	public PlayerStatistics(String name, int numVictories, int numDefeats, int numTies, int totalScore) {
+	public PlayerStatistics(String name, int numVictories, int numDefeats,
+			int numTies, int totalScore) {
 		this.name = name;
 		this.numVictories = numVictories;
 		this.numDefeats = numDefeats;
@@ -17,24 +17,4 @@ public class PlayerStatistics {
 		this.totalScore = totalScore;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public int getNumVictories() {
-		return numVictories;
-	}
-
-	public int getNumDefeats() {
-		return numDefeats;
-	}
-
-	public int getNumTies() {
-		return numTies;
-	}
-
-	public int getTotalScore() {
-		return totalScore;
-	}
-	
 }

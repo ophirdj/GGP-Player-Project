@@ -15,15 +15,15 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import utils.Verbose;
 
-public class ScoreChart {
+public final class ScoreChart {
 	
 	private static final int CHART_IMAGE_WIDTH = 680;
 	private static final int CHART_IMAGE_HEIGHT = 420;
 
-	private DefaultCategoryDataset dataset;
-	private JFreeChart chart;
+	private final DefaultCategoryDataset dataset;
+	private final JFreeChart chart;
 	private final ChartPanel chartPanel;
-	private Set<String> players;
+	private final Set<String> players;
 
 	public ScoreChart() {
 		dataset = new DefaultCategoryDataset();
@@ -42,8 +42,6 @@ public class ScoreChart {
 			String name = playerNames.get(i);
 			int goal = goals.get(i);
 			if (players.contains(name)) {
-//				int score = dataset.getValue(name, "").intValue();
-//				dataset.setValue(score + goal, name, "");
 				dataset.incrementValue(goal, name, "");
 			} else {
 				players.add(name);

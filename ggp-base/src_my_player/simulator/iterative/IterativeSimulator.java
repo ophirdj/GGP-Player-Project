@@ -14,14 +14,14 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import simulator.BaseSimulator;
 import simulator.ISimulator;
+import simulator.base.BaseSimulator;
 import states.LabeledState;
 import states.MyState;
 import weka.classifiers.lazy.IBk;
-import classifier.ClassifierBuildingException;
 import classifier.IClassifier.ClassificationException;
 import classifier.IClassifier.ClassifierValue;
+import classifier.IClassifierFactory.ClassifierBuildingException;
 
 public class IterativeSimulator extends BaseSimulator implements ISimulator {
 
@@ -78,11 +78,13 @@ public class IterativeSimulator extends BaseSimulator implements ISimulator {
 		List<MyState> simulation = new ArrayList<MyState>();
 		MyState state = rootState;
 		while (!machine.isTerminal(state.getState())) {
+			reporter.discoverState();
 			simulation.add(state);
 			addContents(state);
 			List<MachineState> nextStates = machine.getNextStates(state.getState());
 			state = getBestNextState(nextStates, state);
 		}
+		reporter.discoverState();
 		simulation.add(state);
 		addContents(state);
 		MyState finalState = simulation.get(simulation.size() - 1);
@@ -143,7 +145,7 @@ public class IterativeSimulator extends BaseSimulator implements ISimulator {
 	}
 
 	@Override
-	public Collection<LabeledState> getLabeledStates() {
+	protected Collection<LabeledState> SimulatorGetLabeledStates() {
 		return labeled.values();
 	}
 

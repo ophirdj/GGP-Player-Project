@@ -4,7 +4,6 @@ import gamestatistics.ResultExtractor.GameResult;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,9 +20,12 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import logging.CSVGenerator;
+
+import org.ggp.base.util.ui.table.JZebraTable;
+
 import utils.Verbose;
 
-public class StatisticsTable {
+public final class StatisticsTable {
 
 	private static final String TOTAL_SCORE_COLUMN = "Total Score";
 	private static final String GAMES_TIED_COLUMN = "Games Tied";
@@ -33,27 +35,18 @@ public class StatisticsTable {
 	private static final String headers[] = { PLAYER_COLUMN, GAMES_WON_COLUMN,
 			GAMES_LOST_COLUMN, GAMES_TIED_COLUMN, TOTAL_SCORE_COLUMN };
 
-	private StatisticsPanel parentPanel;
-	private final JTable statsTable;
+	private final StatisticsPanel parentPanel;
+	public final JTable statsTable;
+	private final DefaultTableModel model;
 	private final TableRowSorter<TableModel> sorter;
 
-	private static int indexOf(String columnName) {
-		for (int i = 0; i < headers.length; ++i) {
-			if (headers[i] == columnName) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	public StatisticsTable(StatisticsPanel parent) {
-		super();
 		this.parentPanel = parent;
-		DefaultTableModel model = new DefaultTableModel();
+		model = new DefaultTableModel();
 		for (String header : headers) {
 			model.addColumn(header);
 		}
-		statsTable = new JTable(model) {
+		statsTable = new JZebraTable(model) {
 			private static final long serialVersionUID = 6599141739431637522L;
 
 			@Override
@@ -63,118 +56,143 @@ public class StatisticsTable {
 
 			@Override
 			public Class<?> getColumnClass(int colIndex) {
-				if (colIndex == indexOf(PLAYER_COLUMN))
+				if (colIndex == model.findColumn(PLAYER_COLUMN))
 					return String.class;
-				if (colIndex == indexOf(GAMES_WON_COLUMN))
+				if (colIndex == model.findColumn(GAMES_WON_COLUMN))
 					return Integer.class;
-				if (colIndex == indexOf(GAMES_LOST_COLUMN))
+				if (colIndex == model.findColumn(GAMES_LOST_COLUMN))
 					return Integer.class;
-				if (colIndex == indexOf(GAMES_LOST_COLUMN))
+				if (colIndex == model.findColumn(GAMES_TIED_COLUMN))
 					return Integer.class;
-				if (colIndex == indexOf(TOTAL_SCORE_COLUMN))
+				if (colIndex == model.findColumn(TOTAL_SCORE_COLUMN))
 					return Integer.class;
 				return Object.class;
 			}
 		};
-		statsTable.setShowHorizontalLines(true);
-		statsTable.setShowVerticalLines(true);
-		statsTable.getColumnModel().getColumn(1).setPreferredWidth(2);
-		statsTable.getColumnModel().getColumn(2).setPreferredWidth(2);
-		statsTable.getColumnModel().getColumn(3).setPreferredWidth(1);
+		statsTable.getColumnModel().getColumn(model.findColumn(PLAYER_COLUMN))
+				.setPreferredWidth(2);
+		statsTable.getColumnModel()
+				.getColumn(model.findColumn(GAMES_WON_COLUMN))
+				.setPreferredWidth(2);
+		statsTable.getColumnModel()
+				.getColumn(model.findColumn(GAMES_LOST_COLUMN))
+				.setPreferredWidth(2);
+		statsTable.getColumnModel()
+				.getColumn(model.findColumn(GAMES_TIED_COLUMN))
+				.setPreferredWidth(2);
+		statsTable.getColumnModel()
+				.getColumn(model.findColumn(TOTAL_SCORE_COLUMN))
+				.setPreferredWidth(1);
+
 		sorter = new TableRowSorter<TableModel>(model);
-		sorter.setComparator(indexOf(GAMES_WON_COLUMN),
+		sorter.setComparator(model.findColumn(GAMES_WON_COLUMN),
 				new Comparator<Integer>() {
+
+					@Override
 					public int compare(Integer a, Integer b) {
 						return a - b;
 					}
+
 				});
-		sorter.setComparator(indexOf(GAMES_LOST_COLUMN),
+		sorter.setComparator(model.findColumn(GAMES_LOST_COLUMN),
 				new Comparator<Integer>() {
+
+					@Override
 					public int compare(Integer a, Integer b) {
 						return a - b;
 					}
+
 				});
-		sorter.setComparator(indexOf(GAMES_TIED_COLUMN),
+		sorter.setComparator(model.findColumn(GAMES_TIED_COLUMN),
 				new Comparator<Integer>() {
+
+					@Override
 					public int compare(Integer a, Integer b) {
 						return a - b;
 					}
+
 				});
-		sorter.setComparator(indexOf(TOTAL_SCORE_COLUMN),
+		sorter.setComparator(model.findColumn(TOTAL_SCORE_COLUMN),
 				new Comparator<Integer>() {
+
+					@Override
 					public int compare(Integer a, Integer b) {
 						return a - b;
 					}
+
 				});
-		sorter.setSortKeys(Arrays
-				.asList(new SortKey[] {
-						new SortKey(indexOf(GAMES_WON_COLUMN),
-								SortOrder.DESCENDING),
-						new SortKey(indexOf(GAMES_LOST_COLUMN),
-								SortOrder.DESCENDING),
-						new SortKey(indexOf(GAMES_TIED_COLUMN),
-								SortOrder.DESCENDING),
-						new SortKey(indexOf(TOTAL_SCORE_COLUMN),
-								SortOrder.DESCENDING) }));
+		sorter.setSortKeys(Arrays.asList(new SortKey[] {
+				new SortKey(model.findColumn(GAMES_WON_COLUMN),
+						SortOrder.DESCENDING),
+				new SortKey(model.findColumn(GAMES_LOST_COLUMN),
+						SortOrder.DESCENDING),
+				new SortKey(model.findColumn(GAMES_TIED_COLUMN),
+						SortOrder.DESCENDING),
+				new SortKey(model.findColumn(TOTAL_SCORE_COLUMN),
+						SortOrder.DESCENDING) }));
 		statsTable.setRowSorter(sorter);
 
 		statsTable.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					parentPanel.switchToChart(getRow(statsTable
-							.getSelectedRow()));
+				int row = statsTable.getSelectedRow();
+				if ((e.getClickCount() == 2) && (row >= 0)
+						&& (row < statsTable.getRowCount())) {
+					parentPanel.switchToChart(getRow(row));
 				}
 			}
 		});
 	}
 
 	private PlayerStatistics getRow(int row) {
-		DefaultTableModel model = (DefaultTableModel) statsTable.getModel();
 		return new PlayerStatistics((String) model.getValueAt(row,
-				indexOf(PLAYER_COLUMN)), (Integer) model.getValueAt(row,
-				indexOf(GAMES_WON_COLUMN)), (Integer) model.getValueAt(row,
-				indexOf(GAMES_LOST_COLUMN)), (Integer) model.getValueAt(row,
-				indexOf(GAMES_TIED_COLUMN)), (Integer) model.getValueAt(row,
-				indexOf(TOTAL_SCORE_COLUMN)));
+				model.findColumn(PLAYER_COLUMN)), (Integer) model.getValueAt(
+				row, model.findColumn(GAMES_WON_COLUMN)),
+				(Integer) model.getValueAt(row,
+						model.findColumn(GAMES_LOST_COLUMN)),
+				(Integer) model.getValueAt(row,
+						model.findColumn(GAMES_TIED_COLUMN)),
+				(Integer) model.getValueAt(row,
+						model.findColumn(TOTAL_SCORE_COLUMN)));
 	}
 
 	public void updateTable(List<String> players, List<Integer> goals,
 			List<GameResult> results) {
 		Set<String> playersToAdd = new HashSet<String>(players);
-		DefaultTableModel model = (DefaultTableModel) statsTable.getModel();
-		updateTablePlayers(players, goals, results, playersToAdd, model);
-		addNewPlayers(players, goals, results, playersToAdd, model);
+		updateTablePlayers(players, goals, results, playersToAdd);
+		addNewPlayers(players, goals, results, playersToAdd);
 		sorter.sort();
 	}
 
 	private void updateTablePlayers(List<String> players, List<Integer> goals,
-			List<GameResult> results, Set<String> playersToAdd,
-			DefaultTableModel model) {
+			List<GameResult> results, Set<String> playersToAdd) {
 		for (int tableRow = 0; tableRow < model.getRowCount(); ++tableRow) {
 			String playerName = model.getValueAt(tableRow,
-					indexOf(PLAYER_COLUMN)).toString();
+					model.findColumn(PLAYER_COLUMN)).toString();
 			int playerIndex = players.indexOf(playerName);
 			if (playerIndex >= 0) {
 				model.setValueAt(
 						(Integer) model.getValueAt(tableRow,
-								indexOf(TOTAL_SCORE_COLUMN))
+								model.findColumn(TOTAL_SCORE_COLUMN))
 								+ goals.get(playerIndex), tableRow,
-						indexOf(TOTAL_SCORE_COLUMN));
+						model.findColumn(TOTAL_SCORE_COLUMN));
 				switch (results.get(playerIndex)) {
 				case WIN:
-					model.setValueAt((Integer) model.getValueAt(tableRow,
-							indexOf(GAMES_WON_COLUMN)) + 1, tableRow,
-							indexOf(GAMES_WON_COLUMN));
+					model.setValueAt(
+							(Integer) model.getValueAt(tableRow,
+									model.findColumn(GAMES_WON_COLUMN)) + 1,
+							tableRow, model.findColumn(GAMES_WON_COLUMN));
 					break;
 				case LOSE:
-					model.setValueAt((Integer) model.getValueAt(tableRow,
-							indexOf(GAMES_LOST_COLUMN)) + 1, tableRow,
-							indexOf(GAMES_LOST_COLUMN));
+					model.setValueAt(
+							(Integer) model.getValueAt(tableRow,
+									model.findColumn(GAMES_LOST_COLUMN)) + 1,
+							tableRow, model.findColumn(GAMES_LOST_COLUMN));
 					break;
 				case TIE:
-					model.setValueAt((Integer) model.getValueAt(tableRow,
-							indexOf(GAMES_TIED_COLUMN)) + 1, tableRow,
-							indexOf(GAMES_TIED_COLUMN));
+					model.setValueAt(
+							(Integer) model.getValueAt(tableRow,
+									model.findColumn(GAMES_TIED_COLUMN)) + 1,
+							tableRow, model.findColumn(GAMES_TIED_COLUMN));
 					break;
 				}
 				playersToAdd.remove(playerName);
@@ -183,8 +201,7 @@ public class StatisticsTable {
 	}
 
 	private void addNewPlayers(List<String> players, List<Integer> goals,
-			List<GameResult> results, Set<String> playersToAdd,
-			DefaultTableModel model) {
+			List<GameResult> results, Set<String> playersToAdd) {
 		for (String playerName : playersToAdd) {
 			int playerIndex = players.indexOf(playerName);
 			int numVictories = results.get(playerIndex) == GameResult.WIN ? 1
@@ -193,18 +210,14 @@ public class StatisticsTable {
 					: 0;
 			int numTies = results.get(playerIndex) == GameResult.TIE ? 1 : 0;
 			Object row[] = new Object[headers.length];
-			row[indexOf(PLAYER_COLUMN)] = playerName;
-			row[indexOf(GAMES_WON_COLUMN)] = numVictories;
-			row[indexOf(GAMES_LOST_COLUMN)] = numDefeats;
-			row[indexOf(GAMES_TIED_COLUMN)] = numTies;
-			row[indexOf(TOTAL_SCORE_COLUMN)] = goals.get(players
+			row[model.findColumn(PLAYER_COLUMN)] = playerName;
+			row[model.findColumn(GAMES_WON_COLUMN)] = numVictories;
+			row[model.findColumn(GAMES_LOST_COLUMN)] = numDefeats;
+			row[model.findColumn(GAMES_TIED_COLUMN)] = numTies;
+			row[model.findColumn(TOTAL_SCORE_COLUMN)] = goals.get(players
 					.indexOf(playerName));
 			model.addRow(row);
 		}
-	}
-
-	public JTable getTableView() {
-		return statsTable;
 	}
 
 	public List<PlayerStatistics> getPlayersStats() {
@@ -216,12 +229,10 @@ public class StatisticsTable {
 		return stats;
 	}
 
-	public void save(String filename) {
-		File csv = new File(filename);
+	public void save(String directory, String filename) {
 		CSVGenerator logger = null;
 		try {
-			logger = new CSVGenerator(csv.getAbsolutePath(), headers);
-			DefaultTableModel model = (DefaultTableModel) statsTable.getModel();
+			logger = new CSVGenerator(directory, filename, headers);
 			for (int row = 0; row < model.getRowCount(); ++row) {
 				Object rowData[] = new Object[model.getColumnCount()];
 				for (int column = 0; column < rowData.length; ++column) {

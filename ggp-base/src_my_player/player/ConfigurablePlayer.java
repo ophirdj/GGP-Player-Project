@@ -21,7 +21,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
-import playerstatistics.PlayerDetatilPanel;
+import playerdetails.ConfigurablePlayerDetailPanel;
 import simulator.ISimulator;
 import states.MyState;
 import utils.Verbose;
@@ -32,19 +32,19 @@ import classifier.IClassifierFactory.ClassifierBuildingException;
 
 public class ConfigurablePlayer extends StateMachineGamer {
 
-	private static int numInstances = -1;
+	private static int numInstances = 0;
 
 	private final int myNumber;
-	private ConfigurationPanel configPanel;
-	private PlayerDetatilPanel detatilPanel;
+	private final ConfigurationPanel configurationPanel;
+	private final DetailPanel detatilPanel;
 	private IMinMax minmax;
 	private int turnNumber;
 
 	public ConfigurablePlayer() {
-		this.myNumber = ++numInstances;
-		this.configPanel = new ConfigurationPanel();
-		this.detatilPanel = new PlayerDetatilPanel(getName(),
-				configPanel.savePlayerData);
+		this.myNumber = numInstances++;
+		this.configurationPanel = new ConfigurationPanel();
+		this.detatilPanel = new ConfigurablePlayerDetailPanel(getName(),
+				configurationPanel.savePlayerData);
 	}
 
 	@Override
@@ -56,16 +56,16 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		configPanel.setEnabled(false);
+		configurationPanel.setEnabled(false);
 		Verbose.printVerboseNoNewLine("getting machine... ", Verbose.PLAYER);
 		StateMachine machine = getStateMachine();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Verbose.printVerboseNoNewLine("getting labeler... ", Verbose.PLAYER);
-		IStateLabeler labeler = configPanel.getLabelerFactory()
+		IStateLabeler labeler = configurationPanel.getLabelerFactory()
 				.createStateLabeler(getStateMachine(), getRole());
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Verbose.printVerboseNoNewLine("getting simulator... ", Verbose.PLAYER);
-		ISimulator simulator = configPanel.getSimulatorFactory()
+		ISimulator simulator = configurationPanel.getSimulatorFactory()
 				.createSimulator(machine, labeler, getRole());
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		simulator.addObserver(detatilPanel);
@@ -75,7 +75,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Verbose.printVerboseNoNewLine("getting number of examples... ",
 				Verbose.PLAYER);
-		int exampleAmount = configPanel.getExampleAmount();
+		int exampleAmount = configurationPanel.getExampleAmount();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		for (int counter = 0; counter < exampleAmount; counter++) {
 			simulator.Simulate(initalState);
@@ -85,10 +85,10 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 		Verbose.printVerboseNoNewLine("getting classifier type... ",
 				Verbose.PLAYER);
-		Classifier wekaClassifier = configPanel.getWekaClassifer();
+		Classifier wekaClassifier = configurationPanel.getWekaClassifer();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Game game = getMatch().getGame();
-		IClassifierFactory classifierFactory = configPanel
+		IClassifierFactory classifierFactory = configurationPanel
 				.getClassifierFactory();
 		try {
 			Verbose.printVerboseNoNewLine("getting classifier... ",
@@ -99,14 +99,17 @@ public class ConfigurablePlayer extends StateMachineGamer {
 					wekaClassifier);
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("getting minmax... ", Verbose.PLAYER);
-			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine,
-					getRole(), classifier, configPanel.isMinMaxCached(),
-					configPanel.isMinMaxAnytime());
+			this.minmax = configurationPanel.getMinmaxFactory().createMinMax(
+					machine, getRole(), classifier,
+					configurationPanel.isMinMaxCached(),
+					configurationPanel.isMinMaxAnytime());
 			Verbose.printVerbose("success", Verbose.PLAYER);
-			Verbose.printVerboseNoNewLine("setting minmax depth... ",
-					Verbose.PLAYER);
-			minmax.setDepth(configPanel.getMinMaxDepth());
-			Verbose.printVerbose("success", Verbose.PLAYER);
+			if (!configurationPanel.isMinMaxAnytime()) {
+				Verbose.printVerboseNoNewLine("setting minmax depth... ",
+						Verbose.PLAYER);
+				minmax.setDepth(configurationPanel.getMinMaxDepth());
+				Verbose.printVerbose("success", Verbose.PLAYER);
+			}
 			minmax.addObserver(detatilPanel);
 		} catch (ClassifierBuildingException e) {
 			e.printStackTrace();
@@ -114,7 +117,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 					+ " could not build classifier", Verbose.UNEXPECTED_VALUE);
 		}
 		turnNumber = 0;
-		configPanel.setEnabled(true);
+		configurationPanel.setEnabled(true);
 	}
 
 	private MyState buildInitialState() throws MoveDefinitionException {
@@ -196,7 +199,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 	@Override
 	public ConfigPanel getConfigPanel() {
-		return configPanel;
+		return configurationPanel;
 	}
 
 	@Override
