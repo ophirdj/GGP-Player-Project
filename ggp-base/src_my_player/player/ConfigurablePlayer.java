@@ -56,7 +56,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		configPanel.setEditble(false);
+		configPanel.setEnabled(false);
 		Verbose.printVerboseNoNewLine("getting machine... ", Verbose.PLAYER);
 		StateMachine machine = getStateMachine();
 		Verbose.printVerbose("success", Verbose.PLAYER);
@@ -69,10 +69,12 @@ public class ConfigurablePlayer extends StateMachineGamer {
 				.createSimulator(machine, labeler, getRole());
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		simulator.addObserver(detatilPanel);
-		Verbose.printVerboseNoNewLine("building initial state... ", Verbose.PLAYER);
+		Verbose.printVerboseNoNewLine("building initial state... ",
+				Verbose.PLAYER);
 		MyState initalState = buildInitialState();
 		Verbose.printVerbose("success", Verbose.PLAYER);
-		Verbose.printVerboseNoNewLine("getting number of examples... ", Verbose.PLAYER);
+		Verbose.printVerboseNoNewLine("getting number of examples... ",
+				Verbose.PLAYER);
 		int exampleAmount = configPanel.getExampleAmount();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		for (int counter = 0; counter < exampleAmount; counter++) {
@@ -80,14 +82,14 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			Verbose.printVerbose("current simulation is: " + counter + " of: "
 					+ exampleAmount, Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
-		
+
 		Verbose.printVerboseNoNewLine("getting classifier type... ",
 				Verbose.PLAYER);
 		Classifier wekaClassifier = configPanel.getWekaClassifer();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Game game = getMatch().getGame();
 		IClassifierFactory classifierFactory = configPanel
-				.getStateClassifierFactory();
+				.getClassifierFactory();
 		try {
 			Verbose.printVerboseNoNewLine("getting classifier... ",
 					Verbose.PLAYER);
@@ -98,7 +100,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("getting minmax... ", Verbose.PLAYER);
 			this.minmax = configPanel.getMinmaxFactory().createMinMax(machine,
-					getRole(), classifier);
+					getRole(), classifier, configPanel.isMinMaxCached(),
+					configPanel.isMinMaxAnytime());
 			Verbose.printVerbose("success", Verbose.PLAYER);
 			Verbose.printVerboseNoNewLine("setting minmax depth... ",
 					Verbose.PLAYER);
@@ -112,14 +115,15 @@ public class ConfigurablePlayer extends StateMachineGamer {
 					Verbose.UNEXPECTED_VALUE);
 		}
 		turnNumber = 0;
-		configPanel.setEditble(true);
+		configPanel.setEnabled(true);
 	}
 
 	private MyState buildInitialState() throws MoveDefinitionException {
 		StateMachine machine = getStateMachine();
 		Role myRole = getRole();
-		Role otherRole = machine.getRoles().get(0).equals(myRole) ? machine.getRoles().get(1) : machine.getRoles().get(0);
-		if(machine.getLegalMoves(machine.getInitialState(), getRole()).size() > 1) {
+		Role otherRole = machine.getRoles().get(0).equals(myRole) ? machine
+				.getRoles().get(1) : machine.getRoles().get(0);
+		if (machine.getLegalMoves(machine.getInitialState(), getRole()).size() > 1) {
 			return new MyState(machine.getInitialState(), 0, myRole, otherRole);
 		} else {
 			return new MyState(machine.getInitialState(), 0, otherRole, myRole);
@@ -137,11 +141,14 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Move selection = null;
 		try {
 			if (moves.size() > 1) {
+				minmax.setTimeout(timeout - 1500);
 				selection = minmax.getMove(new MyState(getCurrentState(),
 						turnNumber, getRole(), getOponent()));
 			}
 		} catch (MinMaxException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// computation timed out
 		} finally {
 			if (selection == null) {
 				selection = moves.get(0);
