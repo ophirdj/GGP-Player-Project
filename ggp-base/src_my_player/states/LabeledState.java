@@ -1,7 +1,7 @@
 package states;
 
 
-public class LabeledState {
+public final class LabeledState {
 
 	private MyState state;
 	private double value;

@@ -15,7 +15,7 @@ import states.LabeledState;
 import states.MyState;
 
 
-public class MinMaxValueStateLabeler implements IStateLabeler {
+public final class MinMaxValueStateLabeler implements IStateLabeler {
 
 	private StateMachine machine;
 	private int maxPlayerIndex;

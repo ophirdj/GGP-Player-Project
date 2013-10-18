@@ -9,7 +9,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import states.LabeledState;
 import states.MyState;
 
-public class SimpleStateLabeler implements IStateLabeler {
+public final class SimpleStateLabeler implements IStateLabeler {
 
 	private StateMachine machine;
 	private Role player;

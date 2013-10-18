@@ -7,8 +7,8 @@ import utils.Verbose;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
-import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
+import classifier.IClassifierFactory.ClassifierBuildingException;
 
 public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 	
@@ -22,7 +22,7 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 		this.isTrained = false;
 	}
 	
-	protected void train(Instances data) throws ClassifierBuildingException{
+	protected final void train(Instances data) throws ClassifierBuildingException{
 		try {
 			regressionClassifier.buildClassifier(data);
 			this.isTrained = true;
@@ -33,7 +33,7 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 	}
 
 	@Override
-	public ClassifierValue getValue(MyState state)
+	public final ClassifierValue getValue(MyState state)
 			throws ClassificationException {
 		assertTrained();
 		try {
@@ -51,20 +51,20 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 	
 
 	@Override
-	public boolean isBetterValue(ClassifierValue value1, ClassifierValue value2) throws ClassificationException {
+	public final boolean isBetterValue(ClassifierValue value1, ClassifierValue value2) throws ClassificationException {
 		assertTrained();
 		assertNumbers(value1, value2);
 		return ((DoubleValue)value1).getValue() > ((DoubleValue)value2).getValue();
 	}
 	
-	private void assertNumbers(ClassifierValue value1, ClassifierValue value2) throws ClassificationException {
+	private final void assertNumbers(ClassifierValue value1, ClassifierValue value2) throws ClassificationException {
 		if(!(value1 instanceof DoubleValue && value2 instanceof DoubleValue)){
 			Verbose.printVerboseError("Unexpected values", Verbose.UNEXPECTED_VALUE);
 			throw new ClassificationException();
 		}
 	}
 
-	private void assertTrained() throws ClassificationException{
+	private final void assertTrained() throws ClassificationException{
 		if(!isTrained){
 			Verbose.printVerboseError("Untrained classifier", Verbose.UNEXPECTED_VALUE);
 			throw new ClassificationException();
@@ -73,7 +73,7 @@ public abstract class HeuristicClassifierInfrastructure implements IClassifier {
 	
 	protected abstract Instance stateToInstance(MyState state);
 	
-	public static class DoubleValue implements ClassifierValue{
+	public static final class DoubleValue implements ClassifierValue{
 		private Double value;
 		
 		public DoubleValue(Double value) {

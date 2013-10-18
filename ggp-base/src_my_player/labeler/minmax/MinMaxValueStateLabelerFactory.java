@@ -6,7 +6,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import labeler.IStateLabeler;
 import labeler.IStateLabelerFactory;
 
-public class MinMaxValueStateLabelerFactory implements IStateLabelerFactory {
+public final class MinMaxValueStateLabelerFactory implements IStateLabelerFactory {
 
 	@Override
 	public IStateLabeler createStateLabeler(StateMachine machine, Role player) {

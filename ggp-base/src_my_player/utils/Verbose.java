@@ -1,6 +1,6 @@
 package utils;
 
-public class Verbose {
+public final class Verbose {
 	public static final long HEURISTIC_GENERATOR_VERBOSE = 1 << 0;
 	public static final long CURRENT_SIMULATION_VERBOSE = 1 << 1;
 	public static final long MIN_MAX_VERBOSE = 1 << 2;

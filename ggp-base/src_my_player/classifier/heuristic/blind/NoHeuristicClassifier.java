@@ -7,7 +7,7 @@ import utils.Verbose;
 import classifier.IClassifier;
 import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure.DoubleValue;
 
-public class NoHeuristicClassifier implements IClassifier {
+public final class NoHeuristicClassifier implements IClassifier {
 
 	private IStateLabeler labeler;
 

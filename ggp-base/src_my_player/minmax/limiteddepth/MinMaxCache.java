@@ -6,10 +6,10 @@ import java.util.Map;
 
 import states.MyState;
 
-public class MinMaxCache<T> {
+public final class MinMaxCache<T> {
 
 
-	public static class CacheEntry<T> {
+	public static final class CacheEntry<T> {
 		
 		public static final int TERMINAL_STATE_DEPTH = 200;
 

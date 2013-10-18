@@ -15,12 +15,12 @@ public abstract class BasicReporter implements Subject {
 	}
 	
 	@Override
-	public void addObserver(Observer observer) {
+	public final void addObserver(Observer observer) {
 		observers.add(observer);
 	}
 
 	@Override
-	public void notifyObservers(Event event) {
+	public final void notifyObservers(Event event) {
 		for (Observer observer : observers) {
 			observer.observe(event);
 		}

@@ -3,7 +3,7 @@ package utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BinaryValues {
+public final class BinaryValues {
 	public static final String TRUE_VALUE = "TRUE";
 	public static final String FALSE_VALUE = "FALSE";
 	private static final List<String> binaryValues = getBinaryValues();

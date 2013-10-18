@@ -20,7 +20,7 @@ import simulator.BaseSimulator;
 import states.LabeledState;
 import states.MyState;
 
-public class KnownValueSimulator extends BaseSimulator {
+public final class KnownValueSimulator extends BaseSimulator {
 
 	private Role maxplayer;
 	private Map<MachineState, LabeledState> labeled;

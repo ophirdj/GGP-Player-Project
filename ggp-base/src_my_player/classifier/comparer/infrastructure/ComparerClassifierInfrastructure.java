@@ -1,4 +1,4 @@
-package classifier.comparer;
+package classifier.comparer.infrastructure;
 
 import states.MyState;
 import utils.BinaryValues;
@@ -6,8 +6,8 @@ import utils.Verbose;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
-import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
+import classifier.IClassifierFactory.ClassifierBuildingException;
 
 public abstract class ComparerClassifierInfrastructure implements IClassifier {
 
@@ -19,7 +19,7 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 		this.isTrained = false;
 	}
 
-	protected void train(Instances data) throws ClassifierBuildingException {
+	protected final void train(Instances data) throws ClassifierBuildingException {
 		try {
 			classificationClassifier.buildClassifier(data);
 			this.isTrained = true;
@@ -31,14 +31,14 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 	}
 
 	@Override
-	public ClassifierValue getValue(MyState state)
+	public final ClassifierValue getValue(MyState state)
 			throws ClassificationException {
 		assertTrained();
 		return new StateValue(state);
 	}
 
 	@Override
-	public boolean isBetterValue(ClassifierValue value1, ClassifierValue value2)
+	public final boolean isBetterValue(ClassifierValue value1, ClassifierValue value2)
 			throws ClassificationException {
 		assertTrained();
 		assertStates(value1, value2);
@@ -55,7 +55,7 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 		}
 	}
 
-	private void assertStates(ClassifierValue value1, ClassifierValue value2)
+	private final void assertStates(ClassifierValue value1, ClassifierValue value2)
 			throws ClassificationException {
 		if (!(value1 instanceof StateValue && value2 instanceof StateValue)) {
 			Verbose.printVerboseError("Unexpected values",
@@ -64,7 +64,7 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 		}
 	}
 
-	private void assertTrained() throws ClassificationException {
+	private final void assertTrained() throws ClassificationException {
 		if (!isTrained) {
 			Verbose.printVerboseError("Untrained classifier",
 					Verbose.UNEXPECTED_VALUE);
@@ -74,7 +74,7 @@ public abstract class ComparerClassifierInfrastructure implements IClassifier {
 
 	protected abstract Instance statesToInstance(MyState state1, MyState state2);
 
-	public static class StateValue implements ClassifierValue {
+	public static final class StateValue implements ClassifierValue {
 		private MyState value;
 
 		public StateValue(MyState value) {

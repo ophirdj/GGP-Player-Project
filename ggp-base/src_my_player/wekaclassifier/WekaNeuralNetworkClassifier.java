@@ -2,7 +2,7 @@ package wekaclassifier;
 
 import weka.classifiers.functions.MultilayerPerceptron;
 
-public class WekaNeuralNetworkClassifier extends MultilayerPerceptron implements
+public final class WekaNeuralNetworkClassifier extends MultilayerPerceptron implements
 		IWekaClassifier {
 
 	private static final long serialVersionUID = -5738599499628940141L;

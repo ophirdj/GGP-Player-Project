@@ -35,7 +35,7 @@ import classifier.IClassifierFactory;
 import classifier.comparer.simple.SimpleComparerClassifierFactory;
 import classifier.heuristic.simple.SimpleHeuristicClassifierFactory;
 
-public class ConfigurationPanel extends ConfigPanel {
+public final class ConfigurationPanel extends ConfigPanel {
 
 	private static final long serialVersionUID = -581259385199768198L;
 

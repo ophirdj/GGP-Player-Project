@@ -19,10 +19,10 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
-import classifier.ClassifierBuildingException;
-import classifier.comparer.ComparerClassifierInfrastructure;
+import classifier.IClassifierFactory.ClassifierBuildingException;
+import classifier.comparer.infrastructure.ComparerClassifierInfrastructure;
 
-public class SimpleComparerClassifier extends ComparerClassifierInfrastructure {
+public final class SimpleComparerClassifier extends ComparerClassifierInfrastructure {
 
 	private Map<Attribute, GdlSentence> state1AttributeToSentence;
 	private Map<Attribute, GdlSentence> state2AttributeToSentence;

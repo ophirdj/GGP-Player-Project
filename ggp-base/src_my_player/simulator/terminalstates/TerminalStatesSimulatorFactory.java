@@ -8,7 +8,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import simulator.ISimulator;
 import simulator.ISimulatorFactory;
 
-public class TerminalStatesSimulatorFactory implements ISimulatorFactory {
+public final class TerminalStatesSimulatorFactory implements ISimulatorFactory {
 
 	@Override
 	public ISimulator createSimulator(StateMachine machine,

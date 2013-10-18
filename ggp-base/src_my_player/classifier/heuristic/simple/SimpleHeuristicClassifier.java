@@ -22,10 +22,10 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.ProtectedProperties;
-import classifier.ClassifierBuildingException;
+import classifier.IClassifierFactory.ClassifierBuildingException;
 import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 
-public class SimpleHeuristicClassifier extends
+public final class SimpleHeuristicClassifier extends
 		HeuristicClassifierInfrastructure {
 
 	private HashMap<Attribute, GdlSentence> attributeToSentence;

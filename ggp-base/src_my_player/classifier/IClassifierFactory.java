@@ -31,5 +31,11 @@ public interface IClassifierFactory {
 	IClassifier createClassifier(IStateLabeler labeler, String gameName, Set<GdlSentence> contents,
 			List<Gdl> rules, Collection<LabeledState> labeledExamples,
 			Classifier classifier) throws ClassifierBuildingException;
+	
+	public class ClassifierBuildingException extends Exception {
+
+		private static final long serialVersionUID = 1239499081928527499L;
+
+	}
 
 }

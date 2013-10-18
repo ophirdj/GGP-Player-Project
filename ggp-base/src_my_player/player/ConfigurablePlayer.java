@@ -26,9 +26,9 @@ import simulator.ISimulator;
 import states.MyState;
 import utils.Verbose;
 import weka.classifiers.Classifier;
-import classifier.ClassifierBuildingException;
 import classifier.IClassifier;
 import classifier.IClassifierFactory;
+import classifier.IClassifierFactory.ClassifierBuildingException;
 
 public class ConfigurablePlayer extends StateMachineGamer {
 
@@ -110,9 +110,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 			minmax.addObserver(detatilPanel);
 		} catch (ClassifierBuildingException e) {
 			e.printStackTrace();
-			Verbose.printVerboseError(
-					"an error has occured in configurable player " + myNumber,
-					Verbose.UNEXPECTED_VALUE);
+			Verbose.printVerboseError("configurable player " + myNumber
+					+ " could not build classifier", Verbose.UNEXPECTED_VALUE);
 		}
 		turnNumber = 0;
 		configPanel.setEnabled(true);
@@ -206,4 +205,3 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	}
 
 }
-

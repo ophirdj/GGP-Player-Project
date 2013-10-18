@@ -27,21 +27,21 @@ public abstract class BaseSimulator implements ISimulator {
 	}
 
 	@Override
-	public void addObserver(Observer observer) {
+	public final void addObserver(Observer observer) {
 		reporter.addObserver(observer);
 	}
 
 	@Override
-	public void notifyObservers(Event event) {
+	public final void notifyObservers(Event event) {
 		reporter.notifyObservers(event);
 	}
 
-	protected void addContents(MyState state) {
+	protected final void addContents(MyState state) {
 		contents.addAll(state.getContents());
 	}
 
 	@Override
-	public Set<GdlSentence> getAllContents() {
+	public final Set<GdlSentence> getAllContents() {
 		return contents;
 	}
 

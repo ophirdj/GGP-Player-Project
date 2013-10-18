@@ -9,7 +9,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import classifier.IClassifier;
 
 
-public class AlphaBetaFactory extends IMinMaxFactory {
+public final class AlphaBetaFactory extends IMinMaxFactory {
 	
 	@Override
 	protected IMinMax createLimitedDepthMinMax(StateMachine machine,

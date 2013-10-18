@@ -18,7 +18,7 @@ import simulator.BaseSimulator;
 import states.LabeledState;
 import states.MyState;
 
-public class TerminalStatesSimulator extends BaseSimulator {
+public final class TerminalStatesSimulator extends BaseSimulator {
 
 	private Set<LabeledState> labeled;
 

@@ -1,22 +1,45 @@
 package simulator;
 
-import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.observer.Subject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class SimulatorReporter implements Subject {
+import org.ggp.base.util.gdl.grammar.GdlSentence;
 
+import states.LabeledState;
+import utils.BasicReporter;
+import simulator.ISimulator.SimulatorEvent;;
 
-	@Override
-	public void addObserver(Observer observer) {
-		// TODO Auto-generated method stub
-		
+public final class SimulatorReporter extends BasicReporter {
+
+	private Map<Double, Integer> labelsHistogram = new HashMap<Double, Integer>();
+	private int discoveredStates;
+	private int labeledStates;
+	
+
+	public void resetCount() {
+		labelsHistogram.clear();
+		discoveredStates =  0;
+		labeledStates = 0;
 	}
-
-	@Override
-	public void notifyObservers(Event event) {
-		// TODO Auto-generated method stub
-		
+	
+	public void discoverState() {
+		++discoveredStates;
 	}
-
+	
+	public void labeledState(LabeledState labeledState) {
+		++labeledStates;
+		double label = labeledState.getValue();
+		if(labelsHistogram.containsKey(label)) {
+			labelsHistogram.put(label, labelsHistogram.get(label) + 1);
+		} else {
+			labelsHistogram.put(label, 1);
+		}
+	}
+	
+	public void reportAndReset(Set<GdlSentence> contents) {
+		notifyObservers(new SimulatorEvent(contents, labelsHistogram, discoveredStates, labeledStates));
+		resetCount();
+	}
+	
 }

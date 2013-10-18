@@ -11,7 +11,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import states.MyState;
 import utils.Verbose;
 
-public class AnyTimeWorker extends Thread {
+public final class AnyTimeWorker extends Thread {
 
 	private final IMinMax minmax;
 	private int maxDepth;

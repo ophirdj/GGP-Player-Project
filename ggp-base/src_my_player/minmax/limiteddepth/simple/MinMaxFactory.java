@@ -9,7 +9,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import classifier.IClassifier;
 
 
-public class MinMaxFactory extends IMinMaxFactory {
+public final class MinMaxFactory extends IMinMaxFactory {
 
 	@Override
 	public IMinMax createLimitedDepthMinMax(StateMachine machine, Role maxPlayer,

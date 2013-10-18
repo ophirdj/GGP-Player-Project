@@ -6,7 +6,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import labeler.IStateLabeler;
 import labeler.IStateLabelerFactory;
 
-public class SimpleStateLabelerFactory implements IStateLabelerFactory {
+public final class SimpleStateLabelerFactory implements IStateLabelerFactory {
 
 	@Override
 	public IStateLabeler createStateLabeler(StateMachine machine, Role player) {

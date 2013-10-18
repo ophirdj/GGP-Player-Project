@@ -11,7 +11,7 @@ import simulator.ISimulator;
 import simulator.ISimulatorFactory;
 
 
-public class KnownValueSimulatorFactory implements ISimulatorFactory {
+public final class KnownValueSimulatorFactory implements ISimulatorFactory {
 
 	@Override
 	public ISimulator createSimulator(StateMachine machine,

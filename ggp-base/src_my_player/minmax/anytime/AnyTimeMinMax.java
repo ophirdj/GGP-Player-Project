@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import states.MyState;
 import utils.Verbose;
 
-public class AnyTimeMinMax implements IMinMax {
+public final class AnyTimeMinMax implements IMinMax {
 
 	public static final int DEFAULT_MINMAX_MAX_DEPTH = 10;
 
