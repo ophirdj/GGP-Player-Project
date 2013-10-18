@@ -6,12 +6,17 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
@@ -22,6 +27,7 @@ import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 import simulator.ISimulatorFactory;
+import utils.Verbose;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
 import wekaclassifier.IWekaClassifier;
@@ -48,6 +54,11 @@ public class ConfigurationPanel extends ConfigPanel {
 	private final JSpinner minmaxDepth = new JSpinner(new SpinnerNumberModel(4,
 			1, 20, 1));
 
+	private final JRadioButton useHeuristic = new JRadioButton("Absolute");
+	private final JRadioButton useCompare = new JRadioButton("Relative");
+
+	private final ButtonGroup classificationGroup = new ButtonGroup();
+
 	public ConfigurationPanel() {
 		super(new GridBagLayout());
 
@@ -68,6 +79,42 @@ public class ConfigurationPanel extends ConfigPanel {
 			}
 
 		});
+
+		classificationGroup.add(useHeuristic);
+		classificationGroup.add(useCompare);
+
+		wekaClassifierList.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				IWekaClassifier classifier = getWekaClassifer();
+				Capabilities capabilities = classifier.getCapabilities();
+				useCompare.setEnabled(capabilities
+						.handles(Capability.BINARY_CLASS));
+				useHeuristic.setEnabled(capabilities
+						.handles(Capability.NUMERIC_CLASS));
+				ButtonModel selection = classificationGroup.getSelection();
+				if (selection != null && selection.isEnabled()) {
+					return;
+				}
+				Enumeration<AbstractButton> buttonEnumeration = classificationGroup
+						.getElements();
+				while (buttonEnumeration.hasMoreElements()) {
+					AbstractButton button = buttonEnumeration.nextElement();
+					if (button.isEnabled()) {
+						button.setSelected(true);
+						break;
+					}
+				}
+			}
+
+		});
+
+		{ // need to do this to invoke item listener to prevent bug
+			IWekaClassifier c = wekaClassifierList.getItemAt(0);
+			wekaClassifierList.removeItemAt(0);
+			wekaClassifierList.addItem(c);
+		}
 
 		int rowCount = 0;
 
@@ -119,9 +166,9 @@ public class ConfigurationPanel extends ConfigPanel {
 		add(minmaxDepth, new GridBagConstraints(3, rowCount, 1, 1, 0.0, 0.0,
 				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
 				new Insets(5, 5, 1, 5), 5, 5));
-		
+
 		++rowCount;
-		
+
 		add(minmaxCached, new GridBagConstraints(1, rowCount, 1, 1, 0.0, 0.0,
 				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
 				new Insets(5, 5, 1, 5), 5, 5));
@@ -134,11 +181,23 @@ public class ConfigurationPanel extends ConfigPanel {
 		add(wekaClassifierList, new GridBagConstraints(1, rowCount, 3, 1, 0.0,
 				0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
 				new Insets(5, 5, 1, 5), 5, 5));
-		
+
 		++rowCount;
-		
-		add(savePlayerData, new GridBagConstraints(0, rowCount, 1, 1, 0.0,
-				0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+
+		add(new JLabel("Type:"), new GridBagConstraints(1, rowCount, 1, 1, 0.0,
+				0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(useHeuristic, new GridBagConstraints(2, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5,
+						5, 1, 5), 5, 5));
+		add(useCompare, new GridBagConstraints(3, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5,
+						5, 1, 5), 5, 5));
+
+		++rowCount;
+
+		add(savePlayerData, new GridBagConstraints(0, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
 				new Insets(5, 5, 1, 5), 5, 5));
 	}
 
@@ -199,12 +258,15 @@ public class ConfigurationPanel extends ConfigPanel {
 	}
 
 	public IClassifierFactory getClassifierFactory() {
-		IWekaClassifier classifier = getWekaClassifer();
-		Capabilities capabilities = classifier.getCapabilities();
-		if (capabilities.handles(Capability.BINARY_CLASS)) {
+		if (useCompare.isSelected()) {
 			return new SimpleComparerClassifierFactory();
+		} else if (useHeuristic.isSelected()) {
+			return new SimpleHeuristicClassifierFactory();
+		} else {
+			Verbose.printVerboseError("No compatible builder selected",
+					Verbose.UNEXPECTED_VALUE);
+			return null;
 		}
-		return new SimpleHeuristicClassifierFactory();
 	}
 
 	public IWekaClassifier getWekaClassifer() {
