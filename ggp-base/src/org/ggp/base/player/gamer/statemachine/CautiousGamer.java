@@ -22,6 +22,7 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
  */
 
 public class CautiousGamer extends StateMachineGamer {
+	@SuppressWarnings("unused")
 	private final int MAX_STATE_VALUE = 100;
 	private final int MIN_STATE_VALUE = 0;
 		

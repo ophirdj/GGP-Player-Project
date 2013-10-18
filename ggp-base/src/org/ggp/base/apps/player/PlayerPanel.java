@@ -64,7 +64,7 @@ public final class PlayerPanel extends JPanel
 
 	private final JTextField portTextField;
 
-	private final JComboBox typeComboBox;
+	private final JComboBox<String> typeComboBox;
 	
 	private Integer defaultPort = 9147;
 	
@@ -75,7 +75,7 @@ public final class PlayerPanel extends JPanel
 		super(new GridBagLayout());
 
 		portTextField = new JTextField(defaultPort.toString());
-		typeComboBox = new JComboBox();
+		typeComboBox = new JComboBox<String>();
 		createButton = new JButton(createButtonMethod());
 		playersTabbedPane = new JTabbedPane();
 
@@ -92,7 +92,6 @@ public final class PlayerPanel extends JPanel
 			    gamers.remove(gamer);
 			}
 		}
-		typeComboBox.setSelectedItem("ConfigurablePlayer"); //FIXME: return to random (or maybe not?)
 
 		JPanel managerPanel = new JPanel(new GridBagLayout());
 		managerPanel.setBorder(new TitledBorder("Manager"));
@@ -122,7 +121,6 @@ public final class PlayerPanel extends JPanel
 				try
 				{
 					int port = Integer.valueOf(portTextField.getText());
-					String type = (String) typeComboBox.getSelectedItem();
 
 					MatchPanel matchPanel = new MatchPanel();
 					NetworkPanel networkPanel = new NetworkPanel();
@@ -149,7 +147,7 @@ public final class PlayerPanel extends JPanel
 					tab.addTab("Network", networkPanel);
 					tab.addTab("Configuration", configPanel);
 					tab.addTab("Detail", detailPanel);
-					playersTabbedPane.addTab(type + " (" + player.getGamerPort() + ")", tab);
+					playersTabbedPane.addTab(gamer.getName() + " (" + player.getGamerPort() + ")", tab);
 					playersTabbedPane.setSelectedIndex(playersTabbedPane.getTabCount()-1);
 					
 					defaultPort++;

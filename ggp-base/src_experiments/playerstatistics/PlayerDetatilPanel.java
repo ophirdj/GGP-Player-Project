@@ -12,7 +12,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 
 import logging.CSVGenerator;
-import minmax.MinMax;
+import minmax.IMinMax.MinMaxEvent;
 
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.player.gamer.event.GamerCompletedMatchEvent;
@@ -23,12 +23,12 @@ import org.ggp.base.util.ui.table.JZebraTable;
 public class PlayerDetatilPanel extends DetailPanel {
 
 	private static final long serialVersionUID = -7086442989371557835L;
-	private static final String headers[] = { "Explored", "Expanded", "Pruned",
-			"Terminal", "Cached", "Cache Hits", "Depth", "Branching Factor",
+	private static final String headers[] = { "Depth", "Explored", "Expanded",
+			"Pruned", "Terminal", "Cached", "Cache Hits", "Branching Factor",
 			"Time (secs)", "Move" };
 	private final JZebraTable minmaxTable;
 	private final String playerName;
-	private String logPath;
+	private String logTablePath;
 	private JCheckBox savePlayerData;
 
 	public PlayerDetatilPanel(String playerName, JCheckBox savePlayerData) {
@@ -91,10 +91,10 @@ public class PlayerDetatilPanel extends DetailPanel {
 	public void observe(Event event) {
 		if (event instanceof GamerNewMatchEvent) {
 			observe((GamerNewMatchEvent) event);
-		} else if (event instanceof MinMax.MinMaxEvent) {
-			observe((MinMax.MinMaxEvent) event);
+		} else if (event instanceof MinMaxEvent) {
+			observe((MinMaxEvent) event);
 		} else if (event instanceof GamerCompletedMatchEvent) {
-			if(savePlayerData.isSelected()) {
+			if (savePlayerData.isSelected()) {
 				saveMatchTable();
 			}
 		}
@@ -102,7 +102,7 @@ public class PlayerDetatilPanel extends DetailPanel {
 
 	private void saveMatchTable() {
 		try {
-			CSVGenerator logger = new CSVGenerator(logPath, headers);
+			CSVGenerator logger = new CSVGenerator(logTablePath, headers);
 			DefaultTableModel model = (DefaultTableModel) minmaxTable
 					.getModel();
 			for (int row = 0; row < model.getRowCount(); ++row) {
@@ -113,7 +113,7 @@ public class PlayerDetatilPanel extends DetailPanel {
 				logger.addRow(rowData);
 			}
 			logger.close();
-			logPath = null;
+			logTablePath = null;
 		} catch (IOException e) {
 
 		}
@@ -122,38 +122,48 @@ public class PlayerDetatilPanel extends DetailPanel {
 	private void observe(GamerNewMatchEvent event) {
 		DefaultTableModel model = (DefaultTableModel) minmaxTable.getModel();
 		model.setRowCount(0);
-		
-		File playersDir = new File(System.getProperty("user.home"),
+
+		createLogTablePath(event);
+	}
+
+	private void createLogTablePath(GamerNewMatchEvent event) {
+		File playersDataDirrectory = new File(System.getProperty("user.home"),
 				"ggp-player-details");
-		if (!playersDir.exists()) {
-			playersDir.mkdir();
-		}
-		File playerDir = new File(playersDir, playerName);
-		if (!playerDir.exists()) {
-			playerDir.mkdir();
+		File playerDirectory = new File(playersDataDirrectory, playerName);
+		if (!playerDirectory.exists()) {
+			playerDirectory.mkdirs();
 		}
 		String logID = event.getMatch().getMatchId() + "."
 				+ event.getRoleName() + "." + System.currentTimeMillis();
-		File log = new File(playerDir, logID + ".csv");
-		logPath = log.getAbsolutePath();
+		File log = new File(playerDirectory, logID + ".csv");
+		logTablePath = log.getAbsolutePath();
 	}
 
-	private void observe(MinMax.MinMaxEvent event) {
-		String move = event.getMove().toString();
-		Integer exploredNodes = event.getExploredNodes();
-		Integer expandedNodes = event.getExpandedNodes();
-		Integer prunedNodes = event.getPrunedNodes();
-		Integer terminalNodes = event.getTerminalNodes();
-		Integer cacheSize = event.getNodesInCache();
-		Integer cacheHits = event.getCacheHits();
-		Integer depth = event.getSearchDepth();
-		Double branchingFactor = event.getAverageBranchingFactor();
-		Long time = event.getDuration() / 1000;
+	private void observe(MinMaxEvent event) {
+		String move = event.move.toString();
+		Integer exploredNodes = event.exploredNodes;
+		Integer expandedNodes = event.expandedNodes;
+		Integer prunedNodes = event.prunedNodes;
+		Integer terminalNodes = event.terminalNodes;
+		Integer cacheSize = event.nodesInCache;
+		Integer cacheHits = event.cacheHits;
+		Integer depth = event.searchDepth;
+		Double branchingFactor = event.averageBranchingFactor;
+		Long time = event.duration / 1000;
 
-		DefaultTableModel model = (DefaultTableModel) minmaxTable.getModel();
-		model.addRow(new Object[] { exploredNodes, expandedNodes, prunedNodes,
+		updateTable(move, exploredNodes, expandedNodes, prunedNodes,
 				terminalNodes, cacheSize, cacheHits, depth, branchingFactor,
-				time, move });
+				time);
+	}
+
+	private void updateTable(String move, Integer exploredNodes,
+			Integer expandedNodes, Integer prunedNodes, Integer terminalNodes,
+			Integer cacheSize, Integer cacheHits, Integer depth,
+			Double branchingFactor, Long time) {
+		DefaultTableModel model = (DefaultTableModel) minmaxTable.getModel();
+		model.addRow(new Object[] { depth, exploredNodes, expandedNodes,
+				prunedNodes, terminalNodes, cacheSize, cacheHits,
+				branchingFactor, time, move });
 	}
 
 }

@@ -92,7 +92,7 @@ public final class ServerPanel extends JPanel implements ActionListener
 	private final SchedulingPanel schedulingPanel;
 	private final LeaderboardPanel leaderboardPanel;
 
-	private final List<JComboBox> playerFields;
+	private final List<JComboBox<String>> playerFields;
 	private final List<JLabel> roleLabels;
 	private final JButton runButton;
 
@@ -104,7 +104,7 @@ public final class ServerPanel extends JPanel implements ActionListener
 	
 	private final GameSelector gameSelector;
 	private final PlayerSelector playerSelector;
-	private final JList playerSelectorList;
+	private final JList<String> playerSelectorList;
 
 	public ServerPanel()
 	{
@@ -120,7 +120,7 @@ public final class ServerPanel extends JPanel implements ActionListener
 		playersPanel = new JPanel(new GridBagLayout());
 
 		roleLabels = new ArrayList<JLabel>();
-		playerFields = new ArrayList<JComboBox>();
+		playerFields = new ArrayList<JComboBox<String>>();
 		theGame = null;
 
 		shouldSave = new JCheckBox("Save match to disk?", false);
@@ -226,7 +226,7 @@ public final class ServerPanel extends JPanel implements ActionListener
 				int playClock = (Integer)playClockSpinner.getValue();
 
 				List<PlayerPresence> thePlayers = new ArrayList<PlayerPresence>();
-				for (JComboBox playerField : playerFields) {
+				for (JComboBox<String> playerField : playerFields) {
                 	String name = playerField.getSelectedItem().toString();
                 	thePlayers.add(playerSelector.getPlayerPresence(name));
 				}
@@ -296,7 +296,7 @@ public final class ServerPanel extends JPanel implements ActionListener
 			tab.addTab("Error", errorPanel);
 			tab.addTab("Visualization", visualizationPanel);
 			tab.addTab("States", statesPanel);
-			CloseableTabs.addClosableTab(matchesTabbedPane, tab, matchId, addTabCloseButton(tab));
+			CloseableTabs.addClosableTab(matchesTabbedPane, tab, matchId, addTabCloseButton(tab, visualizationPanel));
 			
 			match.setCryptographicKeys(signingKeys);
 			match.setPlayerNamesFromHost(playerNames);
@@ -329,12 +329,13 @@ public final class ServerPanel extends JPanel implements ActionListener
 		}
 	}
 	
-	private AbstractAction addTabCloseButton(final Component tabToClose) {
+	private AbstractAction addTabCloseButton(final Component tabToClose, final VisualizationPanel visualizationPanel) {
 		return new AbstractAction("x") {
 		    public void actionPerformed(ActionEvent evt) {
 		    	for (int i = 0; i < matchesTabbedPane.getTabCount(); i++) {
 		    		if (tabToClose == matchesTabbedPane.getComponentAt(i)) {
 		    			matchesTabbedPane.remove(tabToClose);
+		    			visualizationPanel.close(); // need to do this to prevent memory leak
 		    		}
 		    	}
 		    }

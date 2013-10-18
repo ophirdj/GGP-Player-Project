@@ -91,15 +91,15 @@ public final class Tourney extends JPanel implements ActionListener {
     private final JTextField numRepsTextField;  
     
     private List<Class<?>> gamers = ProjectSearcher.getAllClassesThatAre(Gamer.class);
-    private List<JComboBox> playerBoxes;
+    private List<JComboBox<String>> playerBoxes;
     private final JPanel playerBoxesPanel;
     
     private final TourneyEventsPanel eventsPanel;
 
     private final GameSelector gameSelector;    
     
-    private JComboBox getFreshPlayerComboBox() {
-        JComboBox newBox = new JComboBox();
+    private JComboBox<String> getFreshPlayerComboBox() {
+        JComboBox<String> newBox = new JComboBox<String>();
 
         List<Class<?>> gamersCopy = new ArrayList<Class<?>>(gamers);
         for (Class<?> gamer : gamersCopy) {
@@ -128,7 +128,7 @@ public final class Tourney extends JPanel implements ActionListener {
         numRepsTextField = new JTextField("100");
 
         // Create the player-selection controls
-        playerBoxes = new ArrayList<JComboBox>();
+        playerBoxes = new ArrayList<JComboBox<String>>();
         playerBoxesPanel = new JPanel(new GridBagLayout());        
         
         // Create the panel at the bottom with the buttons
