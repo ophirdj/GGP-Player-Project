@@ -114,13 +114,8 @@ public final class TestingPanel extends JPanel implements ActionListener {
 		super(new GridBagLayout());
 
 		runButton = new JButton(runButtonMethod());
-<<<<<<< HEAD
 		startClockSpinner = new JSpinner(new SpinnerNumberModel(600, 5, 9999, 1));
-		playClockSpinner = new JSpinner(new SpinnerNumberModel(300, 5, 9999, 1));
-=======
-		startClockSpinner = new JSpinner(new SpinnerNumberModel(600, 5, 600, 1));
-		playClockSpinner = new JSpinner(new SpinnerNumberModel(15, 5, 300, 1));
->>>>>>> branch 'new_design' of https://github.com/ophirdj/GGP-Player-Project.git
+		playClockSpinner = new JSpinner(new SpinnerNumberModel(15, 5, 9999, 1));
 		numberOfGamesSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 9999,
 				1));
 		matchesTabbedPane = new JTabbedPane();
