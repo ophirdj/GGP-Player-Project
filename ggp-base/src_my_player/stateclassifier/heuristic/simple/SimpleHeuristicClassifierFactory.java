@@ -1,4 +1,4 @@
-package classifier.heuristic.simple;
+package stateclassifier.heuristic.simple;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,16 +9,16 @@ import labeler.IStateLabeler;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier;
-import classifier.IClassifierFactory;
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifierFactory;
 import states.LabeledState;
 import weka.classifiers.Classifier;
 
-public class SimpleHeuristicClassifierFactory implements IClassifierFactory {
+public class SimpleHeuristicClassifierFactory implements IStateClassifierFactory {
 
 	@Override
-	public IClassifier createClassifier(IStateLabeler labeler, String gameName,
+	public IStateClassifier createClassifier(IStateLabeler labeler, String gameName,
 			Set<GdlSentence> contents, List<Gdl> rules,
 			Collection<LabeledState> labeledExamples, Classifier classifier)
 			throws ClassifierBuildingException {

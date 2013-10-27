@@ -1,15 +1,15 @@
-package classifier.comparer;
+package stateclassifier.comparer;
 
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier;
 import states.MyState;
 import utils.BinaryValues;
 import utils.Verbose;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier;
 
-public abstract class ComparerClassifierInfrastructure implements IClassifier {
+public abstract class ComparerClassifierInfrastructure implements IStateClassifier {
 
 	private Classifier classificationClassifier;
 	private boolean isTrained;

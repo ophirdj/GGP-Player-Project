@@ -1,9 +1,9 @@
-package wekaclassifier;
+package generalclassifier;
 
 import weka.classifiers.functions.LinearRegression;
 
 public class WekaLinearRegressionClassifier extends LinearRegression implements
-		IWekaClassifier {
+		IGeneralClassifier {
 
 	/**
 	 * 

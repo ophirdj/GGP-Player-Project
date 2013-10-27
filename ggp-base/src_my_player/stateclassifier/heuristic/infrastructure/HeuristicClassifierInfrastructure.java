@@ -1,16 +1,16 @@
-package classifier.heuristic.infrastructure;
+package stateclassifier.heuristic.infrastructure;
 
 import labeler.IStateLabeler;
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier;
 import states.LabeledState;
 import states.MyState;
 import utils.Verbose;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier;
 
-public abstract class HeuristicClassifierInfrastructure implements IClassifier {
+public abstract class HeuristicClassifierInfrastructure implements IStateClassifier {
 	
 	private Classifier regressionClassifier;
 	private boolean isTrained;

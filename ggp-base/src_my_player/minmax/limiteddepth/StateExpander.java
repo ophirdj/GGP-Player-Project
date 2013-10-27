@@ -15,15 +15,15 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import classifier.IClassifier;
-import classifier.IClassifier.ClassificationException;
-import classifier.IClassifier.ClassifierValue;
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifier.ClassificationException;
+import stateclassifier.IStateClassifier.ClassifierValue;
 import states.MyState;
 
 public class StateExpander {
 
 	public static List<Entry<Move, MyState>> expand(StateMachine machine,
-			MyState state, IClassifier classifier, Role maxPlayer)
+			MyState state, IStateClassifier classifier, Role maxPlayer)
 			throws MoveDefinitionException, TransitionDefinitionException,
 			ClassificationException {
 		Map<Move, List<MachineState>> nextStates = machine.getNextStates(
@@ -44,10 +44,10 @@ public class StateExpander {
 
 	private static class Comparer implements Comparator<Entry<Move, MyState>> {
 
-		private IClassifier classifier;
+		private IStateClassifier classifier;
 		private boolean reverse;
 
-		public Comparer(IClassifier classifier, boolean reverse) {
+		public Comparer(IStateClassifier classifier, boolean reverse) {
 			this.classifier = classifier;
 			this.reverse = reverse;
 		}
@@ -78,7 +78,7 @@ public class StateExpander {
 	}
 
 	private static void sortMoves(List<Entry<Move, MyState>> childrenStates,
-			IClassifier classifier, boolean reverse)
+			IStateClassifier classifier, boolean reverse)
 			throws ClassificationException {
 		Collections.sort(childrenStates, new Comparer(classifier, reverse));
 	}

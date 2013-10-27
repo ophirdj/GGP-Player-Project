@@ -23,12 +23,12 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 import playerstatistics.PlayerDetatilPanel;
 import simulator.ISimulator;
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifierFactory;
 import states.MyState;
 import utils.Verbose;
 import weka.classifiers.Classifier;
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier;
-import classifier.IClassifierFactory;
 
 public class ConfigurablePlayer extends StateMachineGamer {
 
@@ -88,12 +88,12 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		Classifier wekaClassifier = configPanel.getWekaClassifer();
 		Verbose.printVerbose("success", Verbose.PLAYER);
 		Game game = getMatch().getGame();
-		IClassifierFactory classifierFactory = configPanel
+		IStateClassifierFactory classifierFactory = configPanel
 				.getClassifierFactory();
 		try {
 			Verbose.printVerboseNoNewLine("getting classifier... ",
 					Verbose.PLAYER);
-			IClassifier classifier = classifierFactory.createClassifier(
+			IStateClassifier classifier = classifierFactory.createClassifier(
 					labeler, game.getName(), simulator.getAllContents(),
 					game.getRules(), simulator.getLabeledStates(),
 					wekaClassifier);

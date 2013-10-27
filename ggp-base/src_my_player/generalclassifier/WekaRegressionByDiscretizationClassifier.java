@@ -1,9 +1,9 @@
-package wekaclassifier;
+package generalclassifier;
 
 import weka.classifiers.meta.RegressionByDiscretization;
 
 public class WekaRegressionByDiscretizationClassifier extends
-		RegressionByDiscretization implements IWekaClassifier {
+		RegressionByDiscretization implements IGeneralClassifier {
 
 	/**
 	 * 

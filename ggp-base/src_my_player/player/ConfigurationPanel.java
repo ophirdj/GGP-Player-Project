@@ -1,5 +1,7 @@
 package player;
 
+import generalclassifier.IGeneralClassifier;
+
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -27,13 +29,12 @@ import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 import simulator.ISimulatorFactory;
+import stateclassifier.IStateClassifierFactory;
+import stateclassifier.comparer.simple.SimpleComparerClassifierFactory;
+import stateclassifier.heuristic.simple.SimpleHeuristicClassifierFactory;
 import utils.Verbose;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
-import wekaclassifier.IWekaClassifier;
-import classifier.IClassifierFactory;
-import classifier.comparer.simple.SimpleComparerClassifierFactory;
-import classifier.heuristic.simple.SimpleHeuristicClassifierFactory;
 
 public class ConfigurationPanel extends ConfigPanel {
 
@@ -42,7 +43,7 @@ public class ConfigurationPanel extends ConfigPanel {
 	private final JComboBox<IStateLabelerFactory> labelerList = initComboBox(IStateLabelerFactory.class);
 	private final JComboBox<ISimulatorFactory> simulatorList = initComboBox(ISimulatorFactory.class);
 	private final JComboBox<IMinMaxFactory> minMaxList = initComboBox(IMinMaxFactory.class);
-	private final JComboBox<IWekaClassifier> wekaClassifierList = initComboBox(IWekaClassifier.class);
+	private final JComboBox<IGeneralClassifier> wekaClassifierList = initComboBox(IGeneralClassifier.class);
 
 	public final JCheckBox savePlayerData = new JCheckBox("Save Data?", false);
 	private final JCheckBox simulatorAnytime = new JCheckBox("Anytime?", false);
@@ -87,7 +88,7 @@ public class ConfigurationPanel extends ConfigPanel {
 
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {
-				IWekaClassifier classifier = getWekaClassifer();
+				IGeneralClassifier classifier = getWekaClassifer();
 				Capabilities capabilities = classifier.getCapabilities();
 				useCompare.setEnabled(capabilities
 						.handles(Capability.BINARY_CLASS));
@@ -111,7 +112,7 @@ public class ConfigurationPanel extends ConfigPanel {
 		});
 
 		{ // need to do this to invoke item listener to prevent bug
-			IWekaClassifier c = wekaClassifierList.getItemAt(0);
+			IGeneralClassifier c = wekaClassifierList.getItemAt(0);
 			wekaClassifierList.removeItemAt(0);
 			wekaClassifierList.addItem(c);
 		}
@@ -257,7 +258,7 @@ public class ConfigurationPanel extends ConfigPanel {
 		return (IMinMaxFactory) minMaxList.getSelectedItem();
 	}
 
-	public IClassifierFactory getClassifierFactory() {
+	public IStateClassifierFactory getClassifierFactory() {
 		if (useCompare.isSelected()) {
 			return new SimpleComparerClassifierFactory();
 		} else if (useHeuristic.isSelected()) {
@@ -269,8 +270,8 @@ public class ConfigurationPanel extends ConfigPanel {
 		}
 	}
 
-	public IWekaClassifier getWekaClassifer() {
-		return (IWekaClassifier) wekaClassifierList.getSelectedItem();
+	public IGeneralClassifier getWekaClassifer() {
+		return (IGeneralClassifier) wekaClassifierList.getSelectedItem();
 	}
 
 }

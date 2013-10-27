@@ -1,4 +1,4 @@
-package classifier.comparer.simple;
+package stateclassifier.comparer.simple;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,16 +9,16 @@ import labeler.IStateLabeler;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifierFactory;
 import states.LabeledState;
 import weka.classifiers.Classifier;
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier;
-import classifier.IClassifierFactory;
 
-public class SimpleComparerClassifierFactory implements IClassifierFactory {
+public class SimpleComparerClassifierFactory implements IStateClassifierFactory {
 
 	@Override
-	public IClassifier createClassifier(IStateLabeler labeler, String gameName,
+	public IStateClassifier createClassifier(IStateLabeler labeler, String gameName,
 			Set<GdlSentence> contents, List<Gdl> rules,
 			Collection<LabeledState> labeledExamples, Classifier classifier)
 			throws ClassifierBuildingException {

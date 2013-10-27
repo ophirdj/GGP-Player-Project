@@ -5,7 +5,7 @@ import minmax.anytime.AnyTimeMinMax;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 
-import classifier.IClassifier;
+import stateclassifier.IStateClassifier;
 
 public abstract class IMinMaxFactory {
 
@@ -25,7 +25,7 @@ public abstract class IMinMaxFactory {
 	 * @return A new object that implements a (variation of) min-max algorithm.
 	 */
 	public final IMinMax createMinMax(StateMachine machine, Role maxPlayer,
-			IClassifier classifier, boolean cached, boolean anytime) {
+			IStateClassifier classifier, boolean cached, boolean anytime) {
 		IMinMax minmax = createLimitedDepthMinMax(machine, maxPlayer,
 				classifier, DEFAULT_DEPTH, cached);
 		if (anytime) {
@@ -35,5 +35,5 @@ public abstract class IMinMaxFactory {
 	}
 
 	protected abstract IMinMax createLimitedDepthMinMax(StateMachine machine,
-			Role maxPlayer, IClassifier classifier, int depth, boolean cached);
+			Role maxPlayer, IStateClassifier classifier, int depth, boolean cached);
 }

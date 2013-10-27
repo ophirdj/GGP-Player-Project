@@ -1,4 +1,4 @@
-package classifier;
+package stateclassifier;
 
 public class ClassifierBuildingException extends Exception {
 

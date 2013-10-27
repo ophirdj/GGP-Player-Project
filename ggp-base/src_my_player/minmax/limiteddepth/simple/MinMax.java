@@ -15,11 +15,11 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifier.ClassificationException;
+import stateclassifier.IStateClassifier.ClassifierValue;
 import states.MyState;
 import utils.Verbose;
-import classifier.IClassifier;
-import classifier.IClassifier.ClassificationException;
-import classifier.IClassifier.ClassifierValue;
 
 
 /**
@@ -31,7 +31,7 @@ import classifier.IClassifier.ClassifierValue;
  */
 public final class MinMax extends LimitedDepthMinMax {
 
-	public MinMax(StateMachine machine, Role maxPlayer, IClassifier classifier, int depth, boolean cached) {
+	public MinMax(StateMachine machine, Role maxPlayer, IStateClassifier classifier, int depth, boolean cached) {
 		super(machine, maxPlayer, classifier, depth, cached);
 	}
 	

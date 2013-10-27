@@ -1,4 +1,4 @@
-package classifier;
+package stateclassifier;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +16,7 @@ import weka.classifiers.Classifier;
  * @author ronen
  * 
  */
-public interface IClassifierFactory {
+public interface IStateClassifierFactory {
 
 	/**
 	 * @param machine A labeler for the game.
@@ -28,7 +28,7 @@ public interface IClassifierFactory {
 	 * @return A new IClassifier
 	 * @throws ClassifierBuildingException If the building failed.
 	 */
-	IClassifier createClassifier(IStateLabeler labeler, String gameName, Set<GdlSentence> contents,
+	IStateClassifier createClassifier(IStateLabeler labeler, String gameName, Set<GdlSentence> contents,
 			List<Gdl> rules, Collection<LabeledState> labeledExamples,
 			Classifier classifier) throws ClassifierBuildingException;
 

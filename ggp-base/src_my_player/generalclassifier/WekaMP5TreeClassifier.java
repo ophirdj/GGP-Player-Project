@@ -1,8 +1,8 @@
-package wekaclassifier;
+package generalclassifier;
 
 import weka.classifiers.trees.M5P;
 
-public class WekaMP5TreeClassifier extends M5P implements IWekaClassifier {
+public class WekaMP5TreeClassifier extends M5P implements IGeneralClassifier {
 
 	/**
 	 * 

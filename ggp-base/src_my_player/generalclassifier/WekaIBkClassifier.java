@@ -1,8 +1,8 @@
-package wekaclassifier;
+package generalclassifier;
 
 import weka.classifiers.lazy.IBk;
 
-public class WekaIBkClassifier extends IBk implements IWekaClassifier {
+public class WekaIBkClassifier extends IBk implements IGeneralClassifier {
 
 	/**
 	 * 

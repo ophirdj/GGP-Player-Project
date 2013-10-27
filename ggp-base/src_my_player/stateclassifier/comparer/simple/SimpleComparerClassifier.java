@@ -1,4 +1,4 @@
-package classifier.comparer.simple;
+package stateclassifier.comparer.simple;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +11,8 @@ import java.util.Set;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.comparer.ComparerClassifierInfrastructure;
 import states.LabeledState;
 import states.MyState;
 import utils.BinaryValues;
@@ -19,8 +21,6 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
-import classifier.ClassifierBuildingException;
-import classifier.comparer.ComparerClassifierInfrastructure;
 
 public class SimpleComparerClassifier extends ComparerClassifierInfrastructure {
 

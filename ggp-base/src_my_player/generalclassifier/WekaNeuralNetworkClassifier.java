@@ -1,9 +1,9 @@
-package wekaclassifier;
+package generalclassifier;
 
 import weka.classifiers.functions.MultilayerPerceptron;
 
 public class WekaNeuralNetworkClassifier extends MultilayerPerceptron implements
-		IWekaClassifier {
+		IGeneralClassifier {
 
 	/**
 	 * 

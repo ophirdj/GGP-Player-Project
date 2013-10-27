@@ -12,16 +12,16 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifier.ClassificationException;
+import stateclassifier.IStateClassifier.ClassifierValue;
 import states.MyState;
 import utils.Verbose;
-import classifier.IClassifier;
-import classifier.IClassifier.ClassificationException;
-import classifier.IClassifier.ClassifierValue;
 
 public final class AlphaBeta extends LimitedDepthMinMax {
 
 	public AlphaBeta(StateMachine machine, Role maxPlayer,
-			IClassifier classifier, int depth, boolean cached) {
+			IStateClassifier classifier, int depth, boolean cached) {
 		super(machine, maxPlayer, classifier, depth, cached);
 	}
 

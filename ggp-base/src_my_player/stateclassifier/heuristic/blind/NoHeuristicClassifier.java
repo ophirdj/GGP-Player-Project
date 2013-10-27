@@ -1,13 +1,13 @@
-package classifier.heuristic.blind;
+package stateclassifier.heuristic.blind;
 
 import labeler.IStateLabeler;
+import stateclassifier.IStateClassifier;
+import stateclassifier.heuristic.infrastructure.HeuristicClassifierInfrastructure.DoubleValue;
 import states.LabeledState;
 import states.MyState;
 import utils.Verbose;
-import classifier.IClassifier;
-import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure.DoubleValue;
 
-public class NoHeuristicClassifier implements IClassifier {
+public class NoHeuristicClassifier implements IStateClassifier {
 
 	private IStateLabeler labeler;
 

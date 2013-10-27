@@ -10,6 +10,9 @@ import java.util.Map.Entry;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
 import labeler.IStateLabeler;
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier;
+import stateclassifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 import states.LabeledState;
 import states.MyState;
 import utils.BinaryValues;
@@ -19,11 +22,8 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.ProtectedProperties;
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier;
-import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 
-public class IncrementalClassifer extends HeuristicClassifierInfrastructure implements IClassifier {
+public class IncrementalClassifer extends HeuristicClassifierInfrastructure implements IStateClassifier {
 
 	private IBk classifier;
 	private HashMap<Attribute, GdlSentence> attributeToSentence;

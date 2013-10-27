@@ -1,4 +1,4 @@
-package classifier.heuristic.simple;
+package stateclassifier.heuristic.simple;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +13,8 @@ import labeler.IStateLabeler;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 import states.LabeledState;
 import states.MyState;
 import utils.BinaryValues;
@@ -22,8 +24,6 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.ProtectedProperties;
-import classifier.ClassifierBuildingException;
-import classifier.heuristic.infrastructure.HeuristicClassifierInfrastructure;
 
 public class SimpleHeuristicClassifier extends
 		HeuristicClassifierInfrastructure {

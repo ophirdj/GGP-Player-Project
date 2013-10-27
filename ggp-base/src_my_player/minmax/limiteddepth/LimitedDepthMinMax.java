@@ -14,11 +14,11 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
+import stateclassifier.IStateClassifier;
+import stateclassifier.IStateClassifier.ClassificationException;
+import stateclassifier.IStateClassifier.ClassifierValue;
 import states.MyState;
 import utils.Verbose;
-import classifier.IClassifier;
-import classifier.IClassifier.ClassificationException;
-import classifier.IClassifier.ClassifierValue;
 
 public abstract class LimitedDepthMinMax implements IMinMax {
 
@@ -38,7 +38,7 @@ public abstract class LimitedDepthMinMax implements IMinMax {
 	}
 
 	protected final StateMachine machine;
-	private final IClassifier classifier;
+	private final IStateClassifier classifier;
 	protected int minMaxDepth;
 	protected final Role minPlayer;
 	protected final Role maxPlayer;
@@ -46,7 +46,7 @@ public abstract class LimitedDepthMinMax implements IMinMax {
 	private final MinMaxCache<MinMaxEntry> cache;
 
 	public LimitedDepthMinMax(StateMachine machine, Role maxPlayer,
-			IClassifier classifier, int depth, boolean cached) {
+			IStateClassifier classifier, int depth, boolean cached) {
 		List<Role> roles = machine.getRoles();
 		assert (roles.size() == 2);
 		this.machine = machine;

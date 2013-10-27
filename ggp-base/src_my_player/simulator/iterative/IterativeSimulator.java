@@ -16,12 +16,12 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import simulator.BaseSimulator;
 import simulator.ISimulator;
+import stateclassifier.ClassifierBuildingException;
+import stateclassifier.IStateClassifier.ClassificationException;
+import stateclassifier.IStateClassifier.ClassifierValue;
 import states.LabeledState;
 import states.MyState;
 import weka.classifiers.lazy.IBk;
-import classifier.ClassifierBuildingException;
-import classifier.IClassifier.ClassificationException;
-import classifier.IClassifier.ClassifierValue;
 
 public class IterativeSimulator extends BaseSimulator implements ISimulator {
 

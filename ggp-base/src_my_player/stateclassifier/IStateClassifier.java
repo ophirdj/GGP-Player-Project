@@ -1,4 +1,4 @@
-package classifier;
+package stateclassifier;
 
 import states.MyState;
 
@@ -10,7 +10,7 @@ import states.MyState;
  * @author Ophir De Jager
  * 
  */
-public interface IClassifier {
+public interface IStateClassifier {
 	
 	/**
 	 * Interface for feature extraction from GDL and creation of data sets for
