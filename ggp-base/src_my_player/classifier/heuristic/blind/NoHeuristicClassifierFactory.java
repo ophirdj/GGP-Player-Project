@@ -12,9 +12,10 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import states.LabeledState;
 import weka.classifiers.Classifier;
 import classifier.IClassifier;
-import classifier.IClassifierFactory;
+import classifier.IHeuristicClassifierFactory;
 
-public final class NoHeuristicClassifierFactory implements IClassifierFactory {
+public final class NoHeuristicClassifierFactory implements
+		IHeuristicClassifierFactory {
 
 	@Override
 	public IClassifier createClassifier(IStateLabeler labeler, String gameName,

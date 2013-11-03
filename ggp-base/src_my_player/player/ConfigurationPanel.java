@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Enumeration;
@@ -32,8 +34,8 @@ import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
 import wekaclassifier.IWekaClassifier;
 import classifier.IClassifierFactory;
-import classifier.comparer.simple.SimpleComparerClassifierFactory;
-import classifier.heuristic.simple.SimpleHeuristicClassifierFactory;
+import classifier.IComparerClassifierFactory;
+import classifier.IHeuristicClassifierFactory;
 
 public final class ConfigurationPanel extends ConfigPanel {
 
@@ -43,6 +45,8 @@ public final class ConfigurationPanel extends ConfigPanel {
 	private final JComboBox<ISimulatorFactory> simulatorList = initComboBox(ISimulatorFactory.class);
 	private final JComboBox<IMinMaxFactory> minMaxList = initComboBox(IMinMaxFactory.class);
 	private final JComboBox<IWekaClassifier> wekaClassifierList = initComboBox(IWekaClassifier.class);
+	private final JComboBox<IHeuristicClassifierFactory> heuristicClassifiersList = initComboBox(IHeuristicClassifierFactory.class);
+	private final JComboBox<IComparerClassifierFactory> comparerClassifiersList = initComboBox(IComparerClassifierFactory.class);
 
 	public final JCheckBox savePlayerData = new JCheckBox("Save Data?", false);
 	private final JCheckBox simulatorAnytime = new JCheckBox("Anytime?", false);
@@ -82,6 +86,24 @@ public final class ConfigurationPanel extends ConfigPanel {
 
 		classificationGroup.add(useHeuristic);
 		classificationGroup.add(useCompare);
+		
+		useHeuristic.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				heuristicClassifiersList.setEnabled(useHeuristic.isSelected());
+				comparerClassifiersList.setEnabled(!useHeuristic.isSelected());
+			}
+		});
+		
+		useCompare.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				comparerClassifiersList.setEnabled(useCompare.isSelected());
+				heuristicClassifiersList.setEnabled(!useCompare.isSelected());
+			}
+		});
 
 		wekaClassifierList.addItemListener(new ItemListener() {
 
@@ -193,6 +215,18 @@ public final class ConfigurationPanel extends ConfigPanel {
 		add(useCompare, new GridBagConstraints(3, rowCount, 1, 1, 0.0, 0.0,
 				GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5,
 						5, 1, 5), 5, 5));
+		
+		++rowCount;
+
+		add(new JLabel("Builder:"), new GridBagConstraints(1, rowCount, 1, 1, 0.0,
+				0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(heuristicClassifiersList, new GridBagConstraints(2, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5,
+						5, 1, 5), 5, 5));
+		add(comparerClassifiersList, new GridBagConstraints(3, rowCount, 1, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5,
+						5, 1, 5), 5, 5));
 
 		++rowCount;
 
@@ -259,9 +293,9 @@ public final class ConfigurationPanel extends ConfigPanel {
 
 	public IClassifierFactory getClassifierFactory() {
 		if (useCompare.isSelected()) {
-			return new SimpleComparerClassifierFactory();
+			return (IClassifierFactory) comparerClassifiersList.getSelectedItem();
 		} else if (useHeuristic.isSelected()) {
-			return new SimpleHeuristicClassifierFactory();
+			return (IClassifierFactory) heuristicClassifiersList.getSelectedItem();
 		} else {
 			Verbose.printVerboseError("No compatible builder selected",
 					Verbose.UNEXPECTED_VALUE);

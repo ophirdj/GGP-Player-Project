@@ -12,16 +12,18 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import states.LabeledState;
 import weka.classifiers.Classifier;
 import classifier.IClassifier;
-import classifier.IClassifierFactory;
+import classifier.IComparerClassifierFactory;
 
-public final class SimpleComparerClassifierFactory implements IClassifierFactory {
+public final class SimpleComparerClassifierFactory implements
+		IComparerClassifierFactory {
 
 	@Override
 	public IClassifier createClassifier(IStateLabeler labeler, String gameName,
 			Set<GdlSentence> contents, List<Gdl> rules,
 			Collection<LabeledState> labeledExamples, Classifier classifier)
 			throws ClassifierBuildingException {
-		return new SimpleComparerClassifier(gameName, contents, rules, labeledExamples, classifier);
+		return new SimpleComparerClassifier(gameName, contents, rules,
+				labeledExamples, classifier);
 	}
 
 	@Override
