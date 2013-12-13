@@ -42,7 +42,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 	public ConfigurablePlayer() {
 		this.myNumber = numInstances++;
-		this.configurationPanel = new ConfigurationPanel();
+		this.configurationPanel = new ConfigurationPanel(getClass().getSimpleName() + myNumber);
 		this.detatilPanel = new ConfigurablePlayerDetailPanel(getName(),
 				configurationPanel.savePlayerData);
 	}
@@ -193,7 +193,11 @@ public class ConfigurablePlayer extends StateMachineGamer {
 		if (myNumber <= 0) {
 			return getClass().getSimpleName();
 		} else {
-			return getClass().getSimpleName() + myNumber;
+			try {
+				return configurationPanel.getName();
+			} catch(NullPointerException e) {
+				return getClass().getSimpleName() + myNumber;
+			}
 		}
 	}
 

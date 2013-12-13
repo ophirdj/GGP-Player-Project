@@ -1,14 +1,1 @@
-/classifier
-/external
-/gamestatistics
-/labeler
-/logging
-/main
-/minmax
-/org
 /player
-/playerstatistics
-/simulator
-/states
-/utils
-/wekaclassifier

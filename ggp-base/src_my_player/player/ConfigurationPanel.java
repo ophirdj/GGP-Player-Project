@@ -20,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import labeler.IStateLabelerFactory;
@@ -62,10 +63,14 @@ public final class ConfigurationPanel extends ConfigPanel {
 	private final JRadioButton useCompare = new JRadioButton("Relative");
 
 	private final ButtonGroup classificationGroup = new ButtonGroup();
+	
+	private final JTextField playerName = new JTextField();
 
-	public ConfigurationPanel() {
+	public ConfigurationPanel(String name) {
 		super(new GridBagLayout());
-
+		
+		playerName.setText(name);
+		
 		simulatorAnytime.addItemListener(new ItemListener() {
 
 			@Override
@@ -139,6 +144,15 @@ public final class ConfigurationPanel extends ConfigPanel {
 		}
 
 		int rowCount = 0;
+		
+		add(new JLabel("Name:"), new GridBagConstraints(0, rowCount, 1, 1,
+				0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
+				new Insets(5, 5, 1, 5), 5, 5));
+		add(playerName, new GridBagConstraints(1, rowCount++, 3, 1, 0.0, 0.0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL,
+				new Insets(5, 5, 1, 5), 5, 5));
+		
+		++rowCount;
 
 		add(new JLabel("Labeler:"), new GridBagConstraints(0, rowCount, 1, 1,
 				0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE,
@@ -305,6 +319,10 @@ public final class ConfigurationPanel extends ConfigPanel {
 
 	public IWekaClassifier getWekaClassifer() {
 		return (IWekaClassifier) wekaClassifierList.getSelectedItem();
+	}
+	
+	public String getName() {
+		return playerName.getText();
 	}
 
 }
