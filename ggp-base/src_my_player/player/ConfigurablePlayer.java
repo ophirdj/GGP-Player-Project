@@ -40,6 +40,8 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	private IMinMax minmax;
 	private int turnNumber;
 
+	private boolean execute;
+
 	public ConfigurablePlayer() {
 		this.myNumber = numInstances++;
 		this.configurationPanel = new ConfigurationPanel(getClass().getSimpleName() + myNumber);
@@ -56,6 +58,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
+		execute = true;
 		configurationPanel.setEnabled(false);
 		Verbose.printVerboseNoNewLine("getting machine... ", Verbose.PLAYER);
 		StateMachine machine = getStateMachine();
@@ -77,11 +80,13 @@ public class ConfigurablePlayer extends StateMachineGamer {
 				Verbose.PLAYER);
 		int exampleAmount = configurationPanel.getExampleAmount();
 		Verbose.printVerbose("success", Verbose.PLAYER);
-		for (int counter = 0; counter < exampleAmount; counter++) {
+		for (int counter = 0; counter < exampleAmount && execute; counter++) {
 			simulator.Simulate(initalState);
 			Verbose.printVerbose("current simulation is: " + counter + " of: "
 					+ exampleAmount, Verbose.CURRENT_SIMULATION_VERBOSE);
 		}
+		
+		if(!execute) return;
 
 		Verbose.printVerboseNoNewLine("getting classifier type... ",
 				Verbose.PLAYER);
@@ -142,7 +147,7 @@ public class ConfigurablePlayer extends StateMachineGamer {
 				getRole());
 		Move selection = null;
 		try {
-			if (moves.size() > 1) {
+			if (moves.size() > 1 && execute) {
 				minmax.setTimeout(timeout - 1500);
 				selection = minmax.getMove(new MyState(getCurrentState(),
 						turnNumber, getRole(), getOponent()));
@@ -175,12 +180,16 @@ public class ConfigurablePlayer extends StateMachineGamer {
 
 	@Override
 	public void stateMachineStop() {
+		execute = false;
 		minmax.clear();
+		minmax.stop();
 	}
 
 	@Override
 	public void stateMachineAbort() {
+		execute = false;
 		minmax.clear();
+		minmax.stop();
 	}
 
 	@Override

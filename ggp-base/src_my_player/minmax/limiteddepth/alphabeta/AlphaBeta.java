@@ -20,6 +20,8 @@ import classifier.IClassifier.ClassifierValue;
 
 public final class AlphaBeta extends LimitedDepthMinMax {
 
+	private boolean execute = false;
+
 	public AlphaBeta(StateMachine machine, Role maxPlayer,
 			IClassifier classifier, int depth, boolean cached) {
 		super(machine, maxPlayer, classifier, depth, cached);
@@ -29,6 +31,7 @@ public final class AlphaBeta extends LimitedDepthMinMax {
 	public Move getMove(MyState state) throws MinMaxException,
 			MoveDefinitionException, TransitionDefinitionException,
 			GoalDefinitionException, InterruptedException {
+		execute = true;
 		if (state == null) {
 			throw new MinMaxException();
 		}
@@ -56,7 +59,7 @@ public final class AlphaBeta extends LimitedDepthMinMax {
 			throws ClassificationException, MoveDefinitionException,
 			TransitionDefinitionException, GoalDefinitionException,
 			MinMaxException, InterruptedException {
-		if (isTimeout()) {
+		if (isTimeout() || !execute) {
 			throw new InterruptedException();
 		}
 		reporter.exploreNode();
@@ -123,5 +126,10 @@ public final class AlphaBeta extends LimitedDepthMinMax {
 		}
 		addToCache(state, bestEntry, depth);
 		return bestEntry;
+	}
+
+	@Override
+	public void stop() {
+		execute  = false;
 	}
 }

@@ -20,6 +20,8 @@ public final class AnyTimeMinMax implements IMinMax {
 	private final IMinMax minmax;
 	private AnyTimeWorker worker;
 
+	private boolean execute = false;
+
 	public AnyTimeMinMax(IMinMax minmax) {
 		this.timeout = Long.MIN_VALUE;
 		this.minmax = minmax;
@@ -56,7 +58,7 @@ public final class AnyTimeMinMax implements IMinMax {
 			}
 			Verbose.printVerbose("AnyTimeMinMax: stoping worker",
 					Verbose.MIN_MAX_VERBOSE);
-			worker.stopMinMaxLoop();
+			if(execute) worker.stopMinMaxLoop();
 			Verbose.printVerbose("AnyTimeMinMax: getting move result",
 					Verbose.MIN_MAX_VERBOSE);
 			return worker.getMove();
@@ -77,6 +79,12 @@ public final class AnyTimeMinMax implements IMinMax {
 	@Override
 	public void clear() {
 		minmax.clear();
+	}
+
+	@Override
+	public void stop() {
+		execute  = false;
+		worker.stopMinMaxLoop();
 	}
 
 }

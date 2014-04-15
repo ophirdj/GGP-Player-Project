@@ -482,6 +482,9 @@ public final class TestingPanel extends JPanel implements ActionListener {
 			JButton closeButton = CloseableTabs.addClosableTab(
 					matchesTabbedPane, tab, matchId,
 					addTabCloseButton(tab, visualizationPanel));
+			
+			matchesTabbedPane.setSelectedIndex(matchesTabbedPane.getTabCount() - 1); // set focus to game tab
+			tab.setSelectedIndex(2); //set focus to visualization tab
 
 			match.setCryptographicKeys(signingKeys);
 			match.setPlayerNamesFromHost(playerNames);

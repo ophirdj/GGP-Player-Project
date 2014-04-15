@@ -113,4 +113,9 @@ public interface IMinMax extends Subject {
 		}
 	}
 
+	/**
+	 * Stop execution.
+	 */
+	void stop();
+
 }
